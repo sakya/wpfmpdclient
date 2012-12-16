@@ -1,0 +1,252 @@
+﻿<Window x:Class="WpfMpdClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WpfMpdClient"
+        WindowStartupLocation="CenterScreen"
+        Title="WpfMpdClient" Height="400" Width="550">
+
+  <Window.Resources>
+    <local:TrackConverter x:Key="TrackConverter" />
+    <local:TimeConverter x:Key="TimeConverter" />
+  </Window.Resources>
+
+  <TabControl Name="tabControl" SelectionChanged="tabControl_SelectionChanged">
+    <TabItem Header="Browse">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition MinHeight="100" Height="*" />
+          <RowDefinition MinHeight="100" Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition MinWidth="100" Width="*" />
+          <ColumnDefinition MinWidth="100" Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <DockPanel Grid.Row="0">
+          <TextBlock DockPanel.Dock="Top" Margin="2" Text="Artists:" />
+          <ListBox Margin="2,2,5,5" Name="lstArtist" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged" />
+        </DockPanel>
+
+        <GridSplitter ResizeDirection="Rows" VerticalAlignment="Bottom"
+                      Grid.Row="0"
+                      HorizontalAlignment="Stretch" Height="5"/>
+
+        <DockPanel Grid.Row="1">
+          <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Albums:" />
+          <ListBox Margin="2,2,5,2" Grid.Row="3" SelectionMode="Single" Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
+            <ListBox.ItemContainerStyle>
+              <Style TargetType="ListBoxItem">
+                <Setter Property="ContextMenu">
+                  <Setter.Value>
+                    <ContextMenu>
+                      <ContextMenu.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                          <EventSetter Event="MenuItem.Click" Handler="ContextMenu_Click"/>
+                        </Style>
+                      </ContextMenu.ItemContainerStyle>
+                      <MenuItem Name="mnuAdd" Header="Add">
+                        <!--<MenuItem.Icon>
+                        <Image Source="Images/add.png" />
+                      </MenuItem.Icon>-->
+                      </MenuItem>
+                      <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
+                        <!--<MenuItem.Icon>
+                        <Image Source="Images/replace.png" />
+                      </MenuItem.Icon>-->
+                      </MenuItem>
+                      <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
+                        <!--<MenuItem.Icon>
+                      <Image Source="Images/replace.png" />
+                    </MenuItem.Icon>-->
+                      </MenuItem>
+                    </ContextMenu>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </ListBox.ItemContainerStyle>
+          </ListBox>
+        </DockPanel>
+
+        <GridSplitter ResizeDirection="Columns" HorizontalAlignment="Right" 
+                      VerticalAlignment="Stretch" Width="5" Grid.RowSpan="2"/>
+
+        <ListView Margin="2" Grid.RowSpan="2" Grid.Column="1" Name="lstTracks" SelectionMode="Extended" SelectionChanged="lstTracks_SelectionChanged" >
+          <ListView.ItemContainerStyle>
+            <Style TargetType="ListBoxItem">
+              <Setter Property="ContextMenu">
+                <Setter.Value>
+                  <ContextMenu>
+                    <ContextMenu.ItemContainerStyle>
+                      <Style TargetType="MenuItem">
+                        <EventSetter Event="MenuItem.Click" Handler="TracksContextMenu_Click"/>
+                      </Style>
+                    </ContextMenu.ItemContainerStyle>
+                    <MenuItem Name="mnuAdd" Header="Add">
+                      <!--<MenuItem.Icon>
+                        <Image Source="Images/add.png" />
+                      </MenuItem.Icon>-->
+                    </MenuItem>
+                    <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
+                      <!--<MenuItem.Icon>
+                        <Image Source="Images/replace.png" />
+                      </MenuItem.Icon>-->
+                    </MenuItem>
+                    <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
+                      <!--<MenuItem.Icon>
+                      <Image Source="Images/replace.png" />
+                    </MenuItem.Icon>-->
+                    </MenuItem>
+                  </ContextMenu>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </ListView.ItemContainerStyle>
+          <ListView.View>
+            <GridView>
+              <GridViewColumn Header="Track" DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}" />
+              <GridViewColumn DisplayMemberBinding="{Binding Title}">
+                <GridViewColumn.Header>
+                  <GridViewColumnHeader Content="Title" HorizontalContentAlignment="Left"/>
+                </GridViewColumn.Header>
+              </GridViewColumn>
+              <GridViewColumn Header="Time" DisplayMemberBinding="{Binding Time,Converter={StaticResource TimeConverter}}" />
+              <GridViewColumn DisplayMemberBinding="{Binding File}">
+                <GridViewColumn.Header>
+                  <GridViewColumnHeader Content="File" HorizontalContentAlignment="Left"/>
+                </GridViewColumn.Header>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
+        </ListView>
+      </Grid>
+    </TabItem>
+    <TabItem Header="Now Playing">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <ListView Margin="2" Name="lstPlaylist" SelectionMode="Single">
+          <ListView.ItemContainerStyle>
+            <Style TargetType="ListViewItem">
+              <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
+            </Style>
+          </ListView.ItemContainerStyle>
+          <ListView.View>
+            <GridView>
+              <GridViewColumn Header="Track" DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}" />
+              <GridViewColumn DisplayMemberBinding="{Binding Title}">
+                <GridViewColumn.Header>
+                  <GridViewColumnHeader Content="Title" HorizontalContentAlignment="Left"/>
+                </GridViewColumn.Header>
+              </GridViewColumn>
+              <GridViewColumn Header="Time" DisplayMemberBinding="{Binding Time,Converter={StaticResource TimeConverter}}" />
+              <GridViewColumn DisplayMemberBinding="{Binding Artist}">
+                <GridViewColumn.Header>
+                  <GridViewColumnHeader Content="Artist" HorizontalContentAlignment="Left"/>
+                </GridViewColumn.Header>
+              </GridViewColumn>
+              <GridViewColumn DisplayMemberBinding="{Binding Album}">
+                <GridViewColumn.Header>
+                  <GridViewColumnHeader Content="Album" HorizontalContentAlignment="Left"/>
+                </GridViewColumn.Header>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
+        </ListView>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+          <TextBox Margin="2,0,0,0" Name="txtPlaylist" Width="150" TextChanged="txtPlaylist_TextChanged" />
+          <Button Margin="2,0,0,0" MinWidth="50" Name="btnSave" Content="Save" Click="btnSave_Click" IsEnabled="False" />
+          <Button Margin="2,0,0,0" MinWidth="50" Name="btnClear" Content="Clear" Click="btnClear_Click"/>
+        </StackPanel>
+
+        <local:PlayerControl x:Name="playerControl" Grid.Row="2" />
+      </Grid>
+    </TabItem>
+    <TabItem Header="Server">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Button Name="btnUpdate" Content="Update Database" Click="btnUpdate_Click" />
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+          <TextBlock Name="txtServerStatus" TextWrapping="Wrap" />
+        </ScrollViewer>
+      </Grid>
+    </TabItem>
+    <TabItem Header="Settings">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <Label VerticalContentAlignment="Center" Content="Server:" />
+        <TextBox Margin="2" MinWidth="150" Name="txtServerAddress" Grid.Column="1"/>
+        <Label VerticalContentAlignment="Center" Grid.Column="2" Content="Port:" />
+        <TextBox Margin="2" MinWidth="50" Name="txtServerPort" Grid.Column="3"/>
+
+        <Label Grid.Row="1" Content="Password:" />
+        <PasswordBox Margin="2" Name="txtPassword" Grid.Row="1" Grid.Column="1" />
+
+        <Label VerticalContentAlignment="Center" Grid.Row="2" Content="Reconnect on connection lost:" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="2" Grid.Column="1" Name="chkAutoreconnect" VerticalAlignment="Center" />
+
+        <Button Grid.Row="3" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+      </Grid>
+    </TabItem>
+    <TabItem Header="About">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Name="stcAbout">
+          <Label x:Name="productName" x:Uid="productName" FontWeight="Bold" Padding="0"
+                 Content="{Binding Mode=OneTime, Path=Product}" />
+          <StackPanel x:Uid="versionArea" Orientation="Horizontal">
+            <Label x:Name="versionLabel" x:Uid="VersionLabel" Content="Version - " Padding="0"/>
+            <Label x:Name="version" x:Uid="version" Content="{Binding Mode=OneTime, Path=Version}" Padding="0"/>
+          </StackPanel>
+          <Label x:Name="copyright" x:Uid="copyright" Content="{Binding Mode=OneTime, Path=Copyright}" Padding="0" />
+          <Label x:Name="reserved" x:Uid="reserved" Content="All Rights Reserved." Padding="0"/>
+          <Label x:Name="productLink" x:Uid="productLink" Padding="0" >
+            <Hyperlink x:Name="hyperlink" x:Uid="hyperlink" NavigateUri="http://www.sakya.it/wordpress"
+                               Hyperlink.RequestNavigate="hyperlink_RequestNavigate">
+              <TextBlock Text="More Info" />
+            </Hyperlink>
+          </Label>
+        </StackPanel>
+
+        <ScrollViewer Margin="0,2,0,0"  Grid.Row="1" VerticalScrollBarVisibility="Auto">
+          <TextBlock Name="txtLicense" TextWrapping="Wrap" FontFamily="Courier New" />
+        </ScrollViewer>
+      </Grid>
+    </TabItem>
+  </TabControl>
+</Window>

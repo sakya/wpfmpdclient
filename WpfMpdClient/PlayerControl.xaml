@@ -1,0 +1,133 @@
+﻿<UserControl x:Class="WpfMpdClient.PlayerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <Grid Grid.Row="0" Margin="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+
+      <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" >
+        <Image Width="100" Source="images/cover.png"/>
+      </Border>
+      <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" >
+        <Image Name="imgArt" Width="100" />
+      </Border>
+      <TextBlock Grid.Column="1" Name="lblTitle" FontWeight="Bold" Text="&lt;No Title&gt;" TextTrimming="CharacterEllipsis" />
+      <TextBlock Grid.Column="1" Name="lblAlbum" Text="&lt;No Album&gt;" Grid.Row="1" TextTrimming="CharacterEllipsis"  />
+      <TextBlock Grid.Column="1" Name="lblArtist" Text="&lt;No Artist&gt;" Grid.Row="2"  TextTrimming="CharacterEllipsis" />
+    </Grid>
+
+    <Grid Grid.Row="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <Label Name="lblTimeBefore" />
+      <Slider Grid.Column="1" Orientation="Horizontal" Name="sliTime" Thumb.DragCompleted="sliTime_DragCompleted" Thumb.DragDelta="sliTime_DragDelta" />
+      <Label Grid.Column="2" Name="lblTimeAfter" />
+    </Grid>
+
+    <Grid Grid.Row="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+
+      <Button Focusable="False" Margin="2" Name="btnBack" Click="btnBack_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+        <Button.ToolTip>
+          <ToolTip>
+            <StackPanel>
+              <TextBlock>Previous track</TextBlock>
+            </StackPanel>
+          </ToolTip>
+        </Button.ToolTip>
+        <Image Source="Images/previous.png" Width="32"/>
+      </Button>
+      <Button Focusable="False" Margin="2" Name="btnPlay" Grid.Column="1" Click="btnPlay_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+        <Button.ToolTip>
+          <ToolTip>
+            <StackPanel>
+              <TextBlock>Play</TextBlock>
+            </StackPanel>
+          </ToolTip>
+        </Button.ToolTip>
+        <Image Source="Images/play.png" Width="32"/>
+      </Button>
+      <Button Focusable="False" Margin="2" Name="btnPause" Grid.Column="1" Click="btnPause_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent" Visibility="Collapsed">
+        <Button.ToolTip>
+          <ToolTip>
+            <StackPanel>
+              <TextBlock>Pause</TextBlock>
+            </StackPanel>
+          </ToolTip>
+        </Button.ToolTip>
+        <Image Source="Images/pause.png" Width="32"/>
+      </Button>
+      <Button Focusable="False" Margin="2" Name="btnForward" Grid.Column="2" Click="btnForward_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+        <Button.ToolTip>
+          <ToolTip>
+            <StackPanel>
+              <TextBlock>Next track</TextBlock>
+            </StackPanel>
+          </ToolTip>
+        </Button.ToolTip>
+        <Image Source="Images/next.png" Width="32"/>
+      </Button>
+      <ToggleButton Focusable="False" Margin="2" Name="btnShuffle" Grid.Column="3" Click="btnShuffle_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+        <ToggleButton.ToolTip>
+          <ToolTip>
+            <StackPanel>
+              <TextBlock>Shuffle</TextBlock>
+            </StackPanel>
+          </ToolTip>
+        </ToggleButton.ToolTip>
+        <Image Source="Images/shuffle.png" Width="32"/>
+      </ToggleButton>
+      <ToggleButton Focusable="False" Margin="2" Name="btnRepeat" Grid.Column="4" Click="btnRepeat_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+        <ToggleButton.ToolTip>
+          <ToolTip>
+            <StackPanel>
+              <TextBlock>Repeat</TextBlock>
+            </StackPanel>
+          </ToolTip>
+        </ToggleButton.ToolTip>
+        <Image Source="Images/repeat.png" Width="32"/>
+      </ToggleButton>
+    </Grid>
+  </Grid>
+</UserControl>
