@@ -31,6 +31,7 @@ namespace WpfMpdClient
     Timer m_StartTimer = null;
     Timer m_Timer = null;
     List<MpdFile> m_Tracks = null;
+    MpdFile m_CurrentTrack = null;
     About m_About = new About();
 
     public MainWindow()
@@ -101,8 +102,12 @@ namespace WpfMpdClient
         IPAddress[] addresses = System.Net.Dns.GetHostAddresses(m_Settings.ServerAddress);
         if (addresses.Length > 0){
           IPAddress ip = addresses[0];
-          IPEndPoint ie = new IPEndPoint(ip, m_Settings.ServerPort);        
-          m_Mpc.Connection = new MpcConnection(ie);
+          IPEndPoint ie = new IPEndPoint(ip, m_Settings.ServerPort);       
+          try{
+            m_Mpc.Connection = new MpcConnection(ie);
+          }catch (Exception ex){
+            MessageBox.Show(string.Format("Error connecting to server:\r\n{0}", ex.Message), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+          }
         }
       }
     } // Connect
@@ -193,6 +198,8 @@ namespace WpfMpdClient
       MpdStatus status = m_Mpc.Status();
       Dispatcher.BeginInvoke(new Action(() =>
       {
+        m_CurrentTrack = m_Mpc.CurrentSong();
+        SelectCurrentTrack();
         btnUpdate.IsEnabled = status.UpdatingDb <= 0;
         playerControl.Update(status);
       }));      
@@ -205,6 +212,22 @@ namespace WpfMpdClient
 
       List<MpdFile> tracks = m_Mpc.PlaylistInfo();
       lstPlaylist.ItemsSource = tracks;
+      SelectCurrentTrack();
+    }
+
+    private void SelectCurrentTrack()
+    {
+      List<MpdFile> playList = lstPlaylist.ItemsSource as List<MpdFile>;
+      if (playList != null){
+        if (m_CurrentTrack != null){
+          foreach (MpdFile f in playList){
+            if (f.Id == m_CurrentTrack.Id){
+              lstPlaylist.SelectedItem = f;
+              break;
+            }
+          }
+        }
+      }
     }
 
     private void PlayClickedHandler(object sender)
@@ -294,6 +317,12 @@ namespace WpfMpdClient
     {
       if (!m_Mpc.Connected)
         return;
+
+      if (e.AddedItems.Count > 0){
+        TabItem tab = e.AddedItems[0] as TabItem;
+        if (tab == null)
+          return;
+      }
 
       if (tabControl.SelectedIndex == 1){
         PopulatePlaylist();
