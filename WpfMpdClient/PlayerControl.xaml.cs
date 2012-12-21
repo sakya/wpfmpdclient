@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Libmpc;
+using System.Threading;
 
 namespace WpfMpdClient
 {
@@ -85,11 +86,7 @@ namespace WpfMpdClient
         if (file.Album != m_Album || file.Artist != m_Artist){
           m_Album = file.Album;
           m_Artist = file.Artist;
-          string url = Utilities.GetAlbumArt(m_Artist, m_Album);
-          if (!string.IsNullOrEmpty(url))
-            imgArt.Source = new BitmapImage(new Uri(url));
-          else
-            imgArt.Source = null;
+          ThreadPool.QueueUserWorkItem(new WaitCallback(GetAlbumArt));
         }
       }else{
         lblTitle.Text = "<No Title>";
@@ -97,6 +94,18 @@ namespace WpfMpdClient
         lblArtist.Text = "<No Artist>";
         imgArt.Source = null;
       }
+    }
+
+    private void GetAlbumArt(object state)
+    {
+      string url = Utilities.GetAlbumArt(m_Artist, m_Album);
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        if (!string.IsNullOrEmpty(url))
+          imgArt.Source = new BitmapImage(new Uri(url));
+        else
+          imgArt.Source = null;
+      }));
     }
 
     private void btnBack_Click(object sender, RoutedEventArgs e)
