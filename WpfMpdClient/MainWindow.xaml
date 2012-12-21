@@ -3,11 +3,41 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:WpfMpdClient"
         WindowStartupLocation="CenterScreen"
-        Title="WpfMpdClient" Height="400" Width="550">
+        Title="WpfMpdClient" Height="400" Width="550"
+        StateChanged="Window_StateChanged">
 
   <Window.Resources>
     <local:TrackConverter x:Key="TrackConverter" />
     <local:TimeConverter x:Key="TimeConverter" />
+
+    <ContextMenu x:Key="TrayIconContextMenu"
+                 Placement="MousePoint">
+      <MenuItem Name="mnuPrevious" Header="Previous track" Click="mnuPrevious_Click">
+        <MenuItem.Icon>
+          <Image Source="Images/previous.png" Width="16" />
+        </MenuItem.Icon>
+      </MenuItem>
+      <MenuItem Name="mnuPlay" Header="Play" Click="mnuPlay_Click">
+        <MenuItem.Icon>
+          <Image Source="Images/play.png" Width="16" />
+        </MenuItem.Icon>
+      </MenuItem>
+      <MenuItem Name="mnuPause" Header="Play" Click="mnuPause_Click">
+        <MenuItem.Icon>
+          <Image Source="Images/pause.png" Width="16" />
+        </MenuItem.Icon>
+      </MenuItem>
+      <MenuItem Name="mnuNext" Header="Next track" Click="mnuNext_Click">
+        <MenuItem.Icon>
+          <Image Source="Images/next.png" Width="16" />
+        </MenuItem.Icon>
+      </MenuItem>
+      <MenuItem Name="mnuQuit" Header="Quit" Click="mnuQuit_Click">
+        <MenuItem.Icon>
+          <Image Source="Images/quit.png" Width="16" />
+        </MenuItem.Icon>
+      </MenuItem>
+    </ContextMenu>
   </Window.Resources>
 
   <TabControl Name="tabControl" SelectionChanged="tabControl_SelectionChanged">
@@ -162,8 +192,24 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal">
           <TextBox Margin="2,0,0,0" Name="txtPlaylist" Width="150" TextChanged="txtPlaylist_TextChanged" />
-          <Button Margin="2,0,0,0" MinWidth="50" Name="btnSave" Content="Save" Click="btnSave_Click" IsEnabled="False" />
-          <Button Margin="2,0,0,0" MinWidth="50" Name="btnClear" Content="Clear" Click="btnClear_Click"/>
+          <Button Margin="2,0,0,0" MinWidth="50" Name="btnSave" Content="Save" Click="btnSave_Click" IsEnabled="False">
+            <Button.ToolTip>
+              <ToolTip>
+                <StackPanel>
+                  <TextBlock>Save the current playlist</TextBlock>
+                </StackPanel>
+              </ToolTip>
+            </Button.ToolTip>
+          </Button>
+          <Button Margin="2,0,0,0" MinWidth="50" Name="btnClear" Content="Clear" Click="btnClear_Click">
+            <Button.ToolTip>
+              <ToolTip>
+                <StackPanel>
+                  <TextBlock>Clear the current playlist</TextBlock>
+                </StackPanel>
+              </ToolTip>
+            </Button.ToolTip>
+          </Button>
         </StackPanel>
 
         <local:PlayerControl x:Name="playerControl" Grid.Row="2" />
@@ -179,15 +225,17 @@
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Button Name="btnUpdate" Content="Update Database" Click="btnUpdate_Click" />
+        <Button Margin="2" Name="btnUpdate" Content="Update Database" Click="btnUpdate_Click" />
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-          <TextBlock Name="txtServerStatus" TextWrapping="Wrap" />
+          <TextBlock Margin="2" Name="txtServerStatus" TextWrapping="Wrap" />
         </ScrollViewer>
       </Grid>
     </TabItem>
     <TabItem Header="Settings">
       <Grid>
         <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
@@ -213,7 +261,13 @@
         <Label VerticalContentAlignment="Center" Grid.Row="2" Content="Reconnect on connection lost:" />
         <CheckBox Margin="0,4,0,0" Grid.Row="2" Grid.Column="1" Name="chkAutoreconnect" VerticalAlignment="Center" />
 
-        <Button Grid.Row="3" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+        <Label VerticalContentAlignment="Center" Grid.Row="3" Content="Minimize to tray:" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="3" Grid.Column="1" Name="chkMinimizeToTray" VerticalAlignment="Center" />
+
+        <Label VerticalContentAlignment="Center" Grid.Row="4" Content="Close to tray:" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="4" Grid.Column="1" Name="chkCloseToTray" VerticalAlignment="Center" />
+
+        <Button Grid.Row="5" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
       </Grid>
     </TabItem>
     <TabItem Header="About">

@@ -44,6 +44,18 @@ namespace WpfMpdClient
       set;
     }
 
+    [XmlAttribute("minimizetotray")]
+    public bool MinimizeToTray {
+      get;
+      set;
+    }
+
+    [XmlAttribute("closetotray")]
+    public bool CloseToTray {
+      get;
+      set;
+    }
+
     public static string GetSettingsFileName()
     {
       return string.Format("{0}\\wpfmpdclient\\settings.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));

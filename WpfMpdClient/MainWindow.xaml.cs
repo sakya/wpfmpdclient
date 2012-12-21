@@ -15,6 +15,7 @@ using Libmpc;
 using System.Net;
 using System.Timers;
 using System.IO;
+using System.ComponentModel;
 
 namespace WpfMpdClient
 {
@@ -30,9 +31,14 @@ namespace WpfMpdClient
     Mpc m_Mpc = null;
     Timer m_StartTimer = null;
     Timer m_Timer = null;
+    Timer m_ReconnectTimer = null;
     List<MpdFile> m_Tracks = null;
     MpdFile m_CurrentTrack = null;
     About m_About = new About();
+    System.Windows.Forms.NotifyIcon m_NotifyIcon = null;
+    ContextMenu m_NotifyIconMenu = null;
+    WindowState m_StoredWindowState = WindowState.Normal;
+    bool m_Close = false;
 
     public MainWindow()
     {
@@ -52,6 +58,8 @@ namespace WpfMpdClient
         txtServerPort.Text = m_Settings.ServerPort.ToString();
         txtPassword.Password = m_Settings.Password;
         chkAutoreconnect.IsChecked = m_Settings.AutoReconnect;
+        chkMinimizeToTray.IsChecked = m_Settings.MinimizeToTray;
+        chkCloseToTray.IsChecked = m_Settings.CloseToTray;
       } else
         m_Settings = new Settings();
 
@@ -68,6 +76,12 @@ namespace WpfMpdClient
       playerControl.ForwardClicked += ForwardClickedHandler;
       playerControl.RandomClicked += RandomClickedHandler;
       playerControl.RepeatClicked += RepeatClickedHandler;
+
+      m_NotifyIcon = new System.Windows.Forms.NotifyIcon();
+      m_NotifyIcon.Icon = new System.Drawing.Icon("mpd_icon.ico", new System.Drawing.Size(32,32));
+      m_NotifyIcon.MouseDown += new System.Windows.Forms.MouseEventHandler(NotifyIcon_MouseDown);
+      m_NotifyIconMenu = (ContextMenu)this.FindResource("TrayIconContextMenu");
+      Closing += CloseHandler;
 
       if (!string.IsNullOrEmpty(m_Settings.ServerAddress)){
         m_StartTimer = new Timer();
@@ -93,7 +107,12 @@ namespace WpfMpdClient
 
     private void MpcDisconnected(Mpc connection)
     {
-
+      if (m_Settings.AutoReconnect && m_ReconnectTimer == null){
+        m_ReconnectTimer = new Timer();
+        m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
+        m_ReconnectTimer.Elapsed += ReconnectTimerHandler;
+        m_ReconnectTimer.Start();
+      }
     }
 
     private void Connect()
@@ -172,6 +191,8 @@ namespace WpfMpdClient
       m_Settings.Password = txtPassword.Password;
       m_Settings.AutoReconnect = chkAutoreconnect.IsChecked == true;
       m_Settings.AutoReconnectDelay = 10;
+      m_Settings.MinimizeToTray = chkMinimizeToTray.IsChecked == true;
+      m_Settings.CloseToTray = chkCloseToTray.IsChecked == true;
 
       m_Settings.Serialize(Settings.GetSettingsFileName());
 
@@ -179,6 +200,16 @@ namespace WpfMpdClient
         m_Mpc.Connection.Disconnect();
       Connect();
     }
+
+    private void ReconnectTimerHandler(object sender, ElapsedEventArgs e)
+    {
+      m_ReconnectTimer.Stop();
+      m_ReconnectTimer = null;
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        Connect();
+      }));
+    } // ReconnectTimerHandler
 
     private void StartTimerHandler(object sender, ElapsedEventArgs e)
     {
@@ -198,7 +229,16 @@ namespace WpfMpdClient
       MpdStatus status = m_Mpc.Status();
       Dispatcher.BeginInvoke(new Action(() =>
       {
-        m_CurrentTrack = m_Mpc.CurrentSong();
+        MenuItem m = m_NotifyIconMenu.Items[1] as MenuItem;
+        m.Visibility = status.State != MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+        m = m_NotifyIconMenu.Items[2] as MenuItem;
+        m.Visibility = status.State == MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
+        MpdFile file = m_Mpc.CurrentSong();
+        if (m_CurrentTrack == null || m_CurrentTrack.Id != file.Id){
+          TrackChanged(file);
+        }
+        m_CurrentTrack = file;
         SelectCurrentTrack();
         btnUpdate.IsEnabled = status.UpdatingDb <= 0;
         playerControl.Update(status);
@@ -401,5 +441,80 @@ namespace WpfMpdClient
     {
       btnSave.IsEnabled = !string.IsNullOrEmpty(txtPlaylist.Text);
     }
+
+    private void CloseHandler(object sender, CancelEventArgs e)
+    {
+      if (!m_Close && m_Settings.CloseToTray){
+        Hide();
+        if (m_NotifyIcon != null){
+          m_NotifyIcon.BalloonTipText = "WpfMpdClient has been minimized. Click the tray icon to show.";
+          m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
+
+          m_NotifyIcon.Visible = true;
+          m_NotifyIcon.ShowBalloonTip(2000);
+        }
+        e.Cancel = true;
+      }
+    } // CloseHandler
+
+    private void Window_StateChanged(object sender, EventArgs e)
+    {
+      if (WindowState == System.Windows.WindowState.Minimized && m_Settings.MinimizeToTray){
+        Hide();
+        if (m_NotifyIcon != null){
+          m_NotifyIcon.BalloonTipText = "WpfMpdClient has been minimized. Click the tray icon to show.";
+          m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
+          m_NotifyIcon.Visible = true;
+          m_NotifyIcon.ShowBalloonTip(2000);
+        }
+      }
+    } // Window_StateChanged
+
+    private void NotifyIcon_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+    {
+      if (e.Button == System.Windows.Forms.MouseButtons.Right) {
+        m_NotifyIconMenu.IsOpen = !m_NotifyIconMenu.IsOpen;
+      }else if (e.Button == System.Windows.Forms.MouseButtons.Left){
+        m_NotifyIconMenu.IsOpen = false;
+        Show();
+        WindowState = m_StoredWindowState;
+        Focus();
+        m_NotifyIcon.Visible = false;
+      }
+    } // NotifyIcon_MouseDown
+
+    private void TrackChanged(MpdFile track)
+    {
+      if (m_NotifyIcon != null && m_NotifyIcon.Visible){
+        m_NotifyIcon.BalloonTipText = string.Format("\"{0}\"\r\n{1}\r\n{2}", track.Title, track.Album, track.Artist);
+        m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
+        m_NotifyIcon.ShowBalloonTip(2000);
+      }
+    } // TrackChanged
+
+    private void mnuQuit_Click(object sender, RoutedEventArgs e)
+    {
+      Application.Current.Shutdown();
+    }
+
+    private void mnuPrevious_Click(object sender, RoutedEventArgs e)
+    {
+      PreviousTrack();
+    }
+
+    private void mnuNext_Click(object sender, RoutedEventArgs e)
+    {
+      NextTrack();
+    }
+
+    private void mnuPlay_Click(object sender, RoutedEventArgs e)
+    {
+      PlayClickedHandler(null);
+    }
+
+    private void mnuPause_Click(object sender, RoutedEventArgs e)
+    {
+      PauseClickedHandler(null);
+    } 
   }
 }
