@@ -99,6 +99,7 @@ namespace WpfMpdClient
       MpdStatistics stats = m_Mpc.Stats();
       PopulateArtists();
       PopulateGenres();
+      PopulatePlaylists();
       PopulatePlaylist();
 
       m_Timer.Interval = 500;
@@ -164,6 +165,18 @@ namespace WpfMpdClient
         lstGenres.SelectedIndex = 0;
     }
 
+    private void PopulatePlaylists()
+    {
+      if (!m_Mpc.Connected)
+        return;
+
+      List<string> playlists = m_Mpc.ListPlaylists();
+      playlists.Sort();
+      lstPlaylists.ItemsSource = playlists;
+      if (playlists.Count > 0)
+        lstPlaylists.SelectedIndex = 0;
+    }
+
     private void lstArtist_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       if (!m_Mpc.Connected)
@@ -203,6 +216,23 @@ namespace WpfMpdClient
       if (albums.Count > 0)
         lstGenresAlbums.SelectedIndex = 0;
     }
+
+    private void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (!m_Mpc.Connected)
+        return;
+
+      ListBox list = sender as ListBox;
+      if (list.SelectedItem != null) {
+        string playlist = list.SelectedItem.ToString();
+
+        m_Tracks = m_Mpc.ListPlaylistInfo(playlist);
+        lstTracks.ItemsSource = m_Tracks;
+      } else {
+        m_Tracks = null;
+        lstTracks.ItemsSource = null;
+      }
+    } 
 
     private void lstTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -356,6 +386,13 @@ namespace WpfMpdClient
         return;
 
       MenuItem item = sender as MenuItem;
+      if (item.Name == "mnuDeletePlaylist") {
+        string playlist = lstPlaylists.SelectedItem.ToString();
+        m_Mpc.Rm(playlist);
+        PopulatePlaylists();
+        return;
+      }
+
       if (item.Name == "mnuAddReplace" || item.Name == "mnuAddReplacePlay"){
         m_Mpc.Clear();
         if (lstPlaylist.Items.Count > 0)
@@ -419,6 +456,25 @@ namespace WpfMpdClient
           txtServerStatus.Text = sb.ToString();
         }));      
       }
+    }
+
+    private void tabBrowse_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (!m_Mpc.Connected)
+        return;
+
+      if (e.AddedItems.Count > 0) {
+        TabItem tab = e.AddedItems[0] as TabItem;
+        if (tab == null)
+          return;
+      }
+
+      if (tabBrowse.SelectedIndex == 0)
+        lstAlbums_SelectionChanged(lstAlbums, null);
+      else if (tabBrowse.SelectedIndex == 1)
+        lstAlbums_SelectionChanged(lstGenresAlbums, null);
+      else if (tabBrowse.SelectedIndex == 2)
+        lstPlaylists_SelectionChanged(lstPlaylists, null);
     }
 
     private void lstPlaylist_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -561,6 +617,6 @@ namespace WpfMpdClient
     private void mnuPause_Click(object sender, RoutedEventArgs e)
     {
       PauseClickedHandler(null);
-    } 
+    }
   }
 }

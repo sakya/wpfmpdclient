@@ -360,6 +360,21 @@ namespace Libmpc
           response.getAttributeValueList("directory"),
           response.getAttributeValueList("playlist"));
     }
+
+    /// <summary>
+    /// Returns a list of the playlist directory.
+    /// </summary>
+    /// <returns>A list of the playlist directory.</returns>
+    public List<string> ListPlaylists()
+    {
+      MpdResponse response = this.getConnection().Exec("listplaylists");
+
+      if (response.IsError)
+        throw new MpdResponseException(response.ErrorCode, response.ErrorMessage);
+
+      return response.getValueList();
+    }
+
     /// <summary>
     /// Returns all files in the database who's attribute matches the given token. Works like the Find command but is case insensitive.
     /// </summary>

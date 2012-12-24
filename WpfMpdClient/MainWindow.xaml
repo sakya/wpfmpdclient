@@ -48,7 +48,7 @@
           <ColumnDefinition MinWidth="100" Width="*" />
         </Grid.ColumnDefinitions>
 
-        <TabControl Name="tabBrowse">
+        <TabControl Margin="2,2,5,2" Name="tabBrowse" SelectionChanged="tabBrowse_SelectionChanged">
           <TabItem Header="Artists">
             <Grid>
               <Grid.RowDefinitions>
@@ -58,7 +58,7 @@
 
               <DockPanel Grid.Row="0">
                 <TextBlock DockPanel.Dock="Top" Margin="2" Text="Artists:" />
-                <ListBox Margin="2,2,5,5" Name="lstArtist" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged" />
+                <ListBox Margin="2,2,2,5" Name="lstArtist" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged" />
               </DockPanel>
 
               <GridSplitter ResizeDirection="Rows" VerticalAlignment="Bottom"
@@ -67,7 +67,7 @@
 
               <DockPanel Grid.Row="1">
                 <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Albums:" />
-                <ListBox Margin="2,2,5,2" Grid.Row="3" SelectionMode="Single" Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
+                <ListBox Margin="2" Grid.Row="3" SelectionMode="Single" Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
                   <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                       <Setter Property="ContextMenu">
@@ -111,8 +111,8 @@
               </Grid.RowDefinitions>
 
               <DockPanel Grid.Row="0">
-                <TextBlock DockPanel.Dock="Top" Margin="2" Text="Artists:" />
-                <ListBox Margin="2,2,5,5" Name="lstGenres" SelectionMode="Single" SelectionChanged="lstGenres_SelectionChanged" />
+                <TextBlock DockPanel.Dock="Top" Margin="2" Text="Genres:" />
+                <ListBox Margin="2,2,2,5" Name="lstGenres" SelectionMode="Single" SelectionChanged="lstGenres_SelectionChanged" />
               </DockPanel>
 
               <GridSplitter ResizeDirection="Rows" VerticalAlignment="Bottom"
@@ -121,7 +121,7 @@
 
               <DockPanel Grid.Row="1">
                 <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Albums:" />
-                <ListBox Margin="2,2,5,2" Grid.Row="3" SelectionMode="Single" Name="lstGenresAlbums" SelectionChanged="lstAlbums_SelectionChanged">
+                <ListBox Margin="2" Grid.Row="3" SelectionMode="Single" Name="lstGenresAlbums" SelectionChanged="lstAlbums_SelectionChanged">
                   <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                       <Setter Property="ContextMenu">
@@ -147,6 +147,51 @@
                       <Image Source="Images/replace.png" />
                     </MenuItem.Icon>-->
                             </MenuItem>
+                          </ContextMenu>
+                        </Setter.Value>
+                      </Setter>
+                    </Style>
+                  </ListBox.ItemContainerStyle>
+                </ListBox>
+              </DockPanel>
+            </Grid>
+          </TabItem>
+
+          <TabItem Header="Playlists">
+            <Grid>
+              <DockPanel Grid.Row="0">
+                <TextBlock DockPanel.Dock="Top" Margin="2" Text="Playlists:" />
+                <ListBox Margin="2,2,2,5" Name="lstPlaylists" SelectionMode="Single" SelectionChanged="lstPlaylists_SelectionChanged">
+                  <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                      <Setter Property="ContextMenu">
+                        <Setter.Value>
+                          <ContextMenu>
+                            <ContextMenu.ItemContainerStyle>
+                              <Style TargetType="MenuItem">
+                                <EventSetter Event="MenuItem.Click" Handler="ContextMenu_Click"/>
+                              </Style>
+                            </ContextMenu.ItemContainerStyle>
+                            <MenuItem Name="mnuAdd" Header="Add">
+                              <!--<MenuItem.Icon>
+                        <Image Source="Images/add.png" />
+                      </MenuItem.Icon>-->
+                            </MenuItem>
+                            <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
+                              <!--<MenuItem.Icon>
+                        <Image Source="Images/replace.png" />
+                      </MenuItem.Icon>-->
+                            </MenuItem>
+                            <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
+                              <!--<MenuItem.Icon>
+                      <Image Source="Images/replace.png" />
+                    </MenuItem.Icon>-->
+                            </MenuItem>
+                            <MenuItem Name="mnuDeletePlaylist" Header="Delete">
+                              <!--<MenuItem.Icon>
+                        <Image Source="Images/add.png" />
+                      </MenuItem.Icon>-->
+                            </MenuItem>                            
                           </ContextMenu>
                         </Setter.Value>
                       </Setter>
