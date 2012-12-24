@@ -89,9 +89,9 @@ namespace WpfMpdClient
           ThreadPool.QueueUserWorkItem(new WaitCallback(GetAlbumArt));
         }
       }else{
-        lblTitle.Text = "<No Title>";
-        lblAlbum.Text = "<No Album>";
-        lblArtist.Text = "<No Artist>";
+        lblTitle.Text = Mpc.NoTitle;
+        lblAlbum.Text = Mpc.NoAlbum;
+        lblArtist.Text = Mpc.NoArtist;
         imgArt.Source = null;
       }
     }

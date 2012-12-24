@@ -35,6 +35,11 @@ namespace Libmpc
   /// </summary>
   public class Mpc
   {
+    public const string NoArtist = "<No Artist>";
+    public const string NoAlbum = "<No Album>";
+    public const string NoTitle = "<No Title>";
+    public const string NoGenre = "<No Genre>";
+
     private const string TAG_ANY = "any";
     private const string TAG_FILENAME = "filename";
 

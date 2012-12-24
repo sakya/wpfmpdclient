@@ -98,6 +98,7 @@ namespace WpfMpdClient
       }
       MpdStatistics stats = m_Mpc.Stats();
       PopulateArtists();
+      PopulateGenres();
       PopulatePlaylist();
 
       m_Timer.Interval = 500;
@@ -140,11 +141,27 @@ namespace WpfMpdClient
       artists.Sort();
       for (int i = 0; i < artists.Count; i++) {
         if (string.IsNullOrEmpty(artists[i]))
-          artists[i] = "<No Artist>";
+          artists[i] = Mpc.NoArtist;
       }
       lstArtist.ItemsSource = artists;
       if (artists.Count > 0)
         lstArtist.SelectedIndex = 0;
+    }
+
+    private void PopulateGenres()
+    {
+      if (!m_Mpc.Connected)
+        return;
+
+      List<string> genres = m_Mpc.List(ScopeSpecifier.Genre);
+      genres.Sort();
+      for (int i = 0; i < genres.Count; i++) {
+        if (string.IsNullOrEmpty(genres[i]))
+          genres[i] = Mpc.NoGenre;
+      }
+      lstGenres.ItemsSource = genres;
+      if (genres.Count > 0)
+        lstGenres.SelectedIndex = 0;
     }
 
     private void lstArtist_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -153,15 +170,38 @@ namespace WpfMpdClient
         return;
 
       string artist = lstArtist.SelectedItem.ToString();
+      if (artist == Mpc.NoArtist)
+        artist = string.Empty;
+
       List<string> albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Artist, artist);
       albums.Sort();
       for (int i = 0; i < albums.Count; i++) {
         if (string.IsNullOrEmpty(albums[i]))
-          albums[i] = "<No Album>";
+          albums[i] = Mpc.NoAlbum;
       }
       lstAlbums.ItemsSource = albums;
       if (albums.Count > 0)
         lstAlbums.SelectedIndex = 0;
+    }
+
+    private void lstGenres_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (!m_Mpc.Connected)
+        return;
+
+      string genre = lstGenres.SelectedItem.ToString();
+      if (genre == Mpc.NoGenre)
+        genre = string.Empty;
+
+      List<string> albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Genre, genre);
+      albums.Sort();
+      for (int i = 0; i < albums.Count; i++) {
+        if (string.IsNullOrEmpty(albums[i]))
+          albums[i] = Mpc.NoAlbum;
+      }
+      lstGenresAlbums.ItemsSource = albums;
+      if (albums.Count > 0)
+        lstGenresAlbums.SelectedIndex = 0;
     }
 
     private void lstTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -174,8 +214,12 @@ namespace WpfMpdClient
       if (!m_Mpc.Connected)
         return;
 
-      if (lstAlbums.SelectedItem != null) {
-        string album = lstAlbums.SelectedItem.ToString();
+      ListBox list = sender as ListBox;
+      if (list.SelectedItem != null) {
+        string album = list.SelectedItem.ToString();
+        if (album == Mpc.NoAlbum)
+          album = string.Empty;
+
         m_Tracks = m_Mpc.Find(ScopeSpecifier.Album, album);
         lstTracks.ItemsSource = m_Tracks;
       } else {
@@ -485,7 +529,7 @@ namespace WpfMpdClient
 
     private void TrackChanged(MpdFile track)
     {
-      if (m_NotifyIcon != null && m_NotifyIcon.Visible){
+      if (m_NotifyIcon != null && m_NotifyIcon.Visible && track != null) {
         m_NotifyIcon.BalloonTipText = string.Format("\"{0}\"\r\n{1}\r\n{2}", track.Title, track.Album, track.Artist);
         m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
         m_NotifyIcon.ShowBalloonTip(2000);
@@ -494,6 +538,7 @@ namespace WpfMpdClient
 
     private void mnuQuit_Click(object sender, RoutedEventArgs e)
     {
+      m_NotifyIcon.Visible = false;
       m_Close = true;
       Application.Current.Shutdown();
     }
