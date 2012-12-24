@@ -135,8 +135,9 @@ namespace Libmpc
       this.tcpClient = new TcpClient(
           this.ipEndPoint.Address.ToString(),
           this.ipEndPoint.Port);
+      this.tcpClient.ReceiveBufferSize = 32768;
       this.networkStream = this.tcpClient.GetStream();
-
+      
       this.reader = new StreamReader(this.networkStream, Encoding.UTF8);
       this.writer = new StreamWriter(this.networkStream, Encoding.UTF8);
       this.writer.NewLine = "\n";
@@ -233,10 +234,13 @@ namespace Libmpc
       this.CheckConnected();
 
       try {
+        m_Mutex.WaitOne();
         this.writer.WriteLine(string.Format("{0} {1}", command, string.Join(" ", argument)));
         this.writer.Flush();
 
-        return this.readResponse();
+        MpdResponse res = this.readResponse();
+        m_Mutex.ReleaseMutex();
+        return res;
       }
       catch (Exception) {
         try { this.Disconnect(); }

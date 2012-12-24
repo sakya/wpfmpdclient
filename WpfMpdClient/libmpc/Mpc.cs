@@ -249,7 +249,7 @@ namespace Libmpc
       if (token == null)
         throw new ArgumentNullException("token");
 
-      token = string.Format("\"{0}\"", token);
+      token = EscapeString(token);
       MpdResponse response = this.getConnection().Exec("find", new string[] { this.toTag(scopeSpecifier), token });
 
       if (response.IsError)
@@ -283,7 +283,7 @@ namespace Libmpc
       if (searchValue == null)
         throw new ArgumentNullException("searchValue");
 
-      searchValue = string.Format("\"{0}\"", searchValue);
+      searchValue = EscapeString(searchValue);
       MpdResponse response = this.getConnection().Exec("list", new string[] { this.toTag(resultTag), this.toTag(searchTag), searchValue });
 
       if (response.IsError)
@@ -344,7 +344,7 @@ namespace Libmpc
       if (path == null)
         response = this.getConnection().Exec("lsinfo");
       else {
-        path = string.Format("\"{0}\"", path);
+        path = EscapeString(path);
         response = this.getConnection().Exec("lsinfo", new string[] { path });
       }
       if (response.IsError)
@@ -366,7 +366,7 @@ namespace Libmpc
       if (token == null)
         throw new ArgumentNullException("token");
 
-      token = string.Format("\"{0}\"", token);
+      token = EscapeString(token);
       MpdResponse response = this.getConnection().Exec("search", new string[] { this.toTag(scopeSpecifier), token });
 
       if (response.IsError)
@@ -387,7 +387,7 @@ namespace Libmpc
       if (filename == null)
         throw new ArgumentNullException("filename");
 
-      filename = string.Format("\"{0}\"", filename);
+      filename = EscapeString(filename);
       MpdResponse response = this.getConnection().Exec("add", new string[] { filename });
 
       if (response.IsError)
@@ -403,7 +403,7 @@ namespace Libmpc
       if (filename == null)
         throw new ArgumentNullException("filename");
 
-      filename = string.Format("\"{0}\"", filename);
+      filename = EscapeString(filename);
       MpdResponse response = this.getConnection().Exec("add", new string[] { filename });
 
       if (response.IsError)
@@ -475,7 +475,7 @@ namespace Libmpc
       if (name == null)
         throw new ArgumentNullException("name");
 
-      name = string.Format("\"{0}\"", name);
+      name = EscapeString(name);
       MpdResponse response = this.getConnection().Exec("load", new string[] { name });
 
       if (response.IsError)
@@ -646,7 +646,7 @@ namespace Libmpc
       if (name == null)
         throw new ArgumentNullException("name");
 
-      name = string.Format("\"{0}\"", name);
+      name = EscapeString(name);
       MpdResponse response = this.getConnection().Exec("rm", new string[] { name });
 
       if (response.IsError)
@@ -661,7 +661,7 @@ namespace Libmpc
       if (name == null)
         throw new ArgumentNullException("name");
 
-      name = string.Format("\"{0}\"", name);
+      name = EscapeString(name);
       MpdResponse response = this.getConnection().Exec("save", new string[] { name });
 
       if (response.IsError)
@@ -711,7 +711,7 @@ namespace Libmpc
       if (name == null)
         throw new ArgumentNullException("name");
 
-      name = string.Format("\"{0}\"", name);
+      name = EscapeString(name);
       MpdResponse response = this.getConnection().Exec("listplaylist", new string[] { name });
 
       if (response.IsError)
@@ -729,7 +729,7 @@ namespace Libmpc
       if (name == null)
         throw new ArgumentNullException("name");
 
-      name = string.Format("\"{0}\"", name);
+      name = EscapeString(name);
       MpdResponse response = this.getConnection().Exec("listplaylistinfo", new string[] { name });
 
       if (response.IsError)
@@ -749,8 +749,8 @@ namespace Libmpc
       if (file == null)
         throw new ArgumentNullException("file");
 
-      name = string.Format("\"{0}\"", name);
-      file = string.Format("\"{0}\"", file);
+      name = EscapeString(name);
+      file = EscapeString(file);
       MpdResponse response = this.getConnection().Exec("playlistadd", new string[] { name, file });
 
       if (response.IsError)
@@ -781,7 +781,7 @@ namespace Libmpc
       if (name == null)
         throw new ArgumentNullException("name");
 
-      name = string.Format("\"{0}\"", name);
+      name = EscapeString(name);
       MpdResponse response = this.getConnection().Exec("playlistdelete", new string[] { name, id.ToString() });
 
       if (response.IsError)
@@ -798,7 +798,7 @@ namespace Libmpc
       if (name == null)
         throw new ArgumentNullException("name");
 
-      name = string.Format("\"{0}\"", name);
+      name = EscapeString(name);
       MpdResponse response = this.getConnection().Exec("playlistmove", new string[] { id.ToString(), nr.ToString() });
 
       if (response.IsError)
@@ -815,7 +815,7 @@ namespace Libmpc
       if (token == null)
         throw new ArgumentNullException("token");
 
-      token = string.Format("\"{0}\"", token);
+      token = EscapeString(token);
       MpdResponse response = this.getConnection().Exec("playlistfind", new string[] { this.toTag(scopeSpecifier), token });
 
       if (response.IsError)
@@ -834,7 +834,7 @@ namespace Libmpc
       if (token == null)
         throw new ArgumentNullException("token");
 
-      token = string.Format("\"{0}\"", token);
+      token = EscapeString(token);
       MpdResponse response = this.getConnection().Exec("playlistsearch", new string[] { this.toTag(scopeSpecifier), token });
 
       if (response.IsError)
@@ -1320,6 +1320,13 @@ namespace Libmpc
         case ScopeSpecifier.Disc:
           return TAG_DISC;
       }
+    }
+
+    private string EscapeString(string input)
+    {
+      string res = input.Replace("\"", "\\\"");
+      res = string.Format("\"{0}\"", res);
+      return res;
     }
   }
 }

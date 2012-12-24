@@ -446,7 +446,7 @@ namespace WpfMpdClient
     {
       if (!m_Close && m_Settings.CloseToTray){
         Hide();
-        if (m_NotifyIcon != null){
+        if (m_NotifyIcon != null && !m_Close){
           m_NotifyIcon.BalloonTipText = "WpfMpdClient has been minimized. Click the tray icon to show.";
           m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
 
@@ -494,6 +494,7 @@ namespace WpfMpdClient
 
     private void mnuQuit_Click(object sender, RoutedEventArgs e)
     {
+      m_Close = true;
       Application.Current.Shutdown();
     }
 
