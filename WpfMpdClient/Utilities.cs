@@ -54,6 +54,56 @@ namespace WpfMpdClient
       }
       return string.Empty;
     } // GetAlbumArt
+
+    public static string GetLyrics(string artist, string title)
+    {
+      string url = string.Format("http://lyrics.wikia.com/api.php?artist={0}&song={1}&fmt=xml",
+                                  HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));
+      WebClient client = new WebClient();
+      try {
+        using (Stream data = client.OpenRead(url)) {
+          StreamReader reader = new StreamReader(data);
+          string str = null;
+          StringBuilder sb = new StringBuilder();
+          while ((str = reader.ReadLine()) != null)
+            sb.AppendLine(str);
+
+          string xml = sb.ToString();
+          string imageUrl = string.Empty;
+          XmlDocument doc = new XmlDocument();
+          doc.LoadXml(xml);
+          XmlNodeList xnList = doc.SelectNodes("/LyricsResult/url");
+          if (xnList != null && xnList.Count == 1) {
+            string lurl = xnList[0].InnerText;
+            using (Stream ldata = client.OpenRead(lurl)) {
+              StreamReader lreader = new StreamReader(ldata);
+              StringBuilder lsb = new StringBuilder();
+              while ((str = lreader.ReadLine()) != null)
+                lsb.AppendLine(str);
+
+              string lpage = lsb.ToString();
+              int start = lpage.IndexOf("</div>&#");
+              if (start >= 0) {
+                start += 6;
+                int end = lpage.IndexOf(";<!--", start);
+                if (end >= 0) {
+                  end++;
+                  lpage = lpage.Substring(start, end - start);
+                  lpage = lpage.Replace("<br />", "\r\n");
+                  lpage = lpage.Replace("<br\r\n/>", "\r\n");
+                  return HttpUtility.HtmlDecode(lpage);
+                }
+              }
+            }
+
+          }
+        }
+      }
+      catch (Exception) {
+        return string.Empty;
+      }
+      return string.Empty;
+    } // GetLyrics
   }
 
   public class TrackConverter : System.Windows.Data.IValueConverter

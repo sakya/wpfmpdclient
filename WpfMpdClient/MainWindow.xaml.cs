@@ -585,6 +585,9 @@ namespace WpfMpdClient
 
     private void TrackChanged(MpdFile track)
     {
+      txtLyrics.Text = "Downloading lyrics";
+      System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetLyrics));
+
       if (m_NotifyIcon != null && m_NotifyIcon.Visible && track != null) {
         m_NotifyIcon.BalloonTipText = string.Format("\"{0}\"\r\n{1}\r\n{2}", track.Title, track.Album, track.Artist);
         m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
@@ -618,5 +621,21 @@ namespace WpfMpdClient
     {
       PauseClickedHandler(null);
     }
+
+    private void GetLyrics(object state)
+    {
+      if (m_CurrentTrack != null) {
+        string lyrics = Utilities.GetLyrics(m_CurrentTrack.Artist, m_CurrentTrack.Title);
+        if (string.IsNullOrEmpty(lyrics))
+          lyrics = "No lyrics found";
+
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          txtLyrics.Text = lyrics;
+          scrLyrics.ScrollToTop();
+        }));
+      }
+    }
+
   }
 }

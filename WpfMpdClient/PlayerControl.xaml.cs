@@ -33,6 +33,7 @@ namespace WpfMpdClient
     MpdStatus m_Status = null;
     string m_Artist = string.Empty;
     string m_Album = string.Empty;
+    string m_Title = string.Empty;
 
     public PlayerControl()
     {
@@ -88,6 +89,7 @@ namespace WpfMpdClient
           m_Artist = file.Artist;
           ThreadPool.QueueUserWorkItem(new WaitCallback(GetAlbumArt));
         }
+        m_Title = file.Title;
       }else{
         lblTitle.Text = Mpc.NoTitle;
         lblAlbum.Text = Mpc.NoAlbum;

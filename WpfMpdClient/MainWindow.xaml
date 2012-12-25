@@ -275,6 +275,7 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <ListView Margin="2" Name="lstPlaylist" SelectionMode="Single">
@@ -305,8 +306,14 @@
             </GridView>
           </ListView.View>
         </ListView>
-
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
+       
+        <Expander Grid.Column="1" Header="Lyrics" ExpandDirection="Left" >
+          <ScrollViewer Name="scrLyrics" VerticalScrollBarVisibility="Visible">
+            <TextBlock Margin="2" TextWrapping="Wrap" Name="txtLyrics" MinWidth="150" />
+          </ScrollViewer>
+        </Expander>
+        
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
           <TextBox Margin="2,0,0,0" Name="txtPlaylist" Width="150" TextChanged="txtPlaylist_TextChanged" />
           <Button Margin="2,0,0,0" MinWidth="50" Name="btnSave" Content="Save" Click="btnSave_Click" IsEnabled="False">
             <Button.ToolTip>
@@ -328,7 +335,7 @@
           </Button>
         </StackPanel>
 
-        <local:PlayerControl x:Name="playerControl" Grid.Row="2" />
+        <local:PlayerControl x:Name="playerControl" Grid.Row="2" Grid.ColumnSpan="2" />
       </Grid>
     </TabItem>
     <TabItem Header="Server">
