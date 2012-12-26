@@ -104,7 +104,7 @@ namespace WpfMpdClient
       return string.Empty;
     } // GetLyricsWikia
 
-    public static string GetLyricsChatlyrics(string artist, string title)
+    public static string GetLyricsChartlyrics(string artist, string title)
     {
       string url = string.Format("http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist={0}&song={1}",
                                   HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));
@@ -132,13 +132,13 @@ namespace WpfMpdClient
         return string.Empty;
       }
       return string.Empty;
-    } // GetLyricsChatlyrics
+    } // GetLyricsChartlyrics
 
     public static string GetLyrics(string artist, string title)
     {
       string lyrics = GetLyricsWikia(artist, title);
       if (string.IsNullOrEmpty(lyrics)) {
-        lyrics = GetLyricsChatlyrics(artist, title);
+        lyrics = GetLyricsChartlyrics(artist, title);
       }
       return lyrics;
     } // GetLyrics
