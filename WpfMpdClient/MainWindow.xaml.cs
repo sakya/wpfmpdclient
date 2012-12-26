@@ -585,7 +585,6 @@ namespace WpfMpdClient
 
     private void TrackChanged(MpdFile track)
     {
-      txtLyrics.Text = "Downloading lyrics";
       System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetLyrics));
 
       if (m_NotifyIcon != null && m_NotifyIcon.Visible && track != null) {
@@ -624,6 +623,11 @@ namespace WpfMpdClient
 
     private void GetLyrics(object state)
     {
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        txtLyrics.Text = m_CurrentTrack != null ? "Downloading lyrics" : string.Empty;
+      }));
+
       if (m_CurrentTrack != null) {
         string lyrics = Utilities.GetLyrics(m_CurrentTrack.Artist, m_CurrentTrack.Title);
         if (string.IsNullOrEmpty(lyrics))

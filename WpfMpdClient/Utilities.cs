@@ -55,7 +55,7 @@ namespace WpfMpdClient
       return string.Empty;
     } // GetAlbumArt
 
-    public static string GetLyrics(string artist, string title)
+    public static string GetLyricsWikia(string artist, string title)
     {
       string url = string.Format("http://lyrics.wikia.com/api.php?artist={0}&song={1}&fmt=xml",
                                   HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));
@@ -102,6 +102,45 @@ namespace WpfMpdClient
         return string.Empty;
       }
       return string.Empty;
+    } // GetLyricsWikia
+
+    public static string GetLyricsChatlyrics(string artist, string title)
+    {
+      string url = string.Format("http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist={0}&song={1}",
+                                  HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));
+      WebClient client = new WebClient();
+      try {
+        using (Stream data = client.OpenRead(url)) {
+          StreamReader reader = new StreamReader(data);
+          string str = null;
+          StringBuilder sb = new StringBuilder();
+          while ((str = reader.ReadLine()) != null)
+            sb.AppendLine(str);
+
+          string xml = sb.ToString();
+          string imageUrl = string.Empty;
+          XmlDocument doc = new XmlDocument();
+          doc.LoadXml(xml);
+          XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
+          nsmgr.AddNamespace("ab", "http://api.chartlyrics.com/");
+          XmlNodeList xnList = doc.SelectNodes("//ab:Lyric", nsmgr);
+          if (xnList != null && xnList.Count == 1)
+            return xnList[0].InnerText;
+        }
+      }
+      catch (Exception) {
+        return string.Empty;
+      }
+      return string.Empty;
+    } // GetLyricsChatlyrics
+
+    public static string GetLyrics(string artist, string title)
+    {
+      string lyrics = GetLyricsWikia(artist, title);
+      if (string.IsNullOrEmpty(lyrics)) {
+        lyrics = GetLyricsChatlyrics(artist, title);
+      }
+      return lyrics;
     } // GetLyrics
   }
 
