@@ -308,9 +308,18 @@
         </ListView>
        
         <Expander Grid.Column="1" Header="Lyrics" ExpandDirection="Left" >
-          <ScrollViewer Name="scrLyrics" VerticalScrollBarVisibility="Visible">
-            <TextBlock Margin="2" TextWrapping="Wrap" Name="txtLyrics" MinWidth="150" />
-          </ScrollViewer>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" MinWidth="5"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <GridSplitter ResizeDirection="Columns" ResizeBehavior="CurrentAndNext" HorizontalAlignment="Left" 
+                          VerticalAlignment="Stretch" Width="5"/>
+
+            <ScrollViewer Grid.Column="1" Name="scrLyrics" VerticalScrollBarVisibility="Visible">
+              <TextBlock Margin="2" TextWrapping="Wrap" Name="txtLyrics" MinWidth="150" />
+            </ScrollViewer>
+          </Grid>
         </Expander>
         
         <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -413,7 +422,7 @@
           <Label x:Name="copyright" x:Uid="copyright" Content="{Binding Mode=OneTime, Path=Copyright}" Padding="0" />
           <Label x:Name="reserved" x:Uid="reserved" Content="All Rights Reserved." Padding="0"/>
           <Label x:Name="productLink" x:Uid="productLink" Padding="0" >
-            <Hyperlink x:Name="hyperlink" x:Uid="hyperlink" NavigateUri="http://www.sakya.it/wordpress"
+            <Hyperlink x:Name="hyperlink" x:Uid="hyperlink" NavigateUri="http://www.sakya.it/wordpress/?page_id=250"
                                Hyperlink.RequestNavigate="hyperlink_RequestNavigate">
               <TextBlock Text="More Info" />
             </Hyperlink>

@@ -309,7 +309,7 @@ namespace WpfMpdClient
         m.Visibility = status.State == MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
 
         MpdFile file = m_Mpc.CurrentSong();
-        if (m_CurrentTrack == null || m_CurrentTrack.Id != file.Id){
+        if (m_CurrentTrack == null || file == null || m_CurrentTrack.Id != file.Id) {
           TrackChanged(file);
         }
         m_CurrentTrack = file;
