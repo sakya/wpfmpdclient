@@ -63,6 +63,16 @@ namespace WpfMpdClient
       } else
         m_Settings = new Settings();
 
+      if (m_Settings.WindowWidth > 0 && m_Settings.WindowHeight > 0){
+        Width = m_Settings.WindowWidth;
+        Height = m_Settings.WindowHeight;
+      }
+      if (m_Settings.WindowLeft >= 0 && m_Settings.WindowHeight >= 0){
+        Left = m_Settings.WindowLeft;
+        Top = m_Settings.WindowTop;
+      }else
+        WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+
       m_Mpc = new Mpc();
       m_Mpc.OnConnected += MpcConnected;
       m_Mpc.OnDisconnected += MpcDisconnected;
@@ -388,8 +398,10 @@ namespace WpfMpdClient
       MenuItem item = sender as MenuItem;
       if (item.Name == "mnuDeletePlaylist") {
         string playlist = lstPlaylists.SelectedItem.ToString();
-        m_Mpc.Rm(playlist);
-        PopulatePlaylists();
+        if (Utilities.Confirm("Delete", string.Format("Delete playlist \"{0}\"?", playlist))){
+          m_Mpc.Rm(playlist);
+          PopulatePlaylists();
+        }
         return;
       }
 
@@ -496,6 +508,18 @@ namespace WpfMpdClient
       m_About.hyperlink_RequestNavigate(sender, e);
     }
 
+    public static void Stop()
+    {
+      if (This.m_Mpc.Connected) {
+        switch (This.m_Mpc.Status().State) {
+          case MpdState.Play:
+          case MpdState.Pause:
+            This.m_Mpc.Stop();
+            break;
+        }
+      }
+    }
+
     public static void PlayPause()
     {
       if (This.m_Mpc.Connected){
@@ -555,6 +579,14 @@ namespace WpfMpdClient
         }
         e.Cancel = true;
       }
+
+      if (m_Close){
+        m_Settings.WindowLeft = Left;
+        m_Settings.WindowTop = Top;
+        m_Settings.WindowWidth = ActualWidth;
+        m_Settings.WindowHeight = ActualHeight;
+        m_Settings.Serialize(Settings.GetSettingsFileName());
+      }
     } // CloseHandler
 
     private void Window_StateChanged(object sender, EventArgs e)
@@ -587,10 +619,18 @@ namespace WpfMpdClient
     {
       System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetLyrics));
 
-      if (m_NotifyIcon != null && m_NotifyIcon.Visible && track != null) {
-        m_NotifyIcon.BalloonTipText = string.Format("\"{0}\"\r\n{1}\r\n{2}", track.Title, track.Album, track.Artist);
-        m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
-        m_NotifyIcon.ShowBalloonTip(2000);
+      if (m_NotifyIcon != null && track != null) {
+        string trackText = string.Format("\"{0}\"\r\n{1}", track.Title, track.Artist);
+        if (trackText.Length > 64)
+          m_NotifyIcon.Text = string.Format("{0}...", trackText.Substring(0, 60));
+        else
+          m_NotifyIcon.Text = trackText;
+
+        if (m_NotifyIcon.Visible){
+          m_NotifyIcon.BalloonTipText = string.Format("\"{0}\"\r\n{1}\r\n{2}", track.Title, track.Album, track.Artist);
+          m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
+          m_NotifyIcon.ShowBalloonTip(2000);
+        }
       }
     } // TrackChanged
 

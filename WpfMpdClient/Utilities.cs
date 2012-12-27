@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Web;
+using System.Windows;
 
 namespace WpfMpdClient
 {
@@ -28,24 +29,25 @@ namespace WpfMpdClient
     {
       string apiKey = "151e13d056bfe133d205314b7720d27b";
       string url = string.Format("http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key={0}&artist={1}&album={2}",
-                                 apiKey, HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(album));
-      WebClient client = new WebClient();
+                                 apiKey, HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(album));      
       try {
-        using (Stream data = client.OpenRead(url)) {
-          StreamReader reader = new StreamReader(data);
-          string str = null;
-          StringBuilder sb = new StringBuilder();
-          while ((str = reader.ReadLine()) != null)
-            sb.AppendLine(str);
+        using (WebClient client = new WebClient()) {
+          using (Stream data = client.OpenRead(url)) {
+            StreamReader reader = new StreamReader(data);
+            string str = null;
+            StringBuilder sb = new StringBuilder();
+            while ((str = reader.ReadLine()) != null)
+              sb.AppendLine(str);
 
-          string xml = sb.ToString();
-          string imageUrl = string.Empty;
-          XmlDocument doc = new XmlDocument();
-          doc.LoadXml(xml);
-          XmlNodeList xnList = doc.SelectNodes("/lfm/album/image");
-          foreach (XmlNode xn in xnList) {
-            if (xn.Attributes["size"].Value == "mega")
-              return xn.InnerText;
+            string xml = sb.ToString();
+            string imageUrl = string.Empty;
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            XmlNodeList xnList = doc.SelectNodes("/lfm/album/image");
+            foreach (XmlNode xn in xnList) {
+              if (xn.Attributes["size"].Value == "mega")
+                return xn.InnerText;
+            }
           }
         }
       }
@@ -59,39 +61,39 @@ namespace WpfMpdClient
     {
       string url = string.Format("http://lyrics.wikia.com/api.php?artist={0}&song={1}&fmt=xml",
                                   HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));
-      WebClient client = new WebClient();
       try {
-        using (Stream data = client.OpenRead(url)) {
-          StreamReader reader = new StreamReader(data);
-          string str = null;
-          StringBuilder sb = new StringBuilder();
-          while ((str = reader.ReadLine()) != null)
-            sb.AppendLine(str);
+        using (WebClient client = new WebClient()) {
+          using (Stream data = client.OpenRead(url)) {
+            StreamReader reader = new StreamReader(data);
+            string str = null;
+            StringBuilder sb = new StringBuilder();
+            while ((str = reader.ReadLine()) != null)
+              sb.AppendLine(str);
 
-          string xml = sb.ToString();
-          string imageUrl = string.Empty;
-          XmlDocument doc = new XmlDocument();
-          doc.LoadXml(xml);
-          XmlNodeList xnList = doc.SelectNodes("/LyricsResult/url");
-          if (xnList != null && xnList.Count == 1) {
-            string lurl = xnList[0].InnerText;
-            using (Stream ldata = client.OpenRead(lurl)) {
-              StreamReader lreader = new StreamReader(ldata);
-              StringBuilder lsb = new StringBuilder();
-              while ((str = lreader.ReadLine()) != null)
-                lsb.AppendLine(str);
+            string xml = sb.ToString();
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            XmlNodeList xnList = doc.SelectNodes("/LyricsResult/url");
+            if (xnList != null && xnList.Count == 1) {
+              string lurl = xnList[0].InnerText;
+              using (Stream ldata = client.OpenRead(lurl)) {
+                StreamReader lreader = new StreamReader(ldata);
+                StringBuilder lsb = new StringBuilder();
+                while ((str = lreader.ReadLine()) != null)
+                  lsb.AppendLine(str);
 
-              string lpage = lsb.ToString();
-              int start = lpage.IndexOf("</div>&#");
-              if (start >= 0) {
-                start += 6;
-                int end = lpage.IndexOf(";<!--", start);
-                if (end >= 0) {
-                  end++;
-                  lpage = lpage.Substring(start, end - start);
-                  lpage = lpage.Replace("<br />", "\r\n");
-                  lpage = lpage.Replace("<br\r\n/>", "\r\n");
-                  return HttpUtility.HtmlDecode(lpage);
+                string lpage = lsb.ToString();
+                int start = lpage.IndexOf("</div>&#");
+                if (start >= 0) {
+                  start += 6;
+                  int end = lpage.IndexOf(";<!--", start);
+                  if (end >= 0) {
+                    end++;
+                    lpage = lpage.Substring(start, end - start);
+                    lpage = lpage.Replace("<br />", "\r\n");
+                    lpage = lpage.Replace("<br\r\n/>", "\r\n");
+                    return HttpUtility.HtmlDecode(lpage);
+                  }
                 }
               }
             }
@@ -107,25 +109,25 @@ namespace WpfMpdClient
     public static string GetLyricsChartlyrics(string artist, string title)
     {
       string url = string.Format("http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist={0}&song={1}",
-                                  HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));
-      WebClient client = new WebClient();
+                                  HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));      
       try {
-        using (Stream data = client.OpenRead(url)) {
-          StreamReader reader = new StreamReader(data);
-          string str = null;
-          StringBuilder sb = new StringBuilder();
-          while ((str = reader.ReadLine()) != null)
-            sb.AppendLine(str);
+        using (WebClient client = new WebClient()) {
+          using (Stream data = client.OpenRead(url)) {
+            StreamReader reader = new StreamReader(data);
+            string str = null;
+            StringBuilder sb = new StringBuilder();
+            while ((str = reader.ReadLine()) != null)
+              sb.AppendLine(str);
 
-          string xml = sb.ToString();
-          string imageUrl = string.Empty;
-          XmlDocument doc = new XmlDocument();
-          doc.LoadXml(xml);
-          XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
-          nsmgr.AddNamespace("ab", "http://api.chartlyrics.com/");
-          XmlNodeList xnList = doc.SelectNodes("//ab:Lyric", nsmgr);
-          if (xnList != null && xnList.Count == 1)
-            return xnList[0].InnerText;
+            string xml = sb.ToString();
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
+            nsmgr.AddNamespace("ab", "http://api.chartlyrics.com/");
+            XmlNodeList xnList = doc.SelectNodes("//ab:Lyric", nsmgr);
+            if (xnList != null && xnList.Count == 1)
+              return xnList[0].InnerText;
+          }
         }
       }
       catch (Exception) {
@@ -142,6 +144,11 @@ namespace WpfMpdClient
       }
       return lyrics;
     } // GetLyrics
+
+    public static bool Confirm(string title, string message)
+    {
+      return MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+    } // Confirm
   }
 
   public class TrackConverter : System.Windows.Data.IValueConverter

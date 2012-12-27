@@ -56,6 +56,36 @@ namespace WpfMpdClient
       set;
     }
 
+    [XmlAttribute("windowwidth")]
+    public double WindowWidth 
+    {
+      get;
+      set;
+    }
+
+    [XmlAttribute("windowheight")]
+    public double WindowHeight 
+    {
+      get;
+      set;
+    }
+
+    private double m_WindowLeft = -1;
+    [XmlAttribute("windowleft")]
+    public double WindowLeft 
+    {
+      get { return m_WindowLeft; }
+      set { m_WindowLeft = value; }
+    }
+
+    private double m_WindowTop = -1;
+    [XmlAttribute("windowtop")]
+    public double WindowTop
+    {
+      get { return m_WindowTop; }
+      set { m_WindowTop = value; }
+    }
+
     public static string GetSettingsFileName()
     {
       return string.Format("{0}\\wpfmpdclient\\settings.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));

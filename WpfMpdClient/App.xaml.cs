@@ -22,6 +22,9 @@ namespace WpfMpdClient
     void KListener_KeyDown(object sender, RawKeyEventArgs args)
     {      
       switch(args.Key){
+        case System.Windows.Input.Key.MediaStop:
+          WpfMpdClient.MainWindow.Stop();
+          break;
         case System.Windows.Input.Key.MediaPlayPause:
           WpfMpdClient.MainWindow.PlayPause();
           break;
