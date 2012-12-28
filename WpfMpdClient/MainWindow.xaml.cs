@@ -29,6 +29,7 @@ namespace WpfMpdClient
 
     Settings m_Settings = null;
     Mpc m_Mpc = null;
+    MpdStatus m_LastStatus = null;
     Timer m_StartTimer = null;
     Timer m_Timer = null;
     Timer m_ReconnectTimer = null;
@@ -311,6 +312,14 @@ namespace WpfMpdClient
         return;
 
       MpdStatus status = m_Mpc.Status();
+      if (m_LastStatus != null && m_LastStatus.UpdatingDb > 0 && status.UpdatingDb <= 0){
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          UpdateDbFinished();
+        }));
+      }
+      m_LastStatus = status;
+
       Dispatcher.BeginInvoke(new Action(() =>
       {
         MenuItem m = m_NotifyIconMenu.Items[1] as MenuItem;
@@ -558,6 +567,7 @@ namespace WpfMpdClient
       if (m_Mpc.Connected){
         m_Mpc.Save(txtPlaylist.Text);
         txtPlaylist.Clear();
+        PopulatePlaylists();
       }
     }
 
@@ -614,6 +624,14 @@ namespace WpfMpdClient
         m_NotifyIcon.Visible = false;
       }
     } // NotifyIcon_MouseDown
+
+    private void UpdateDbFinished()
+    {
+      PopulateArtists();
+      PopulateGenres();
+      PopulatePlaylists();
+      PopulatePlaylist();
+    } // UpdateDbFinished
 
     private void TrackChanged(MpdFile track)
     {

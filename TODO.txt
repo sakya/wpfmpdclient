@@ -1,5 +1,12 @@
 http://www.iconfinder.com/search/?q=iconset%3Adefaulticon
 
--Browse by genre, year
+http://api.wikia.com/wiki/LyricWiki_API
+http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeling%20Less
+
+-Remove Html tags in lyrics
+-Change playlist order
+-Browse by year
 -Browse file system
 -Playlists
+-Search
+

@@ -84,6 +84,8 @@ namespace WpfMpdClient
 
                 string lpage = lsb.ToString();
                 int start = lpage.IndexOf("</div>&#");
+                if (start < 0)
+                  start = lpage.IndexOf("</div><b>&#");
                 if (start >= 0) {
                   start += 6;
                   int end = lpage.IndexOf(";<!--", start);
