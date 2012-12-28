@@ -51,7 +51,7 @@
       </Grid.ColumnDefinitions>
 
       <Label Name="lblTimeBefore" />
-      <Slider Grid.Column="1" Orientation="Horizontal" Name="sliTime" Thumb.DragCompleted="sliTime_DragCompleted" Thumb.DragDelta="sliTime_DragDelta" />
+      <Slider Grid.Column="1" Orientation="Horizontal" Name="sliTime" Thumb.DragStarted="sliTime_DragStarted" Thumb.DragCompleted="sliTime_DragCompleted" Thumb.DragDelta="sliTime_DragDelta" />
       <Label Grid.Column="2" Name="lblTimeAfter" />
     </Grid>
 

@@ -34,6 +34,7 @@ namespace WpfMpdClient
     string m_Artist = string.Empty;
     string m_Album = string.Empty;
     string m_Title = string.Empty;
+    bool m_TimeDragging = false;
 
     public PlayerControl()
     {
@@ -66,9 +67,11 @@ namespace WpfMpdClient
 
       if (status.TimeTotal > 0) {
         sliTime.Maximum = status.TimeTotal;
-        sliTime.Value = status.TimeElapsed;
-        lblTimeBefore.Content = Utilities.FormatSeconds(status.TimeElapsed);
-        lblTimeAfter.Content = Utilities.FormatSeconds(status.TimeTotal - status.TimeElapsed);
+        if (!m_TimeDragging){
+          sliTime.Value = status.TimeElapsed;
+          lblTimeBefore.Content = Utilities.FormatSeconds(status.TimeElapsed);
+          lblTimeAfter.Content = Utilities.FormatSeconds(status.TimeTotal - status.TimeElapsed);
+        }
       } else {
         sliTime.Value = 0;
         lblTimeBefore.Content = Utilities.FormatSeconds(0);
@@ -134,10 +137,16 @@ namespace WpfMpdClient
         ForwardClicked(this);
     }
 
+    private void sliTime_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+    {
+      m_TimeDragging = true;
+    }
+
     private void sliTime_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
     {
       if (m_Status != null && Mpc.Connected)
         Mpc.Seek(m_Status.Song, (int)sliTime.Value);
+      m_TimeDragging = false;
     }
 
     private void sliTime_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
@@ -157,5 +166,6 @@ namespace WpfMpdClient
       if (RepeatClicked != null)
         RepeatClicked(this, btnRepeat.IsChecked == true);
     }
+
   }
 }

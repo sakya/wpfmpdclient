@@ -229,7 +229,7 @@
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0" Margin="2,0,0,0" Name="btnSearchClear" Content="Clear" Click="btnSearchClear_Click"/>
-                <Button Grid.Column="1" Margin="2,0,0,0" Name="btnSearch" Content="Search" Click="btnSearch_Click"/>
+                <Button Grid.Column="1" Margin="2,0,0,0" Name="btnSearch" IsDefault="True" Content="Search" Click="btnSearch_Click"/>
               </Grid>
             </Grid>
           </TabItem>
@@ -286,6 +286,16 @@
               <GridViewColumn DisplayMemberBinding="{Binding Album}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Content="Album" HorizontalContentAlignment="Left"/>
+                </GridViewColumn.Header>
+              </GridViewColumn>
+              <GridViewColumn DisplayMemberBinding="{Binding Date}">
+                <GridViewColumn.Header>
+                  <GridViewColumnHeader Content="Year" HorizontalContentAlignment="Left"/>
+                </GridViewColumn.Header>
+              </GridViewColumn>
+              <GridViewColumn DisplayMemberBinding="{Binding Genre}">
+                <GridViewColumn.Header>
+                  <GridViewColumnHeader Content="Genre" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
               </GridViewColumn>
               <GridViewColumn DisplayMemberBinding="{Binding File}">
