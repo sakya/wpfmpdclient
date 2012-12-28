@@ -80,6 +80,8 @@ namespace WpfMpdClient
 
       m_Timer = new Timer();
 
+      cmbSearch.SelectedIndex = 0;
+
       playerControl.Mpc = m_Mpc;
       playerControl.PlayClicked += PlayClickedHandler;
       playerControl.PauseClicked += PauseClickedHandler;
@@ -496,6 +498,8 @@ namespace WpfMpdClient
         lstAlbums_SelectionChanged(lstGenresAlbums, null);
       else if (tabBrowse.SelectedIndex == 2)
         lstPlaylists_SelectionChanged(lstPlaylists, null);
+      else if (tabBrowse.SelectedIndex == 3)
+        btnSearch_Click(null, null);
     }
 
     private void lstPlaylist_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -700,5 +704,38 @@ namespace WpfMpdClient
       }
     }
 
+    private void btnSearch_Click(object sender, RoutedEventArgs e)
+    {
+      if (!m_Mpc.Connected)
+        return;
+
+      if (!string.IsNullOrEmpty(txtSearch.Text)){
+        ScopeSpecifier searchBy = ScopeSpecifier.Title;
+        switch (cmbSearch.SelectedIndex){
+          case 0:
+            searchBy = ScopeSpecifier.Artist;
+            break;
+          case 1:
+            searchBy = ScopeSpecifier.Album;
+            break;
+          case 2:
+            searchBy = ScopeSpecifier.Title;
+            break;
+        }
+        m_Tracks = m_Mpc.Search(searchBy, txtSearch.Text);
+        lstTracks.ItemsSource = m_Tracks;
+      }else{
+        m_Tracks = null;
+        lstTracks.ItemsSource = null;
+      }
+    }
+
+    private void btnSearchClear_Click(object sender, RoutedEventArgs e)
+    {
+      txtSearch.Text = string.Empty;
+      cmbSearch.SelectedIndex = 0;
+      m_Tracks = null;
+      lstTracks.ItemsSource = null;
+    }
   }
 }
