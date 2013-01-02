@@ -414,6 +414,7 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
           <RowDefinition Height="*" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -441,7 +442,8 @@
         <Label VerticalContentAlignment="Center" Grid.Row="4" Content="Close to tray:" />
         <CheckBox Margin="0,4,0,0" Grid.Row="4" Grid.Column="1" Name="chkCloseToTray" VerticalAlignment="Center" />
 
-        <Button Grid.Row="5" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+        <Button Margin="2" Grid.Row="5" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+        <Button Margin="2" Grid.Row="6" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
       </Grid>
     </TabItem>
     <TabItem Header="About">

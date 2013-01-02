@@ -40,6 +40,9 @@
     <ApplicationIcon>mpd_icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CsUpdater">
+      <HintPath>dlls\CsUpdater.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -67,6 +70,9 @@
       <DependentUpon>PlayerControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
+    <Compile Include="UpdateWindow.xaml.cs">
+      <DependentUpon>UpdateWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Utilities.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -91,6 +97,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="PlayerControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UpdateWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

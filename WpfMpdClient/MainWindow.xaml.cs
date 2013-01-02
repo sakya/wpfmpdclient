@@ -16,6 +16,8 @@ using System.Net;
 using System.Timers;
 using System.IO;
 using System.ComponentModel;
+using CsUpdater;
+using System.Reflection;
 
 namespace WpfMpdClient
 {
@@ -27,6 +29,8 @@ namespace WpfMpdClient
   {
     static MainWindow This = null;
 
+    Updater m_Updater = null;
+    UpdaterApp m_App = null;
     Settings m_Settings = null;
     Mpc m_Mpc = null;
     MpdStatus m_LastStatus = null;
@@ -46,6 +50,7 @@ namespace WpfMpdClient
       InitializeComponent();
       This = this;
 
+      Title = string.Format("WpfMpdClient v.{0}", Assembly.GetExecutingAssembly().GetName().Version);
       stcAbout.DataContext = m_About;
       try {
         txtLicense.Text = File.ReadAllText("LICENSE.TXT");
@@ -102,6 +107,10 @@ namespace WpfMpdClient
         m_StartTimer.Elapsed += StartTimerHandler;
         m_StartTimer.Start();
       }
+
+      m_Updater = new Updater(new Uri("http://www.sakya.it/updater/updater.php"), "WpfMpdClient", "Windows");
+      m_Updater.CheckCompletedDelegate += CheckCompleted;
+      m_Updater.Check();
     }
 
     private void MpcConnected(Mpc connection)
@@ -656,11 +665,16 @@ namespace WpfMpdClient
       }
     } // TrackChanged
 
-    private void mnuQuit_Click(object sender, RoutedEventArgs e)
+    public void Quit()
     {
       m_NotifyIcon.Visible = false;
       m_Close = true;
       Application.Current.Shutdown();
+    }
+
+    private void mnuQuit_Click(object sender, RoutedEventArgs e)
+    {
+      Quit();
     }
 
     private void mnuPrevious_Click(object sender, RoutedEventArgs e)
@@ -736,6 +750,28 @@ namespace WpfMpdClient
       cmbSearch.SelectedIndex = 0;
       m_Tracks = null;
       lstTracks.ItemsSource = null;
+    }
+
+    private void CheckCompleted(UpdaterApp app)
+    {
+      m_App = app;
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        btnCheckUpdates.IsEnabled = true;
+        if (m_App != null && m_App.Version > Assembly.GetExecutingAssembly().GetName().Version) {
+          if (MessageBox.Show(this, "A new update is available.\r\nDownload and install it now?", string.Format("Update to v.{0}", m_App.Version), MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes){
+            UpdateWindow dlg = new UpdateWindow(m_Updater, m_App);
+            dlg.Owner = this;
+            dlg.ShowDialog();
+          }
+        }
+      }));
+    }
+
+    private void btnCheckUpdates_Click(object sender, RoutedEventArgs e)
+    {
+      btnCheckUpdates.IsEnabled = false;
+      m_Updater.Check();
     }
   }
 }
