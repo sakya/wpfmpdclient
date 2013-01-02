@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Web;
 using System.Windows;
+using System.Text.RegularExpressions;
 
 namespace WpfMpdClient
 {
@@ -94,7 +95,10 @@ namespace WpfMpdClient
                     lpage = lpage.Substring(start, end - start);
                     lpage = lpage.Replace("<br />", "\r\n");
                     lpage = lpage.Replace("<br\r\n/>", "\r\n");
-                    return HttpUtility.HtmlDecode(lpage);
+                    string res = HttpUtility.HtmlDecode(lpage);
+                    // Remove html tags (like <b>...</b>)
+                    res = Regex.Replace(res, @"<[^>]*>", string.Empty);
+                    return res;
                   }
                 }
               }
