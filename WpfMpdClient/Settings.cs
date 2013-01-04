@@ -86,6 +86,19 @@ namespace WpfMpdClient
       set { m_WindowTop = value; }
     }
 
+    [XmlAttribute("scrobbler")]
+    public bool Scrobbler {
+      get;
+      set;
+    }
+
+    [XmlAttribute("scrobblerkey")]
+    public string ScrobblerSessionKey
+    {
+      get;
+      set;
+    }
+
     public static string GetSettingsFileName()
     {
       return string.Format("{0}\\wpfmpdclient\\settings.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
@@ -121,7 +134,7 @@ namespace WpfMpdClient
           serializer.Serialize(textWriter, this);
         }
       }
-      catch (Exception ex) {
+      catch (Exception) {
         return false;
       }
       return true;

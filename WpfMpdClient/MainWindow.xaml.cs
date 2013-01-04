@@ -18,6 +18,7 @@ using System.IO;
 using System.ComponentModel;
 using CsUpdater;
 using System.Reflection;
+using WpfMpdClient.scrobbler;
 
 namespace WpfMpdClient
 {
@@ -29,6 +30,7 @@ namespace WpfMpdClient
   {
     static MainWindow This = null;
 
+    Scrobbler m_Scrobbler = null;
     Updater m_Updater = null;
     UpdaterApp m_App = null;
     Settings m_Settings = null;
@@ -39,6 +41,7 @@ namespace WpfMpdClient
     Timer m_ReconnectTimer = null;
     List<MpdFile> m_Tracks = null;
     MpdFile m_CurrentTrack = null;
+    DateTime m_CurrentTrackStart = DateTime.MinValue;
     About m_About = new About();
     System.Windows.Forms.NotifyIcon m_NotifyIcon = null;
     ContextMenu m_NotifyIconMenu = null;
@@ -66,8 +69,10 @@ namespace WpfMpdClient
         chkAutoreconnect.IsChecked = m_Settings.AutoReconnect;
         chkMinimizeToTray.IsChecked = m_Settings.MinimizeToTray;
         chkCloseToTray.IsChecked = m_Settings.CloseToTray;
+        chkScrobbler.IsChecked = m_Settings.Scrobbler;
       } else
         m_Settings = new Settings();
+      m_Scrobbler = new Scrobbler(Utilities.DecryptString(m_Settings.ScrobblerSessionKey));
 
       if (m_Settings.WindowWidth > 0 && m_Settings.WindowHeight > 0){
         Width = m_Settings.WindowWidth;
@@ -289,6 +294,7 @@ namespace WpfMpdClient
       m_Settings.AutoReconnectDelay = 10;
       m_Settings.MinimizeToTray = chkMinimizeToTray.IsChecked == true;
       m_Settings.CloseToTray = chkCloseToTray.IsChecked == true;
+      m_Settings.Scrobbler = chkScrobbler.IsChecked == true;
 
       m_Settings.Serialize(Settings.GetSettingsFileName());
 
@@ -341,8 +347,9 @@ namespace WpfMpdClient
         MpdFile file = m_Mpc.CurrentSong();
         if (m_CurrentTrack == null || file == null || m_CurrentTrack.Id != file.Id) {
           TrackChanged(file);
+          m_CurrentTrack = file;
+          m_CurrentTrackStart = DateTime.Now;
         }
-        m_CurrentTrack = file;
         SelectCurrentTrack();
         btnUpdate.IsEnabled = status.UpdatingDb <= 0;
         playerControl.Update(status);
@@ -609,6 +616,8 @@ namespace WpfMpdClient
         m_Settings.WindowWidth = ActualWidth;
         m_Settings.WindowHeight = ActualHeight;
         m_Settings.Serialize(Settings.GetSettingsFileName());
+
+        m_Scrobbler.SaveCache();
       }
     } // CloseHandler
 
@@ -648,6 +657,19 @@ namespace WpfMpdClient
 
     private void TrackChanged(MpdFile track)
     {
+
+      if (m_Settings.Scrobbler){
+        if (m_CurrentTrack != null && m_CurrentTrack.Time >= 30){
+          double played = (DateTime.Now - m_CurrentTrackStart).TotalSeconds;
+          if (played >= 240 || played >= m_CurrentTrack.Time / 2)
+              m_Scrobbler.Scrobble(m_CurrentTrack.Artist, m_CurrentTrack.Title, m_CurrentTrack.Album, m_CurrentTrackStart);
+        }
+
+        if (track != null){
+          m_Scrobbler.UpdateNowPlaying(track.Artist, track.Title, track.Album);
+        }
+      }
+
       System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetLyrics), track);
 
       if (m_NotifyIcon != null && track != null) {
@@ -700,6 +722,9 @@ namespace WpfMpdClient
     private void GetLyrics(object state)
     {
       MpdFile track = state as MpdFile;
+      if (track == null)
+        return;
+
       Dispatcher.BeginInvoke(new Action(() =>
       {
         txtLyrics.Text = track != null ? "Downloading lyrics" : string.Empty;
@@ -772,6 +797,19 @@ namespace WpfMpdClient
     {
       btnCheckUpdates.IsEnabled = false;
       m_Updater.Check();
+    }
+
+    private void btnScrobblerAuthorize_Click(object sender, RoutedEventArgs e)
+    {
+      string token = m_Scrobbler.GetToken();
+      string url = m_Scrobbler.GetAuthorizationUrl(token);
+
+      BrowserWindow dlg = new BrowserWindow();
+      dlg.Owner = this;
+      dlg.NavigateTo(url);
+      dlg.ShowDialog();
+
+      m_Settings.ScrobblerSessionKey = Utilities.EncryptString(m_Scrobbler.GetSession());    
     }
   }
 }

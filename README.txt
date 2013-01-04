@@ -9,7 +9,9 @@ http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki
 
 Featues:
 -Browse database
+-Browse saved playlists
+-Lyrics
+-last.fm scrobbler
 -Download album art from last.fm
 -Tray icon with popup on track change
 -Support multimedia keys (play, pause, next track, previous track)
-

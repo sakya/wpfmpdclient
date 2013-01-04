@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Web;
 using System.Windows;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 namespace WpfMpdClient
 {
@@ -25,38 +26,6 @@ namespace WpfMpdClient
       else
         return d.ToString("mm:ss");
     } // FormatSeconds
-
-    public static string GetAlbumArt(string artist, string album)
-    {
-      string apiKey = "151e13d056bfe133d205314b7720d27b";
-      string url = string.Format("http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key={0}&artist={1}&album={2}",
-                                 apiKey, HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(album));      
-      try {
-        using (WebClient client = new WebClient()) {
-          using (Stream data = client.OpenRead(url)) {
-            StreamReader reader = new StreamReader(data);
-            string str = null;
-            StringBuilder sb = new StringBuilder();
-            while ((str = reader.ReadLine()) != null)
-              sb.AppendLine(str);
-
-            string xml = sb.ToString();
-            string imageUrl = string.Empty;
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(xml);
-            XmlNodeList xnList = doc.SelectNodes("/lfm/album/image");
-            foreach (XmlNode xn in xnList) {
-              if (xn.Attributes["size"].Value == "mega")
-                return xn.InnerText;
-            }
-          }
-        }
-      }
-      catch (Exception) {
-        return string.Empty;
-      }
-      return string.Empty;
-    } // GetAlbumArt
 
     public static string GetLyricsWikia(string artist, string title)
     {
@@ -155,6 +124,46 @@ namespace WpfMpdClient
     {
       return MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
     } // Confirm
+
+    public static string EncryptString(string ClearText)
+    {
+      byte[] clearTextBytes = Encoding.UTF8.GetBytes(ClearText);
+      System.Security.Cryptography.SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
+      MemoryStream ms = new MemoryStream();
+
+      byte[] rgbIV = Encoding.ASCII.GetBytes("ryojvlzmdalyglrj");
+      byte[] key = Encoding.ASCII.GetBytes("hcxilkqbbhczfeultgbskdmaunivmfuo");
+      CryptoStream cs = new CryptoStream(ms, rijn.CreateEncryptor(key, rgbIV), CryptoStreamMode.Write);
+
+      cs.Write(clearTextBytes, 0, clearTextBytes.Length);
+      cs.Close();
+
+      return Convert.ToBase64String(ms.ToArray());
+    } // EncryptString
+
+    public static string DecryptString(string EncryptedText)
+    {
+      if (string.IsNullOrEmpty(EncryptedText))
+        return string.Empty;
+      try{
+        byte[] encryptedTextBytes = Convert.FromBase64String(EncryptedText);
+        MemoryStream ms = new MemoryStream();
+        System.Security.Cryptography.SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
+
+        byte[] rgbIV = Encoding.ASCII.GetBytes("ryojvlzmdalyglrj");
+        byte[] key = Encoding.ASCII.GetBytes("hcxilkqbbhczfeultgbskdmaunivmfuo");
+
+        CryptoStream cs = new CryptoStream(ms, rijn.CreateDecryptor(key, rgbIV),
+        CryptoStreamMode.Write);
+        cs.Write(encryptedTextBytes, 0, encryptedTextBytes.Length);
+        cs.Close();
+
+        return Encoding.UTF8.GetString(ms.ToArray());
+      }catch (Exception){
+        return string.Empty;
+      }
+
+    } // DecryptString
   }
 
   public class TrackConverter : System.Windows.Data.IValueConverter

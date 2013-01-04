@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Libmpc;
 using System.Threading;
+using WpfMpdClient.scrobbler;
 
 namespace WpfMpdClient
 {
@@ -103,7 +104,7 @@ namespace WpfMpdClient
 
     private void GetAlbumArt(object state)
     {
-      string url = Utilities.GetAlbumArt(m_Artist, m_Album);
+      string url = Scrobbler.GetAlbumArt(m_Artist, m_Album);
       Dispatcher.BeginInvoke(new Action(() =>
       {
         if (!string.IsNullOrEmpty(url))

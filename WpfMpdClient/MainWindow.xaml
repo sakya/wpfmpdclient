@@ -415,6 +415,7 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
           <RowDefinition Height="*" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -442,8 +443,23 @@
         <Label VerticalContentAlignment="Center" Grid.Row="4" Content="Close to tray:" />
         <CheckBox Margin="0,4,0,0" Grid.Row="4" Grid.Column="1" Name="chkCloseToTray" VerticalAlignment="Center" />
 
-        <Button Margin="2" Grid.Row="5" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
-        <Button Margin="2" Grid.Row="6" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
+        <Label VerticalContentAlignment="Center" Grid.Row="5" Content="Enable last.fm scrobbler:" />
+        <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
+          <CheckBox Margin="0,4,0,0"  Name="chkScrobbler" VerticalAlignment="Center" />
+          <Button IsEnabled="{Binding ElementName=chkScrobbler, Path=IsChecked}" Margin="2" Name="btnScrobblerAuthorize" Content="Authorize" Click="btnScrobblerAuthorize_Click">
+            <Button.ToolTip>
+              <ToolTip>
+                <StackPanel>
+                  <TextBlock>To activate scrobbling you need to authorize WpfMpdClient on your last.fm account.
+This needs to be done only one time.</TextBlock>
+                </StackPanel>
+              </ToolTip>
+            </Button.ToolTip>
+          </Button>
+        </StackPanel>
+
+        <Button Margin="2" Grid.Row="6" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+        <Button Margin="2" Grid.Row="7" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
       </Grid>
     </TabItem>
     <TabItem Header="About">
