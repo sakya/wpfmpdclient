@@ -10,7 +10,7 @@ using System.Web;
 using System.Collections.Specialized;
 using System.Xml.Serialization;
 
-namespace WpfMpdClient.scrobbler
+namespace WpfMpdClient
 {
   public class ScrobblerTrack
   {
@@ -93,6 +93,7 @@ namespace WpfMpdClient.scrobbler
       return true;
     } // Serialize
   }
+
   public class Scrobbler
   {    
     private const string api_key = "";
@@ -236,8 +237,25 @@ namespace WpfMpdClient.scrobbler
     #endregion
 
     #region Static operations
+    public static string GetArtistCorrection(string artist)
+    {
+      Dictionary<string, string> parameters = new Dictionary<string,string>();
+      parameters["method"] = "artist.getCorrection";
+      parameters["api_key"] = api_key;
+      parameters["artist"] = artist;
+
+      XmlDocument xml = GetResponse(GetUrl(m_BaseUrl, parameters));
+      if (xml != null){
+        XmlNodeList xnList = xml.SelectNodes("/lfm/corrections/correction/artist/name");
+        if (xnList != null && xnList.Count > 0)
+          return xnList[0].InnerText;
+      }
+      return artist;
+    } // GetArtistCorrection
+
     public static string GetAlbumArt(string artist, string album)
     {
+      artist = GetArtistCorrection(artist);
       Dictionary<string, string> parameters = new Dictionary<string,string>();
       parameters["method"] = "album.getinfo";
       parameters["api_key"] = api_key;
@@ -258,21 +276,21 @@ namespace WpfMpdClient.scrobbler
     private static XmlDocument GetResponse(Uri url)
     {
       using (WebClient client = new WebClient()) {
-        using (Stream data = client.OpenRead(url)) {
-          StreamReader reader = new StreamReader(data);
-          string str = null;
-          StringBuilder sb = new StringBuilder();
-          while ((str = reader.ReadLine()) != null)
-            sb.AppendLine(str);
+        try{
+          using (Stream data = client.OpenRead(url)) {
+            StreamReader reader = new StreamReader(data);
+            string str = null;
+            StringBuilder sb = new StringBuilder();
+            while ((str = reader.ReadLine()) != null)
+              sb.AppendLine(str);
 
-          try{
             string xml = sb.ToString();
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml);
             return doc;
-          }catch (Exception){
-            return null;
           }
+        }catch (Exception){
+          return null;
         }
       }
     } // GetResponse
@@ -327,8 +345,8 @@ namespace WpfMpdClient.scrobbler
         foreach (string k in parameters.Keys)
           data[k] = parameters[k];
 
-        byte[] response = client.UploadValues(new Uri(url), "POST", data);
         try {
+          byte[] response = client.UploadValues(new Uri(url), "POST", data);
           XmlDocument doc = new XmlDocument();
           doc.LoadXml(System.Text.Encoding.UTF8.GetString(response));
           return doc;

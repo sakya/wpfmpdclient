@@ -13,7 +13,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Libmpc;
 using System.Threading;
-using WpfMpdClient.scrobbler;
 
 namespace WpfMpdClient
 {

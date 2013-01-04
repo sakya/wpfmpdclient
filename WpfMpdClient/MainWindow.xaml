@@ -450,8 +450,11 @@
             <Button.ToolTip>
               <ToolTip>
                 <StackPanel>
-                  <TextBlock>To activate scrobbling you need to authorize WpfMpdClient on your last.fm account.
-This needs to be done only one time.</TextBlock>
+                  <TextBlock>
+                    To activate scrobbling you need to authorize WpfMpdClient on your last.fm account.
+                    <LineBreak />
+                    This needs to be done only one time.
+                  </TextBlock>
                 </StackPanel>
               </ToolTip>
             </Button.ToolTip>

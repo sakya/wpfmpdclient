@@ -18,7 +18,6 @@ using System.IO;
 using System.ComponentModel;
 using CsUpdater;
 using System.Reflection;
-using WpfMpdClient.scrobbler;
 
 namespace WpfMpdClient
 {
@@ -30,6 +29,7 @@ namespace WpfMpdClient
   {
     static MainWindow This = null;
 
+    #region Private members
     Scrobbler m_Scrobbler = null;
     Updater m_Updater = null;
     UpdaterApp m_App = null;
@@ -47,6 +47,7 @@ namespace WpfMpdClient
     ContextMenu m_NotifyIconMenu = null;
     WindowState m_StoredWindowState = WindowState.Normal;
     bool m_Close = false;
+    #endregion
 
     public MainWindow()
     {

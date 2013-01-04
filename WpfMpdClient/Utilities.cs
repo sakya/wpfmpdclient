@@ -12,6 +12,8 @@ using System.Web;
 using System.Windows;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using System.Windows.Media;
+using System.Windows.Controls.Primitives;
 
 namespace WpfMpdClient
 {
