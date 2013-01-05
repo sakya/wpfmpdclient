@@ -262,6 +262,27 @@ namespace Libmpc
 
       return MpdFile.buildList(response);
     }
+
+    public List<MpdFile> Find(Dictionary<ScopeSpecifier, string> search)
+    {
+      if (search == null)
+        throw new ArgumentNullException("search");
+
+      string[] args = new string[search.Keys.Count * 2];
+      int index = 0;
+      foreach (ScopeSpecifier k in search.Keys) {
+        string token = EscapeString(search[k]);
+        args[index++] = this.toTag(k);
+        args[index++] = token;
+      }
+      MpdResponse response = this.getConnection().Exec("find", args);
+
+      if (response.IsError)
+        throw new MpdResponseException(response.ErrorCode, response.ErrorMessage);
+
+      return MpdFile.buildList(response);
+    }
+
     /// <summary>
     /// Returns all values found in files of the MPD for the given attribute.
     /// </summary>

@@ -12,8 +12,6 @@ using System.Web;
 using System.Windows;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
-using System.Windows.Media;
-using System.Windows.Controls.Primitives;
 
 namespace WpfMpdClient
 {
@@ -129,6 +127,9 @@ namespace WpfMpdClient
 
     public static string EncryptString(string ClearText)
     {
+      if (string.IsNullOrEmpty(ClearText))
+        return string.Empty;
+
       byte[] clearTextBytes = Encoding.UTF8.GetBytes(ClearText);
       System.Security.Cryptography.SymmetricAlgorithm rijn = SymmetricAlgorithm.Create();
       MemoryStream ms = new MemoryStream();

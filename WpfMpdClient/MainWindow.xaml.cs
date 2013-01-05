@@ -274,11 +274,26 @@ namespace WpfMpdClient
 
       ListBox list = sender as ListBox;
       if (list.SelectedItem != null) {
+        Dictionary<ScopeSpecifier, string> search = new Dictionary<ScopeSpecifier, string>();
+
+        if (tabBrowse.SelectedIndex == 0) {
+          string artist = lstArtist.SelectedItem.ToString();
+          if (artist == Mpc.NoArtist)
+            artist = string.Empty;
+          search[ScopeSpecifier.Artist] = artist;
+        } else if (tabBrowse.SelectedIndex == 1) {
+          string genre = lstGenres.SelectedItem.ToString();
+          if (genre == Mpc.NoGenre)
+            genre = string.Empty;
+          search[ScopeSpecifier.Genre] = genre;
+        }
+
         string album = list.SelectedItem.ToString();
         if (album == Mpc.NoAlbum)
           album = string.Empty;
+        search[ScopeSpecifier.Album] = album;
 
-        m_Tracks = m_Mpc.Find(ScopeSpecifier.Album, album);
+        m_Tracks = m_Mpc.Find(search);
         lstTracks.ItemsSource = m_Tracks;
       } else {
         m_Tracks = null;
@@ -810,7 +825,8 @@ namespace WpfMpdClient
       dlg.NavigateTo(url);
       dlg.ShowDialog();
 
-      m_Settings.ScrobblerSessionKey = Utilities.EncryptString(m_Scrobbler.GetSession());    
+      m_Settings.ScrobblerSessionKey = Utilities.EncryptString(m_Scrobbler.GetSession());
+      btnApplySettings_Click(null, null);
     }
   }
 }
