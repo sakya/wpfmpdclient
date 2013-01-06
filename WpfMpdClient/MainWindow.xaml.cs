@@ -124,11 +124,11 @@ namespace WpfMpdClient
       if (!string.IsNullOrEmpty(m_Settings.Password)) {
         bool res = m_Mpc.Password(m_Settings.Password);
       }
-      MpdStatistics stats = m_Mpc.Stats();
-      PopulateArtists();
+      MpdStatistics stats = m_Mpc.Stats();      
       PopulateGenres();
       PopulatePlaylists();
       PopulatePlaylist();
+      PopulateArtists();
 
       m_Timer.Interval = 500;
       m_Timer.Elapsed += TimerHandler;
@@ -276,12 +276,12 @@ namespace WpfMpdClient
       if (list.SelectedItem != null) {
         Dictionary<ScopeSpecifier, string> search = new Dictionary<ScopeSpecifier, string>();
 
-        if (tabBrowse.SelectedIndex == 0) {
+        if (tabBrowse.SelectedIndex == 0 && lstArtist.SelectedItem != null) {
           string artist = lstArtist.SelectedItem.ToString();
           if (artist == Mpc.NoArtist)
             artist = string.Empty;
           search[ScopeSpecifier.Artist] = artist;
-        } else if (tabBrowse.SelectedIndex == 1) {
+        } else if (tabBrowse.SelectedIndex == 1 && lstGenres.SelectedItem != null) {
           string genre = lstGenres.SelectedItem.ToString();
           if (genre == Mpc.NoGenre)
             genre = string.Empty;

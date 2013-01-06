@@ -5,6 +5,7 @@ http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeli
 
 -Scrobbling: http://www.lastfm.it/api/scrobbling
 
+-Use idle instead of polling
 -Change playlist order
 -Browse by year
 -Browse file system

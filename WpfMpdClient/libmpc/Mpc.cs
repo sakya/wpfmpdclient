@@ -263,6 +263,12 @@ namespace Libmpc
       return MpdFile.buildList(response);
     }
 
+    /// <summary>
+    /// Returns all files in the database who's attribute matches the given tokens. Works like the Search command but is case sensitive.
+    /// </summary>
+    /// <param name="scopeSpecifier">Specifies the attribute to search for.</param>
+    /// <param name="search">The values the files attribute must have to be included in the result.</param>
+    /// <returns>All files in the database who's attribute matches the given tokens.</returns>
     public List<MpdFile> Find(Dictionary<ScopeSpecifier, string> search)
     {
       if (search == null)
