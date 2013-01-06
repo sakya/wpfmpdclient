@@ -345,12 +345,22 @@ namespace WpfMpdClient
         return;
 
       MpdStatus status = m_Mpc.Status();
+      // Update db finished:
       if (m_LastStatus != null && m_LastStatus.UpdatingDb > 0 && status.UpdatingDb <= 0){
         Dispatcher.BeginInvoke(new Action(() =>
         {
           UpdateDbFinished();
         }));
       }
+
+      // Playlist changed
+      if (m_LastStatus != null && m_LastStatus.Playlist != status.Playlist) {
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          PopulatePlaylist();
+        }));
+      }
+
       m_LastStatus = status;
 
       Dispatcher.BeginInvoke(new Action(() =>
@@ -501,7 +511,7 @@ namespace WpfMpdClient
       }
 
       if (tabControl.SelectedIndex == 1){
-        PopulatePlaylist();
+
       }else if (tabControl.SelectedIndex == 2){
         Dispatcher.BeginInvoke(new Action(() =>
         {
@@ -594,7 +604,6 @@ namespace WpfMpdClient
     {
       if (m_Mpc.Connected){
         m_Mpc.Clear();
-        PopulatePlaylist();
       }
     }
 
@@ -673,7 +682,6 @@ namespace WpfMpdClient
 
     private void TrackChanged(MpdFile track)
     {
-
       if (m_Settings.Scrobbler){
         if (m_CurrentTrack != null && m_CurrentTrack.Time >= 30){
           double played = (DateTime.Now - m_CurrentTrackStart).TotalSeconds;

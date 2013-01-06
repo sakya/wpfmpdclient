@@ -237,6 +237,29 @@ namespace WpfMpdClient
     #endregion
 
     #region Static operations
+    public static ScrobblerTrack GetTrackCorrection(string artist, string title)
+    {
+      Dictionary<string, string> parameters = new Dictionary<string, string>();
+      parameters["method"] = "track.getCorrection";
+      parameters["api_key"] = api_key;
+      parameters["artist"] = artist;
+      parameters["track"] = title;
+
+      XmlDocument xml = GetResponse(GetUrl(m_BaseUrl, parameters));
+      if (xml != null) {
+        XmlNodeList xnList = xml.SelectNodes("/lfm/corrections/correction/track/name");
+        if (xnList != null && xnList.Count > 0) {
+          ScrobblerTrack res = new ScrobblerTrack();
+          res.Title = xnList[0].InnerText;
+          xnList = xml.SelectNodes("/lfm/corrections/correction/track/artist/name");
+          if (xnList != null && xnList.Count > 0)
+            res.Artist = xnList[0].InnerText;
+          return res;
+        }
+      }
+      return null;
+    } // GetTrackCorrection
+
     public static string GetArtistCorrection(string artist)
     {
       Dictionary<string, string> parameters = new Dictionary<string,string>();
@@ -341,6 +364,7 @@ namespace WpfMpdClient
     private XmlDocument GetPostResponse(string url, Dictionary<string, string> parameters)
     {
       using (WebClient client = new WebClient()) {
+        System.Net.ServicePointManager.Expect100Continue = false;
         NameValueCollection data = new NameValueCollection();
         foreach (string k in parameters.Keys)
           data[k] = parameters[k];
