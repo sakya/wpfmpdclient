@@ -78,7 +78,7 @@ namespace WpfMpdClient
         lblTimeAfter.Content = Utilities.FormatSeconds(0);
       }
 
-      MpdFile file = Mpc.CurrentSong();
+      MpdFile file = Mpc.Connected ? Mpc.CurrentSong() : null;
       if (file != null) {
         lblTitle.Text = file.Title;        
         if (!string.IsNullOrEmpty(file.Date))
@@ -103,7 +103,7 @@ namespace WpfMpdClient
 
     private void GetAlbumArt(object state)
     {
-      string url = Scrobbler.GetAlbumArt(m_Artist, m_Album);
+      string url = LastfmScrobbler.GetAlbumArt(m_Artist, m_Album);
       Dispatcher.BeginInvoke(new Action(() =>
       {
         if (!string.IsNullOrEmpty(url))

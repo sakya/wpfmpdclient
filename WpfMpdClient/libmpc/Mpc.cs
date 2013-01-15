@@ -330,10 +330,11 @@ namespace Libmpc
     /// <returns>The names of all files and directory found under the given path.</returns>
     public List<string> ListAll(string path)
     {
+      MpdResponse response = null;
       if (path == null)
-        throw new ArgumentNullException("path");
-
-      MpdResponse response = this.getConnection().Exec("listall", new string[] { path });
+        response = this.getConnection().Exec("listall");
+      else
+        response = this.getConnection().Exec("listall", new string[] { path });
 
       if (response.IsError)
         throw new MpdResponseException(response.ErrorCode, response.ErrorMessage);
@@ -365,6 +366,7 @@ namespace Libmpc
     {
       return this.LsInfo(null);
     }
+
     /// <summary>
     /// Returns the directory listing of the given path.
     /// </summary>

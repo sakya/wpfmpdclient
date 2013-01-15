@@ -1,11 +1,12 @@
 http://www.iconfinder.com/search/?q=iconset%3Adefaulticon
+http://mpd.wikia.com/wiki/Protocol_Reference
 
 http://api.wikia.com/wiki/LyricWiki_API
 http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeling%20Less
 
 -Scrobbling: http://www.lastfm.it/api/scrobbling
 
--Use idle instead of polling
+-Libre.fm scrobbling
 -Change playlist order
 -Browse by year
 -Browse file system

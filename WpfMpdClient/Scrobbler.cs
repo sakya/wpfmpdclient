@@ -96,17 +96,16 @@ namespace WpfMpdClient
 
   public class Scrobbler
   {    
-    private const string api_key = "";
-    private const string api_secret = "";
-    private const string m_BaseUrl = "http://ws.audioscrobbler.com/2.0/";
-
     ScrobblerCache m_Cache = null;
     string m_Token = string.Empty;
     string m_SessionKey = string.Empty;
 
-    public Scrobbler(string sessionKey)
+    public Scrobbler(string apiKey, string apiSecret, string baseUrl, string sessionKey)
     {
       m_SessionKey = sessionKey;
+      ApiKey = apiKey;
+      ApiSecret = apiSecret;
+      BaseUrl = baseUrl;
 
       m_Cache = ScrobblerCache.Deserialize(ScrobblerCache.GetCacheFileName());
       if (m_Cache == null)
@@ -115,6 +114,25 @@ namespace WpfMpdClient
         m_Cache.Tracks = new List<ScrobblerTrack>();
     }
 
+    #region Properties
+    public string ApiKey
+    {
+      get;
+      private set;
+    }
+
+    public string ApiSecret
+    {
+      get;
+      private set;
+    }
+
+    public string BaseUrl
+    {
+      get;
+      private set;
+    }
+    #endregion
     #region Public Operations
     public bool SaveCache()
     {
@@ -128,7 +146,7 @@ namespace WpfMpdClient
       m_Token = token;
 
       if (!string.IsNullOrEmpty(token))
-        return string.Format("http://www.last.fm/api/auth/?api_key={0}&token={1}", api_key, token);
+        return string.Format("http://www.last.fm/api/auth/?api_key={0}&token={1}", ApiKey, token);
       return string.Empty;
     } // GetAuthorizationUrl
 
@@ -136,10 +154,10 @@ namespace WpfMpdClient
     {
       Dictionary<string, string> parameters = new Dictionary<string,string>();
       parameters["method"] = "auth.getToken";
-      parameters["api_key"] = api_key;
+      parameters["api_key"] = ApiKey;
       parameters["api_sig"] = GetSignature(parameters);
 
-      XmlDocument xml = GetResponse(GetUrl(m_BaseUrl, parameters));
+      XmlDocument xml = GetResponse(GetUrl(BaseUrl, parameters));
       if (xml != null){
         XmlNodeList list = xml.SelectNodes("/lfm/token");
         if (list != null && list.Count > 0){
@@ -156,11 +174,11 @@ namespace WpfMpdClient
 
       Dictionary<string, string> parameters = new Dictionary<string,string>();
       parameters["method"] = "auth.getSession";
-      parameters["api_key"] = api_key;
+      parameters["api_key"] = ApiKey;
       parameters["token"] = m_Token;
       parameters["api_sig"] = GetSignature(parameters);
 
-      XmlDocument xml = GetResponse(GetUrl(m_BaseUrl, parameters));
+      XmlDocument xml = GetResponse(GetUrl(BaseUrl, parameters));
       if (xml != null){
         XmlNodeList list = xml.SelectNodes("/lfm/session/key");
         if (list != null && list.Count > 0){
@@ -181,10 +199,10 @@ namespace WpfMpdClient
       parameters["artist"] = artist;
       parameters["track"] = title;
       parameters["album"] = album;
-      parameters["api_key"] = api_key;
+      parameters["api_key"] = ApiKey;
       parameters["sk"] = m_SessionKey;
       parameters["api_sig"] = GetSignature(parameters);
-      XmlDocument xml = GetPostResponse(m_BaseUrl, parameters);
+      XmlDocument xml = GetPostResponse(BaseUrl, parameters);
       if (xml != null){
         return true;
       }
@@ -221,11 +239,11 @@ namespace WpfMpdClient
         parameters[string.Format("chosenByUser[{0}]", index)] = "1";
         index++;
       }
-      parameters["api_key"] = api_key;
+      parameters["api_key"] = ApiKey;
       parameters["sk"] = m_SessionKey;
       parameters["api_sig"] = GetSignature(parameters);
 
-      XmlDocument xml = GetPostResponse(m_BaseUrl, parameters);
+      XmlDocument xml = GetPostResponse(BaseUrl, parameters);
       if (xml != null){
         m_Cache.Tracks.Clear();
         XmlNodeList list = xml.SelectNodes("/lfm/scrobbles");
@@ -237,15 +255,15 @@ namespace WpfMpdClient
     #endregion
 
     #region Static operations
-    public static ScrobblerTrack GetTrackCorrection(string artist, string title)
+    public static ScrobblerTrack GetTrackCorrection(string baseUrl, string apiKey, string artist, string title)
     {
       Dictionary<string, string> parameters = new Dictionary<string, string>();
       parameters["method"] = "track.getCorrection";
-      parameters["api_key"] = api_key;
+      parameters["api_key"] = apiKey;
       parameters["artist"] = artist;
       parameters["track"] = title;
 
-      XmlDocument xml = GetResponse(GetUrl(m_BaseUrl, parameters));
+      XmlDocument xml = GetResponse(GetUrl(baseUrl, parameters));
       if (xml != null) {
         XmlNodeList xnList = xml.SelectNodes("/lfm/corrections/correction/track/name");
         if (xnList != null && xnList.Count > 0) {
@@ -260,14 +278,14 @@ namespace WpfMpdClient
       return null;
     } // GetTrackCorrection
 
-    public static string GetArtistCorrection(string artist)
+    public static string GetArtistCorrection(string baseUrl, string apiKey, string artist)
     {
       Dictionary<string, string> parameters = new Dictionary<string,string>();
       parameters["method"] = "artist.getCorrection";
-      parameters["api_key"] = api_key;
+      parameters["api_key"] = apiKey;
       parameters["artist"] = artist;
 
-      XmlDocument xml = GetResponse(GetUrl(m_BaseUrl, parameters));
+      XmlDocument xml = GetResponse(GetUrl(baseUrl, parameters));
       if (xml != null){
         XmlNodeList xnList = xml.SelectNodes("/lfm/corrections/correction/artist/name");
         if (xnList != null && xnList.Count > 0)
@@ -276,16 +294,16 @@ namespace WpfMpdClient
       return artist;
     } // GetArtistCorrection
 
-    public static string GetAlbumArt(string artist, string album)
+    public static string GetAlbumArt(string baseUrl, string apiKey, string artist, string album)
     {
-      artist = GetArtistCorrection(artist);
+      artist = GetArtistCorrection(baseUrl, apiKey, artist);
       Dictionary<string, string> parameters = new Dictionary<string,string>();
       parameters["method"] = "album.getinfo";
-      parameters["api_key"] = api_key;
+      parameters["api_key"] = apiKey;
       parameters["artist"] = artist;
       parameters["album"] = album;
 
-      XmlDocument xml = GetResponse(GetUrl(m_BaseUrl, parameters));
+      XmlDocument xml = GetResponse(GetUrl(baseUrl, parameters));
       if (xml != null){
         XmlNodeList xnList = xml.SelectNodes("/lfm/album/image");
         foreach (XmlNode xn in xnList) {
@@ -348,7 +366,7 @@ namespace WpfMpdClient
         sb.Append(k);
         sb.Append(parameters[k]);
       }
-      sb.Append(api_secret);
+      sb.Append(ApiSecret);
 
       string res = sb.ToString();
       using (MD5 md5Hash = MD5.Create()) {
@@ -381,5 +399,41 @@ namespace WpfMpdClient
       }
     } // GetPostResponse
     #endregion
+  }
+
+  public class LastfmScrobbler : Scrobbler
+  {    
+    private const string api_key = "";
+    private const string api_secret = "";
+    private const string m_BaseUrl = "http://ws.audioscrobbler.com/2.0/";
+
+    public LastfmScrobbler(string sessionKey)
+      : base(api_key, api_secret, m_BaseUrl, sessionKey)
+    {
+      
+    }
+
+    public static string GetAlbumArt(string artist, string album)
+    {
+      return Scrobbler.GetAlbumArt(m_BaseUrl, api_key, artist, album);
+    }
+  }
+
+  public class LibrefmScrobbler : Scrobbler
+  {
+    private const string api_key = "";
+    private const string api_secret = "";
+    private const string m_BaseUrl = "http://turtle.libre.fm/";
+
+    public LibrefmScrobbler(string sessionKey)
+      : base(api_key, api_secret, m_BaseUrl, sessionKey)
+    {
+      
+    }
+
+    public static string GetAlbumArt(string artist, string album)
+    {
+      return Scrobbler.GetAlbumArt(m_BaseUrl, api_key, artist, album);
+    }
   }
 }

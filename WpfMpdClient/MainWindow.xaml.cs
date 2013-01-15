@@ -30,7 +30,7 @@ namespace WpfMpdClient
     static MainWindow This = null;
 
     #region Private members
-    Scrobbler m_Scrobbler = null;
+    LastfmScrobbler m_LastfmScrobbler = null;
     Updater m_Updater = null;
     UpdaterApp m_App = null;
     Settings m_Settings = null;
@@ -73,7 +73,7 @@ namespace WpfMpdClient
         chkScrobbler.IsChecked = m_Settings.Scrobbler;
       } else
         m_Settings = new Settings();
-      m_Scrobbler = new Scrobbler(Utilities.DecryptString(m_Settings.ScrobblerSessionKey));
+      m_LastfmScrobbler = new LastfmScrobbler(Utilities.DecryptString(m_Settings.ScrobblerSessionKey));
 
       if (m_Settings.WindowWidth > 0 && m_Settings.WindowHeight > 0){
         Width = m_Settings.WindowWidth;
@@ -127,6 +127,7 @@ namespace WpfMpdClient
       MpdStatistics stats = m_Mpc.Stats();      
       PopulateGenres();
       PopulatePlaylists();
+      PopulateFileSystemTree();
       PopulatePlaylist();
       PopulateArtists();
 
@@ -203,6 +204,71 @@ namespace WpfMpdClient
       lstPlaylists.ItemsSource = playlists;
       if (playlists.Count > 0)
         lstPlaylists.SelectedIndex = 0;
+    }
+
+    private void PopulateFileSystemTree()
+    {
+      if (!m_Mpc.Connected)
+        return;
+
+      treeFileSystem.Items.Clear();
+      TreeViewItem root = new TreeViewItem();
+      root.Header = "Root";
+      root.Tag = null;
+      treeFileSystem.Items.Add(root);
+
+      PopulateFileSystemTree(root.Items, null);
+      if (treeFileSystem.Items != null && treeFileSystem.Items.Count > 0) {
+        TreeViewItem item = treeFileSystem.Items[0] as TreeViewItem;
+        item.IsSelected = true;
+        item.IsExpanded = true;
+      }
+    }
+
+    private void PopulateFileSystemTree(ItemCollection items, string path)
+    {
+      items.Clear();
+      MpdDirectoryListing list = m_Mpc.LsInfo(path);
+      foreach (string dir in list.DirectoryList){
+        TreeViewItem item = new TreeViewItem();
+        item.Header = path != null ? dir.Remove(0, path.Length + 1) : dir;
+        item.Tag = dir;
+        if (HasSubdirectories(item.Tag.ToString())){
+          item.Items.Add(null);
+          item.Expanded += TreeItemExpanded;
+        }
+        items.Add(item);
+      }
+    }
+
+    private bool HasSubdirectories(string path)
+    {
+      MpdDirectoryListing list = m_Mpc.LsInfo(path);
+      return list.DirectoryList.Count > 0;      
+    }
+
+    private void TreeItemExpanded(object sender, RoutedEventArgs e)
+    {
+      TreeViewItem treeItem = sender as TreeViewItem;
+      if (treeItem != null){
+        if (treeItem.Items.Count == 1 && treeItem.Items[0] == null) {
+          treeFileSystem.Cursor = Cursors.Wait;
+          PopulateFileSystemTree(treeItem.Items, treeItem.Tag.ToString());
+          treeFileSystem.Cursor = Cursors.Arrow;
+        }
+      }
+    }
+
+    private void treeFileSystem_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+      TreeViewItem treeItem = treeFileSystem.SelectedItem as TreeViewItem;
+      if (treeItem != null){
+        MpdDirectoryListing list = m_Mpc.LsInfo(treeItem.Tag != null ? treeItem.Tag.ToString() : null);
+        m_Tracks = new List<MpdFile>();
+        foreach (MpdFile file in list.FileList)
+          m_Tracks.Add(file);
+        lstTracks.ItemsSource = m_Tracks;
+      }
     }
 
     private void lstArtist_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -541,6 +607,8 @@ namespace WpfMpdClient
       else if (tabBrowse.SelectedIndex == 2)
         lstPlaylists_SelectionChanged(lstPlaylists, null);
       else if (tabBrowse.SelectedIndex == 3)
+        treeFileSystem_SelectedItemChanged(null, null);
+      else if (tabBrowse.SelectedIndex == 4)
         btnSearch_Click(null, null);
     }
 
@@ -642,7 +710,7 @@ namespace WpfMpdClient
         m_Settings.WindowHeight = ActualHeight;
         m_Settings.Serialize(Settings.GetSettingsFileName());
 
-        m_Scrobbler.SaveCache();
+        m_LastfmScrobbler.SaveCache();
       }
     } // CloseHandler
 
@@ -685,12 +753,12 @@ namespace WpfMpdClient
       if (m_Settings.Scrobbler){
         if (m_CurrentTrack != null && m_CurrentTrack.Time >= 30){
           double played = (DateTime.Now - m_CurrentTrackStart).TotalSeconds;
-          if (played >= 240 || played >= m_CurrentTrack.Time / 2)
-              m_Scrobbler.Scrobble(m_CurrentTrack.Artist, m_CurrentTrack.Title, m_CurrentTrack.Album, m_CurrentTrackStart);
+          if (played >= 240 || played >= m_CurrentTrack.Time / 2) 
+            m_LastfmScrobbler.Scrobble(m_CurrentTrack.Artist, m_CurrentTrack.Title, m_CurrentTrack.Album, m_CurrentTrackStart);
         }
 
         if (track != null){
-          m_Scrobbler.UpdateNowPlaying(track.Artist, track.Title, track.Album);
+          m_LastfmScrobbler.UpdateNowPlaying(track.Artist, track.Title, track.Album);
         }
       }
 
@@ -825,15 +893,15 @@ namespace WpfMpdClient
 
     private void btnScrobblerAuthorize_Click(object sender, RoutedEventArgs e)
     {
-      string token = m_Scrobbler.GetToken();
-      string url = m_Scrobbler.GetAuthorizationUrl(token);
+      string token = m_LastfmScrobbler.GetToken();
+      string url = m_LastfmScrobbler.GetAuthorizationUrl(token);
 
       BrowserWindow dlg = new BrowserWindow();
       dlg.Owner = this;
       dlg.NavigateTo(url);
       dlg.ShowDialog();
 
-      m_Settings.ScrobblerSessionKey = Utilities.EncryptString(m_Scrobbler.GetSession());
+      m_Settings.ScrobblerSessionKey = Utilities.EncryptString(m_LastfmScrobbler.GetSession());
       btnApplySettings_Click(null, null);
     }
   }

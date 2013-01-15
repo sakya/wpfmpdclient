@@ -58,7 +58,16 @@
 
               <DockPanel Grid.Row="0">
                 <TextBlock DockPanel.Dock="Top" Margin="2" Text="Artists:" />
-                <ListBox Margin="2,2,2,5" Name="lstArtist" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged" />
+                <ListBox Margin="2,2,2,5" Name="lstArtist" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged">
+                  <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                      <Style.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+                      </Style.Resources>
+                    </Style>
+                  </ListBox.ItemContainerStyle>
+                </ListBox>
               </DockPanel>
 
               <GridSplitter ResizeDirection="Rows" VerticalAlignment="Bottom"
@@ -70,6 +79,10 @@
                 <ListBox Margin="2" Grid.Row="3" SelectionMode="Single" Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
                   <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
+                      <Style.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+                      </Style.Resources>                      
                       <Setter Property="ContextMenu">
                         <Setter.Value>
                           <ContextMenu>
@@ -79,19 +92,10 @@
                               </Style>
                             </ContextMenu.ItemContainerStyle>
                             <MenuItem Name="mnuAdd" Header="Add">
-                              <!--<MenuItem.Icon>
-                        <Image Source="Images/add.png" />
-                      </MenuItem.Icon>-->
                             </MenuItem>
                             <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
-                              <!--<MenuItem.Icon>
-                        <Image Source="Images/replace.png" />
-                      </MenuItem.Icon>-->
                             </MenuItem>
                             <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
-                              <!--<MenuItem.Icon>
-                      <Image Source="Images/replace.png" />
-                    </MenuItem.Icon>-->
                             </MenuItem>
                           </ContextMenu>
                         </Setter.Value>
@@ -112,7 +116,16 @@
 
               <DockPanel Grid.Row="0">
                 <TextBlock DockPanel.Dock="Top" Margin="2" Text="Genres:" />
-                <ListBox Margin="2,2,2,5" Name="lstGenres" SelectionMode="Single" SelectionChanged="lstGenres_SelectionChanged" />
+                <ListBox Margin="2,2,2,5" Name="lstGenres" SelectionMode="Single" SelectionChanged="lstGenres_SelectionChanged">
+                  <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                      <Style.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+                      </Style.Resources>
+                    </Style>
+                  </ListBox.ItemContainerStyle>
+                </ListBox>                  
               </DockPanel>
 
               <GridSplitter ResizeDirection="Rows" VerticalAlignment="Bottom"
@@ -124,6 +137,10 @@
                 <ListBox Margin="2" Grid.Row="3" SelectionMode="Single" Name="lstGenresAlbums" SelectionChanged="lstAlbums_SelectionChanged">
                   <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
+                      <Style.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+                      </Style.Resources>                      
                       <Setter Property="ContextMenu">
                         <Setter.Value>
                           <ContextMenu>
@@ -133,19 +150,10 @@
                               </Style>
                             </ContextMenu.ItemContainerStyle>
                             <MenuItem Name="mnuAdd" Header="Add">
-                              <!--<MenuItem.Icon>
-                        <Image Source="Images/add.png" />
-                      </MenuItem.Icon>-->
                             </MenuItem>
                             <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
-                              <!--<MenuItem.Icon>
-                        <Image Source="Images/replace.png" />
-                      </MenuItem.Icon>-->
                             </MenuItem>
                             <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
-                              <!--<MenuItem.Icon>
-                      <Image Source="Images/replace.png" />
-                    </MenuItem.Icon>-->
                             </MenuItem>
                           </ContextMenu>
                         </Setter.Value>
@@ -164,6 +172,10 @@
                 <ListBox Margin="2,2,2,5" Name="lstPlaylists" SelectionMode="Single" SelectionChanged="lstPlaylists_SelectionChanged">
                   <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
+                      <Style.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+                      </Style.Resources>                      
                       <Setter Property="ContextMenu">
                         <Setter.Value>
                           <ContextMenu>
@@ -173,24 +185,12 @@
                               </Style>
                             </ContextMenu.ItemContainerStyle>
                             <MenuItem Name="mnuAdd" Header="Add">
-                              <!--<MenuItem.Icon>
-                        <Image Source="Images/add.png" />
-                      </MenuItem.Icon>-->
                             </MenuItem>
                             <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
-                              <!--<MenuItem.Icon>
-                        <Image Source="Images/replace.png" />
-                      </MenuItem.Icon>-->
                             </MenuItem>
                             <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
-                              <!--<MenuItem.Icon>
-                      <Image Source="Images/replace.png" />
-                    </MenuItem.Icon>-->
                             </MenuItem>
                             <MenuItem Name="mnuDeletePlaylist" Header="Delete">
-                              <!--<MenuItem.Icon>
-                        <Image Source="Images/add.png" />
-                      </MenuItem.Icon>-->
                             </MenuItem>                            
                           </ContextMenu>
                         </Setter.Value>
@@ -202,6 +202,28 @@
             </Grid>
           </TabItem>
 
+          <TabItem Header="File system">
+            <Grid>
+              <TreeView Name="treeFileSystem" SelectedItemChanged="treeFileSystem_SelectedItemChanged">
+                <TreeView.ContextMenu>
+                  <ContextMenu>
+                    <ContextMenu.ItemContainerStyle>
+                      <Style TargetType="MenuItem">
+                        <EventSetter Event="MenuItem.Click" Handler="ContextMenu_Click"/>
+                      </Style>
+                    </ContextMenu.ItemContainerStyle>
+                    <MenuItem Name="mnuAdd" Header="Add">
+                    </MenuItem>
+                    <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
+                    </MenuItem>
+                    <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
+                    </MenuItem>
+                  </ContextMenu>
+                </TreeView.ContextMenu>
+              </TreeView>
+            </Grid>
+          </TabItem>
+          
           <TabItem Header="Search">
             <Grid>
               <Grid.RowDefinitions>
@@ -240,7 +262,11 @@
 
         <ListView Margin="2" Grid.Column="1" Name="lstTracks" SelectionMode="Extended" SelectionChanged="lstTracks_SelectionChanged" >
           <ListView.ItemContainerStyle>
-            <Style TargetType="ListBoxItem">
+            <Style TargetType="ListViewItem">
+              <Style.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+              </Style.Resources>
               <Setter Property="ContextMenu">
                 <Setter.Value>
                   <ContextMenu>
@@ -250,19 +276,10 @@
                       </Style>
                     </ContextMenu.ItemContainerStyle>
                     <MenuItem Name="mnuAdd" Header="Add">
-                      <!--<MenuItem.Icon>
-                        <Image Source="Images/add.png" />
-                      </MenuItem.Icon>-->
                     </MenuItem>
                     <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
-                      <!--<MenuItem.Icon>
-                        <Image Source="Images/replace.png" />
-                      </MenuItem.Icon>-->
                     </MenuItem>
                     <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
-                      <!--<MenuItem.Icon>
-                      <Image Source="Images/replace.png" />
-                    </MenuItem.Icon>-->
                     </MenuItem>
                   </ContextMenu>
                 </Setter.Value>
