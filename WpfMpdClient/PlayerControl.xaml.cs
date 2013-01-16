@@ -25,6 +25,7 @@ namespace WpfMpdClient
     public delegate void PlayerToggleHandler(object sender, bool value);
     public event PlayHandler PlayClicked;
     public event PlayHandler PauseClicked;
+    public event PlayHandler StopClicked;
     public event PlayHandler BackClicked;
     public event PlayHandler ForwardClicked;
     public event PlayerToggleHandler RandomClicked;
@@ -35,6 +36,7 @@ namespace WpfMpdClient
     string m_Album = string.Empty;
     string m_Title = string.Empty;
     bool m_TimeDragging = false;
+    bool m_VolumeDragging = false;
 
     public PlayerControl()
     {
@@ -47,12 +49,27 @@ namespace WpfMpdClient
       set;
     }
 
+    public bool ShowStopButton
+    {
+      get
+      {
+        return btnStop.Visibility == System.Windows.Visibility.Visible;
+      }
+
+      set
+      {
+        btnStop.Visibility = value ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+        colStop.Width = new GridLength(value ? 1 : 0, GridUnitType.Star);
+      }
+    }
+
     public void Update(MpdStatus status)
     {
       m_Status = status;
       btnShuffle.IsChecked = status.Random;
       btnRepeat.IsChecked = status.Repeat;
 
+      btnStop.IsEnabled = status.State != MpdState.Stop;
       switch (status.State) {
         case MpdState.Play:
           btnPlay.Visibility = Visibility.Collapsed;
@@ -78,6 +95,11 @@ namespace WpfMpdClient
         lblTimeAfter.Content = Utilities.FormatSeconds(0);
       }
 
+      if (!m_VolumeDragging) {
+        lblVolume.Content = string.Format("{0}", status.Volume);
+        sliVolume.Value = status.Volume;
+      }
+
       MpdFile file = Mpc.Connected ? Mpc.CurrentSong() : null;
       if (file != null) {
         lblTitle.Text = file.Title;        
@@ -90,6 +112,7 @@ namespace WpfMpdClient
         if (file.Album != m_Album || file.Artist != m_Artist){
           m_Album = file.Album;
           m_Artist = file.Artist;
+          imgArt.Source = null;
           ThreadPool.QueueUserWorkItem(new WaitCallback(GetAlbumArt));
         }
         m_Title = file.Title;
@@ -131,6 +154,12 @@ namespace WpfMpdClient
         PauseClicked(this);
     }
 
+    private void btnStop_Click(object sender, RoutedEventArgs e)
+    {
+      if (StopClicked != null)
+        StopClicked(this);
+    }
+
     private void btnForward_Click(object sender, RoutedEventArgs e)
     {
       if (ForwardClicked != null)
@@ -165,6 +194,22 @@ namespace WpfMpdClient
     {
       if (RepeatClicked != null)
         RepeatClicked(this, btnRepeat.IsChecked == true);
+    }
+
+    private void sliVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+      Mpc.SetVol((int)sliVolume.Value);
+      lblVolume.Content = string.Format("{0}", (int)sliVolume.Value);
+    }
+
+    private void sliVolume_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+    {
+      m_VolumeDragging = true;
+    }
+
+    private void sliVolume_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+    {
+      m_VolumeDragging = false;
     }
 
   }

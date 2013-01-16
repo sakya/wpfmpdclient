@@ -44,6 +44,20 @@ namespace WpfMpdClient
       set;
     }
 
+    [XmlAttribute("showstopbutton")]
+    public bool ShowStopButton
+    {
+      get;
+      set;
+    }
+
+    [XmlAttribute("showfilesystemtab")]
+    public bool ShowFilesystemTab
+    {
+      get;
+      set;
+    }
+
     [XmlAttribute("minimizetotray")]
     public bool MinimizeToTray {
       get;
@@ -52,6 +66,13 @@ namespace WpfMpdClient
 
     [XmlAttribute("closetotray")]
     public bool CloseToTray {
+      get;
+      set;
+    }
+
+    [XmlAttribute("windowmaximized")]
+    public bool WindowMaximized
+    {
       get;
       set;
     }

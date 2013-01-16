@@ -68,6 +68,8 @@ namespace WpfMpdClient
         txtServerPort.Text = m_Settings.ServerPort.ToString();
         txtPassword.Password = m_Settings.Password;
         chkAutoreconnect.IsChecked = m_Settings.AutoReconnect;
+        chkShowStop.IsChecked = m_Settings.ShowStopButton;
+        chkShowFilesystem.IsChecked = m_Settings.ShowFilesystemTab;
         chkMinimizeToTray.IsChecked = m_Settings.MinimizeToTray;
         chkCloseToTray.IsChecked = m_Settings.CloseToTray;
         chkScrobbler.IsChecked = m_Settings.Scrobbler;
@@ -84,6 +86,8 @@ namespace WpfMpdClient
         Top = m_Settings.WindowTop;
       }else
         WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+      if (m_Settings.WindowMaximized)
+        WindowState = System.Windows.WindowState.Maximized;
 
       m_Mpc = new Mpc();
       m_Mpc.OnConnected += MpcConnected;
@@ -93,6 +97,8 @@ namespace WpfMpdClient
 
       cmbSearch.SelectedIndex = 0;
 
+      tabFileSystem.Visibility = m_Settings.ShowFilesystemTab ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+      playerControl.ShowStopButton = m_Settings.ShowStopButton;
       playerControl.Mpc = m_Mpc;
       playerControl.PlayClicked += PlayClickedHandler;
       playerControl.PauseClicked += PauseClickedHandler;
@@ -100,6 +106,7 @@ namespace WpfMpdClient
       playerControl.ForwardClicked += ForwardClickedHandler;
       playerControl.RandomClicked += RandomClickedHandler;
       playerControl.RepeatClicked += RepeatClickedHandler;
+      playerControl.StopClicked += StopClickedHandler;
 
       m_NotifyIcon = new System.Windows.Forms.NotifyIcon();
       m_NotifyIcon.Icon = new System.Drawing.Icon("mpd_icon.ico", new System.Drawing.Size(32,32));
@@ -212,6 +219,9 @@ namespace WpfMpdClient
         return;
 
       treeFileSystem.Items.Clear();
+      if (!m_Settings.ShowFilesystemTab)
+        return;
+
       TreeViewItem root = new TreeViewItem();
       root.Header = "Root";
       root.Tag = null;
@@ -374,11 +384,16 @@ namespace WpfMpdClient
       m_Settings.Password = txtPassword.Password;
       m_Settings.AutoReconnect = chkAutoreconnect.IsChecked == true;
       m_Settings.AutoReconnectDelay = 10;
+      m_Settings.ShowStopButton = chkShowStop.IsChecked == true;
+      m_Settings.ShowFilesystemTab = chkShowFilesystem.IsChecked == true;
       m_Settings.MinimizeToTray = chkMinimizeToTray.IsChecked == true;
       m_Settings.CloseToTray = chkCloseToTray.IsChecked == true;
       m_Settings.Scrobbler = chkScrobbler.IsChecked == true;
 
       m_Settings.Serialize(Settings.GetSettingsFileName());
+
+      playerControl.ShowStopButton = m_Settings.ShowStopButton;
+      tabFileSystem.Visibility = m_Settings.ShowFilesystemTab ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
 
       if (m_Mpc.Connected)
         m_Mpc.Connection.Disconnect();
@@ -483,6 +498,12 @@ namespace WpfMpdClient
     {
       if (m_Mpc.Connected)
         m_Mpc.Pause(true);
+    }
+
+    private void StopClickedHandler(object sender)
+    {
+      if (m_Mpc.Connected)
+        m_Mpc.Stop();
     }
 
     private void BackClickedHandler(object sender)
@@ -694,6 +715,7 @@ namespace WpfMpdClient
       if (!m_Close && m_Settings.CloseToTray){
         Hide();
         if (m_NotifyIcon != null && !m_Close){
+          m_StoredWindowState = WindowState;
           m_NotifyIcon.BalloonTipText = "WpfMpdClient has been minimized. Click the tray icon to show.";
           m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
 
@@ -704,6 +726,10 @@ namespace WpfMpdClient
       }
 
       if (m_Close){
+        if (IsVisible)
+          m_Settings.WindowMaximized = WindowState == System.Windows.WindowState.Maximized;
+        else
+          m_Settings.WindowMaximized = m_StoredWindowState == System.Windows.WindowState.Maximized;
         m_Settings.WindowLeft = Left;
         m_Settings.WindowTop = Top;
         m_Settings.WindowWidth = ActualWidth;
@@ -716,14 +742,16 @@ namespace WpfMpdClient
 
     private void Window_StateChanged(object sender, EventArgs e)
     {
-      if (WindowState == System.Windows.WindowState.Minimized && m_Settings.MinimizeToTray){
+      if (WindowState == System.Windows.WindowState.Minimized && m_Settings.MinimizeToTray) {
         Hide();
-        if (m_NotifyIcon != null){
+        if (m_NotifyIcon != null) {
           m_NotifyIcon.BalloonTipText = "WpfMpdClient has been minimized. Click the tray icon to show.";
           m_NotifyIcon.BalloonTipTitle = "WpfMpdClient";
           m_NotifyIcon.Visible = true;
           m_NotifyIcon.ShowBalloonTip(2000);
         }
+      } else {
+        m_StoredWindowState = WindowState;
       }
     } // Window_StateChanged
 

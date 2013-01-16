@@ -26,6 +26,7 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
 
       <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" >
@@ -37,6 +38,12 @@
       <TextBlock Grid.Column="1" Name="lblTitle" FontWeight="Bold" Text="&lt;No Title&gt;" TextTrimming="CharacterEllipsis" />
       <TextBlock Grid.Column="1" Name="lblAlbum" Text="&lt;No Album&gt;" Grid.Row="1" TextTrimming="CharacterEllipsis"  />
       <TextBlock Grid.Column="1" Name="lblArtist" Text="&lt;No Artist&gt;" Grid.Row="2"  TextTrimming="CharacterEllipsis" />
+
+      <DockPanel Grid.Column="2" Grid.RowSpan="3">
+        <Label Width="30" DockPanel.Dock="Top" Name="lblVolume" HorizontalContentAlignment="Center" Content="0" />
+        <Slider HorizontalAlignment="Center" DockPanel.Dock="Bottom" Orientation="Vertical" Maximum="100" Minimum="0"
+                Name="sliVolume" Thumb.DragStarted="sliVolume_DragStarted" Thumb.DragCompleted="sliVolume_DragCompleted" ValueChanged="sliVolume_ValueChanged" />
+      </DockPanel>        
     </Grid>
 
     <Grid Grid.Row="1">
@@ -63,6 +70,7 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="*" />
+        <ColumnDefinition Name="colStop" Width="*" />
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="*" />
@@ -98,7 +106,17 @@
         </Button.ToolTip>
         <Image Source="Images/pause.png" Width="32"/>
       </Button>
-      <Button Focusable="False" Margin="2" Name="btnForward" Grid.Column="2" Click="btnForward_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+      <Button Focusable="False" Margin="2" Name="btnStop" Grid.Column="2" Click="btnStop_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent" Visibility="Collapsed">
+        <Button.ToolTip>
+          <ToolTip>
+            <StackPanel>
+              <TextBlock>Stop</TextBlock>
+            </StackPanel>
+          </ToolTip>
+        </Button.ToolTip>
+        <Image Source="Images/stop.png" Width="32"/>
+      </Button>      
+      <Button Focusable="False" Margin="2" Name="btnForward" Grid.Column="3" Click="btnForward_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
         <Button.ToolTip>
           <ToolTip>
             <StackPanel>
@@ -108,7 +126,7 @@
         </Button.ToolTip>
         <Image Source="Images/next.png" Width="32"/>
       </Button>
-      <ToggleButton Focusable="False" Margin="2" Name="btnShuffle" Grid.Column="3" Click="btnShuffle_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+      <ToggleButton Focusable="False" Margin="2" Name="btnShuffle" Grid.Column="4" Click="btnShuffle_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
         <ToggleButton.ToolTip>
           <ToolTip>
             <StackPanel>
@@ -118,7 +136,7 @@
         </ToggleButton.ToolTip>
         <Image Source="Images/shuffle.png" Width="32"/>
       </ToggleButton>
-      <ToggleButton Focusable="False" Margin="2" Name="btnRepeat" Grid.Column="4" Click="btnRepeat_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+      <ToggleButton Focusable="False" Margin="2" Name="btnRepeat" Grid.Column="5" Click="btnRepeat_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
         <ToggleButton.ToolTip>
           <ToolTip>
             <StackPanel>

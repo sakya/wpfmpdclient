@@ -202,7 +202,7 @@
             </Grid>
           </TabItem>
 
-          <TabItem Header="File system">
+          <TabItem Name="tabFileSystem" Header="File system">
             <Grid>
               <TreeView Name="treeFileSystem" SelectedItemChanged="treeFileSystem_SelectedItemChanged">
                 <TreeView.ContextMenu>
@@ -433,6 +433,8 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
           <RowDefinition Height="*" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -454,14 +456,20 @@
         <Label VerticalContentAlignment="Center" Grid.Row="2" Content="Reconnect on connection lost:" />
         <CheckBox Margin="0,4,0,0" Grid.Row="2" Grid.Column="1" Name="chkAutoreconnect" VerticalAlignment="Center" />
 
-        <Label VerticalContentAlignment="Center" Grid.Row="3" Content="Minimize to tray:" />
-        <CheckBox Margin="0,4,0,0" Grid.Row="3" Grid.Column="1" Name="chkMinimizeToTray" VerticalAlignment="Center" />
+        <Label VerticalContentAlignment="Center" Grid.Row="3" Content="Show stop button:" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="3" Grid.Column="1" Name="chkShowStop" VerticalAlignment="Center" />
 
-        <Label VerticalContentAlignment="Center" Grid.Row="4" Content="Close to tray:" />
-        <CheckBox Margin="0,4,0,0" Grid.Row="4" Grid.Column="1" Name="chkCloseToTray" VerticalAlignment="Center" />
+        <Label VerticalContentAlignment="Center" Grid.Row="4" Content="Show file system browser:" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="4" Grid.Column="1" Name="chkShowFilesystem" VerticalAlignment="Center" />
 
-        <Label VerticalContentAlignment="Center" Grid.Row="5" Content="Enable last.fm scrobbler:" />
-        <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
+        <Label VerticalContentAlignment="Center" Grid.Row="5" Content="Minimize to tray:" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="5" Grid.Column="1" Name="chkMinimizeToTray" VerticalAlignment="Center" />
+
+        <Label VerticalContentAlignment="Center" Grid.Row="6" Content="Close to tray:" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="6" Grid.Column="1" Name="chkCloseToTray" VerticalAlignment="Center" />
+
+        <Label VerticalContentAlignment="Center" Grid.Row="7" Content="Enable last.fm scrobbler:" />
+        <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal">
           <CheckBox Margin="0,4,0,0"  Name="chkScrobbler" VerticalAlignment="Center" />
           <Button IsEnabled="{Binding ElementName=chkScrobbler, Path=IsChecked}" Margin="2" Name="btnScrobblerAuthorize" Content="Authorize" Click="btnScrobblerAuthorize_Click">
             <Button.ToolTip>
@@ -478,8 +486,8 @@
           </Button>
         </StackPanel>
 
-        <Button Margin="2" Grid.Row="6" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
-        <Button Margin="2" Grid.Row="7" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
+        <Button Margin="2" Grid.Row="8" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+        <Button Margin="2" Grid.Row="9" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
       </Grid>
     </TabItem>
     <TabItem Header="About">
