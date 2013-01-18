@@ -286,6 +286,11 @@ namespace WpfMpdClient
       if (!m_Mpc.Connected)
         return;
 
+      if (lstArtist.SelectedItem == null) {
+        lstAlbums.ItemsSource = null;
+        return;
+      }
+
       string artist = lstArtist.SelectedItem.ToString();
       if (artist == Mpc.NoArtist)
         artist = string.Empty;
@@ -305,6 +310,11 @@ namespace WpfMpdClient
     {
       if (!m_Mpc.Connected)
         return;
+
+      if (lstGenres.SelectedItem == null) {
+        lstGenresAlbums.ItemsSource = null;
+        return;
+      }
 
       string genre = lstGenres.SelectedItem.ToString();
       if (genre == Mpc.NoGenre)
@@ -904,7 +914,9 @@ namespace WpfMpdClient
       {
         btnCheckUpdates.IsEnabled = true;
         if (m_App != null && m_App.Version > Assembly.GetExecutingAssembly().GetName().Version) {
-          if (MessageBox.Show(this, "A new update is available.\r\nDownload and install it now?", string.Format("Update to v.{0}", m_App.Version), MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes){
+          UpdateConfirmWindow cdlg = new UpdateConfirmWindow(m_App);
+          cdlg.Owner = this;
+          if (cdlg.ShowDialog() == true){
             UpdateWindow dlg = new UpdateWindow(m_Updater, m_App);
             dlg.Owner = this;
             dlg.ShowDialog();

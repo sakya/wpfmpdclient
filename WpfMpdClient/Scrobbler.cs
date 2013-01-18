@@ -347,7 +347,7 @@ namespace WpfMpdClient
           if (!first)
             sb.Append("&");
           first = false;
-          sb.Append(string.Format("{0}={1}", k, HttpUtility.UrlEncode(parameters[k])));
+          sb.Append(string.Format("{0}={1}", k, Uri.EscapeDataString(parameters[k])));
         }
       }
 

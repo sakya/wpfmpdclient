@@ -12,6 +12,8 @@ using System.Web;
 using System.Windows;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using System.Windows.Controls;
+using System.Threading;
 
 namespace WpfMpdClient
 {
@@ -30,7 +32,7 @@ namespace WpfMpdClient
     public static string GetLyricsWikia(string artist, string title)
     {
       string url = string.Format("http://lyrics.wikia.com/api.php?artist={0}&song={1}&fmt=xml",
-                                  HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));
+                                  Uri.EscapeDataString(artist), Uri.EscapeDataString(title));
       try {
         using (WebClient client = new WebClient()) {
           using (Stream data = client.OpenRead(url)) {
@@ -64,7 +66,7 @@ namespace WpfMpdClient
                     lpage = lpage.Substring(start, end - start);
                     lpage = lpage.Replace("<br />", "\r\n");
                     lpage = lpage.Replace("<br\r\n/>", "\r\n");
-                    string res = HttpUtility.HtmlDecode(lpage);
+                    string res = WebUtility.HtmlDecode(lpage);
                     // Remove html tags (like <b>...</b>)
                     res = Regex.Replace(res, @"<[^>]*>", string.Empty);
                     return res;
@@ -84,7 +86,7 @@ namespace WpfMpdClient
     public static string GetLyricsChartlyrics(string artist, string title)
     {
       string url = string.Format("http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist={0}&song={1}",
-                                  HttpUtility.UrlEncode(artist), HttpUtility.UrlEncode(title));      
+                                  Uri.EscapeDataString(artist), Uri.EscapeDataString(title));      
       try {
         using (WebClient client = new WebClient()) {
           using (Stream data = client.OpenRead(url)) {

@@ -27,12 +27,12 @@ namespace WpfMpdClient
     {
       InitializeComponent();
 
+      Title = string.Format("Update to v.{0}", app.Version);
       m_Updater = updater;
       m_App = app;
       m_Updater.DownloadingDelegate += Download;
       m_Updater.DownloadCompletedDelegate += DownloadCompleted;
 
-      txtText.Text = string.Format("Changelog:\r\n{0}", m_App.Changelog);
       m_Updater.Download(m_App.Url, string.Format("{0}\\temp\\{1}", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), m_App.FileName));
     }
 

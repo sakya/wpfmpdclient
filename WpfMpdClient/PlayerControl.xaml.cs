@@ -198,7 +198,9 @@ namespace WpfMpdClient
 
     private void sliVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-      Mpc.SetVol((int)sliVolume.Value);
+      try {
+        Mpc.SetVol((int)sliVolume.Value);
+      }catch (Exception) {}
       lblVolume.Content = string.Format("{0}", (int)sliVolume.Value);
     }
 

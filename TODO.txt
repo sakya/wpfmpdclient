@@ -9,6 +9,4 @@ http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeli
 -Libre.fm scrobbling
 -Change playlist order
 -Browse by year
--Browse file system
 -Playlists
--Volume slider

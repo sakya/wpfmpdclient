@@ -337,7 +337,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <ListView Margin="2" Name="lstPlaylist" SelectionMode="Single">
+        <ListView Margin="2" Name="lstPlaylist" SelectionMode="Single" local:GridViewColumnResize.Enabled="True">
           <ListView.ItemContainerStyle>
             <Style TargetType="ListViewItem">
               <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
@@ -357,7 +357,7 @@
                   <GridViewColumnHeader Content="Artist" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
               </GridViewColumn>
-              <GridViewColumn DisplayMemberBinding="{Binding Album}">
+              <GridViewColumn DisplayMemberBinding="{Binding Album}" local:GridViewColumnResize.Width="*">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Content="Album" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
