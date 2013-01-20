@@ -31,8 +31,9 @@ namespace WpfMpdClient
 
     public static string GetLyricsWikia(string artist, string title)
     {
-      string url = string.Format("http://lyrics.wikia.com/api.php?artist={0}&song={1}&fmt=xml",
-                                  Uri.EscapeDataString(artist), Uri.EscapeDataString(title));
+        string pArtist = String.IsNullOrEmpty(artist) ? "" : Uri.EscapeDataString(artist);
+        string pTitle = String.IsNullOrEmpty(title) ? "" : Uri.EscapeDataString(title);
+        string url = string.Format("http://lyrics.wikia.com/api.php?artist={0}&song={1}&fmt=xml", pArtist, pTitle);
       try {
         using (WebClient client = new WebClient()) {
           using (Stream data = client.OpenRead(url)) {
@@ -85,8 +86,10 @@ namespace WpfMpdClient
 
     public static string GetLyricsChartlyrics(string artist, string title)
     {
+        string pArtist = String.IsNullOrEmpty(artist) ? "" : Uri.EscapeDataString(artist);
+        string pTitle = String.IsNullOrEmpty(title) ? "" : Uri.EscapeDataString(title);
       string url = string.Format("http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist={0}&song={1}",
-                                  Uri.EscapeDataString(artist), Uri.EscapeDataString(title));      
+                                  pArtist, pTitle);      
       try {
         using (WebClient client = new WebClient()) {
           using (Stream data = client.OpenRead(url)) {
