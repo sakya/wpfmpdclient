@@ -498,6 +498,7 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
         <StackPanel Name="stcAbout">
@@ -517,7 +518,13 @@
           </Label>
         </StackPanel>
 
-        <ScrollViewer Margin="0,2,0,0"  Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <TextBlock Grid.Column="1">        
+          <Hyperlink x:Uid="hyperlink" NavigateUri="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=VPBSNYJUYEY3N"
+                     TextDecorations="None" Hyperlink.RequestNavigate="hyperlink_RequestNavigate">
+              <Image Source="Images/donate.png" Width="126"/>
+          </Hyperlink>
+        </TextBlock>
+        <ScrollViewer Margin="0,2,0,0"  Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
           <TextBlock Name="txtLicense" TextWrapping="Wrap" FontFamily="Courier New" />
         </ScrollViewer>
       </Grid>

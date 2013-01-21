@@ -296,6 +296,9 @@ namespace WpfMpdClient
 
     public static string GetAlbumArt(string baseUrl, string apiKey, string artist, string album)
     {
+      if (string.IsNullOrEmpty(artist) || string.IsNullOrEmpty(album))
+        return string.Empty;
+
       artist = GetArtistCorrection(baseUrl, apiKey, artist);
       Dictionary<string, string> parameters = new Dictionary<string,string>();
       parameters["method"] = "album.getinfo";
@@ -348,9 +351,7 @@ namespace WpfMpdClient
             sb.Append("&");
           first = false;
           if (parameters[k] != null)
-          {
-              sb.Append(string.Format("{0}={1}", k, Uri.EscapeDataString(parameters[k])));
-          }
+            sb.Append(string.Format("{0}={1}", k, Uri.EscapeDataString(parameters[k])));
         }
       }
 

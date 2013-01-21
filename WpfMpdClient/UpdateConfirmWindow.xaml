@@ -17,7 +17,7 @@
     <TextBlock Margin="2" Grid.Row="0" Grid.ColumnSpan="2" TextWrapping="Wrap" Name="txtText"/>
     <Label Grid.Row="1" Content="Changelog:" FontWeight="Bold" />
     <ScrollViewer Grid.Row="2" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
-      <TextBlock Margin="2" Name="txtChangelog" />
+      <TextBlock Margin="2" Name="txtChangelog" TextWrapping="Wrap" />
     </ScrollViewer>
     <Button IsDefault="True" Name="btnYes" Margin="2" Content="Yes" Grid.Row="3" Click="btnYes_Click" />
     <Button IsCancel="True" Name="btnNo" Margin="2" Content="No" Grid.Row="3" Grid.Column="1" Click="btnNo_Click" />
