@@ -390,7 +390,11 @@ namespace WpfMpdClient
     private void btnApplySettings_Click(object sender, RoutedEventArgs e)
     {
       m_Settings.ServerAddress = txtServerAddress.Text;
-      m_Settings.ServerPort = int.Parse(txtServerPort.Text);
+      int port = 0;
+      if (int.TryParse(txtServerPort.Text, out port))
+        m_Settings.ServerPort = port;
+      else
+        m_Settings.ServerPort = 6600;
       m_Settings.Password = txtPassword.Password;
       m_Settings.AutoReconnect = chkAutoreconnect.IsChecked == true;
       m_Settings.AutoReconnectDelay = 10;
@@ -943,6 +947,14 @@ namespace WpfMpdClient
 
       m_Settings.ScrobblerSessionKey = Utilities.EncryptString(m_LastfmScrobbler.GetSession());
       btnApplySettings_Click(null, null);
+    }
+
+    private void txtServerPort_PreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+      string chars = "0123456789";
+      char keyChar = e.Text.ToCharArray().First();
+      if (chars.IndexOf(keyChar) == -1 && keyChar != 8)
+        e.Handled = true;
     }
   }
 }

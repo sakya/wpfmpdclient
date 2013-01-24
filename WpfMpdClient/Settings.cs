@@ -9,6 +9,12 @@ namespace WpfMpdClient
 {
   public class Settings
   {
+    public Settings()
+    {
+      ServerAddress = "localhost";
+      ServerPort = 6600;
+    }
+
     [XmlAttribute("ServerAddress")]
     public string ServerAddress
     {

@@ -448,7 +448,7 @@
         <Label VerticalContentAlignment="Center" Content="Server:" />
         <TextBox Margin="2" MinWidth="150" Name="txtServerAddress" Grid.Column="1"/>
         <Label VerticalContentAlignment="Center" Grid.Column="2" Content="Port:" />
-        <TextBox Margin="2" MinWidth="50" Name="txtServerPort" Grid.Column="3"/>
+        <TextBox Margin="2" MinWidth="50" Name="txtServerPort" Grid.Column="3" PreviewTextInput="txtServerPort_PreviewTextInput"/>
 
         <Label Grid.Row="1" Content="Password:" />
         <PasswordBox Margin="2" Name="txtPassword" Grid.Row="1" Grid.Column="1" />
