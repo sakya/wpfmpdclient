@@ -18,13 +18,10 @@ using System.IO;
 using System.ComponentModel;
 using CsUpdater;
 using System.Reflection;
+using System.Collections.ObjectModel;
 
 namespace WpfMpdClient
 {
-  /// <summary>
-  /// Logica di interazione per MainWindow.xaml
-  /// </summary>
-
   public partial class MainWindow : Window
   {
     static MainWindow This = null;
@@ -35,9 +32,9 @@ namespace WpfMpdClient
     UpdaterApp m_App = null;
     Settings m_Settings = null;
     Mpc m_Mpc = null;
+    Mpc m_MpcIdle = null;
     MpdStatus m_LastStatus = null;
     Timer m_StartTimer = null;
-    Timer m_Timer = null;
     Timer m_ReconnectTimer = null;
     List<MpdFile> m_Tracks = null;
     MpdFile m_CurrentTrack = null;
@@ -47,6 +44,11 @@ namespace WpfMpdClient
     ContextMenu m_NotifyIconMenu = null;
     WindowState m_StoredWindowState = WindowState.Normal;
     bool m_Close = false;
+
+    ArtDownloader m_ArtDownloader = new ArtDownloader();
+    ObservableCollection<ListboxEntry> m_ArtistsSource = new ObservableCollection<ListboxEntry>();
+    ObservableCollection<ListboxEntry> m_AlbumsSource = new ObservableCollection<ListboxEntry>();
+    ObservableCollection<ListboxEntry> m_GenresAlbumsSource = new ObservableCollection<ListboxEntry>();
     #endregion
 
     public MainWindow()
@@ -93,7 +95,9 @@ namespace WpfMpdClient
       m_Mpc.OnConnected += MpcConnected;
       m_Mpc.OnDisconnected += MpcDisconnected;
 
-      m_Timer = new Timer();
+      m_MpcIdle = new Mpc();
+      m_MpcIdle.OnConnected += MpcIdleConnected;
+      m_MpcIdle.OnSubsystemsChanged += MpcIdleSubsystemsChanged;
 
       cmbSearch.SelectedIndex = 0;
 
@@ -124,23 +128,81 @@ namespace WpfMpdClient
       m_Updater = new Updater(new Uri("http://www.sakya.it/updater/updater.php"), "WpfMpdClient", "Windows");
       m_Updater.CheckCompletedDelegate += CheckCompleted;
       m_Updater.Check();
+
+      lstArtist.ItemsSource = m_ArtistsSource;
+      lstAlbums.ItemsSource = m_AlbumsSource;
+      lstGenresAlbums.ItemsSource = m_GenresAlbumsSource;
+      m_ArtDownloader.Start();
+    }
+
+    private void MpcIdleConnected(Mpc connection)
+    {
+      if (!string.IsNullOrEmpty(m_Settings.Password))
+        m_MpcIdle.Password(m_Settings.Password);
+
+      MpcIdleSubsystemsChanged(m_MpcIdle, Mpc.Subsystems.All);
+      m_MpcIdle.Idle(Mpc.Subsystems.player | Mpc.Subsystems.playlist | Mpc.Subsystems.stored_playlist | Mpc.Subsystems.update |
+                     Mpc.Subsystems.mixer | Mpc.Subsystems.options);
+    }
+
+    private void MpcIdleSubsystemsChanged(Mpc connection, Mpc.Subsystems subsystems)
+    {
+      if (!m_Mpc.Connected)
+        return;
+
+      MpdStatus status = m_Mpc.Status();
+
+      if ((subsystems & Mpc.Subsystems.player) != 0 || (subsystems & Mpc.Subsystems.mixer) != 0 ||
+          (subsystems & Mpc.Subsystems.options) != 0){
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          MenuItem m = m_NotifyIconMenu.Items[1] as MenuItem;
+          m.Visibility = status.State != MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+          m = m_NotifyIconMenu.Items[2] as MenuItem;
+          m.Visibility = status.State == MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
+          MpdFile file = m_Mpc.CurrentSong();
+          playerControl.Update(status, file);          
+          if (m_CurrentTrack == null || file == null || m_CurrentTrack.Id != file.Id) {
+            TrackChanged(file);
+            m_CurrentTrack = file;
+            m_CurrentTrackStart = DateTime.Now;
+          }
+          SelectCurrentTrack();
+        }));
+      }
+
+      if ((subsystems & Mpc.Subsystems.playlist) != 0){
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          PopulatePlaylist();
+        }));
+      }
+
+      if ((subsystems & Mpc.Subsystems.update) != 0){
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          btnUpdate.IsEnabled = status.UpdatingDb <= 0;
+          // Update db finished:
+          if (m_LastStatus != null && m_LastStatus.UpdatingDb > 0 && status.UpdatingDb <= 0)
+              UpdateDbFinished();
+        }));
+      }
+
+      m_LastStatus = status;
     }
 
     private void MpcConnected(Mpc connection)
     {
-      if (!string.IsNullOrEmpty(m_Settings.Password)) {
-        bool res = m_Mpc.Password(m_Settings.Password);
-      }
+      if (!string.IsNullOrEmpty(m_Settings.Password))
+        m_Mpc.Password(m_Settings.Password);
+
       MpdStatistics stats = m_Mpc.Stats();      
       PopulateGenres();
       PopulatePlaylists();
       PopulateFileSystemTree();
       PopulatePlaylist();
-      PopulateArtists();
-
-      m_Timer.Interval = 500;
-      m_Timer.Elapsed += TimerHandler;
-      m_Timer.Start();
+      PopulateArtists();      
     }
 
     private void MpcDisconnected(Mpc connection)
@@ -155,16 +217,19 @@ namespace WpfMpdClient
 
     private void Connect()
     {
-      if (!string.IsNullOrEmpty(m_Settings.ServerAddress)){
-        IPAddress[] addresses = System.Net.Dns.GetHostAddresses(m_Settings.ServerAddress);
-        if (addresses.Length > 0){
-          IPAddress ip = addresses[0];
-          IPEndPoint ie = new IPEndPoint(ip, m_Settings.ServerPort);       
-          try{
+      if (!string.IsNullOrEmpty(m_Settings.ServerAddress)) {
+        try {
+          IPAddress[] addresses = System.Net.Dns.GetHostAddresses(m_Settings.ServerAddress);
+          if (addresses.Length > 0) {
+            IPAddress ip = addresses[0];
+            IPEndPoint ie = new IPEndPoint(ip, m_Settings.ServerPort);
+
             m_Mpc.Connection = new MpcConnection(ie);
-          }catch (Exception ex){
-            MessageBox.Show(string.Format("Error connecting to server:\r\n{0}", ex.Message), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            m_MpcIdle.Connection = new MpcConnection(ie);
           }
+        }
+        catch (Exception ex) {
+          MessageBox.Show(string.Format("Error connecting to server:\r\n{0}", ex.Message), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
       }
     } // Connect
@@ -174,13 +239,16 @@ namespace WpfMpdClient
       if (!m_Mpc.Connected)
         return;
 
+      m_ArtistsSource.Clear();
       List<string> artists = m_Mpc.List(ScopeSpecifier.Artist);
       artists.Sort();
       for (int i = 0; i < artists.Count; i++) {
         if (string.IsNullOrEmpty(artists[i]))
           artists[i] = Mpc.NoArtist;
+        ListboxEntry entry = new ListboxEntry() { Type = ListboxEntry.EntryType.Artist, 
+                                                  Artist = artists[i] };
+        m_ArtistsSource.Add(entry);
       }
-      lstArtist.ItemsSource = artists;
       if (artists.Count > 0)
         lstArtist.SelectedIndex = 0;
     }
@@ -287,23 +355,26 @@ namespace WpfMpdClient
         return;
 
       if (lstArtist.SelectedItem == null) {
-        lstAlbums.ItemsSource = null;
+        m_AlbumsSource.Clear();
         return;
       }
 
-      string artist = lstArtist.SelectedItem.ToString();
-      if (artist == Mpc.NoArtist)
-        artist = string.Empty;
-
+      m_AlbumsSource.Clear();
+      string artist = SelectedArtist();
       List<string> albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Artist, artist);
       albums.Sort();
       for (int i = 0; i < albums.Count; i++) {
         if (string.IsNullOrEmpty(albums[i]))
           albums[i] = Mpc.NoAlbum;
+        ListboxEntry entry = new ListboxEntry() { Type = ListboxEntry.EntryType.Album, 
+                                                  Artist = artist,
+                                                  Album = albums[i] };
+        m_AlbumsSource.Add(entry);
       }
-      lstAlbums.ItemsSource = albums;
-      if (albums.Count > 0)
+      if (albums.Count > 0){
         lstAlbums.SelectedIndex = 0;
+        lstAlbums.ScrollIntoView(m_AlbumsSource[0]);
+      }
     }
 
     private void lstGenres_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -312,10 +383,11 @@ namespace WpfMpdClient
         return;
 
       if (lstGenres.SelectedItem == null) {
-        lstGenresAlbums.ItemsSource = null;
+        m_GenresAlbumsSource.Clear();
         return;
       }
 
+      m_GenresAlbumsSource.Clear();
       string genre = lstGenres.SelectedItem.ToString();
       if (genre == Mpc.NoGenre)
         genre = string.Empty;
@@ -325,10 +397,19 @@ namespace WpfMpdClient
       for (int i = 0; i < albums.Count; i++) {
         if (string.IsNullOrEmpty(albums[i]))
           albums[i] = Mpc.NoAlbum;
+        ListboxEntry entry = new ListboxEntry()
+        {
+          Type = ListboxEntry.EntryType.Album,
+          Artist = string.Empty,
+          Album = albums[i]
+        };
+        m_GenresAlbumsSource.Add(entry);
       }
-      lstGenresAlbums.ItemsSource = albums;
-      if (albums.Count > 0)
+
+      if (albums.Count > 0) {
         lstGenresAlbums.SelectedIndex = 0;
+        lstGenresAlbums.ScrollIntoView(m_GenresAlbumsSource[0]);
+      }
     }
 
     private void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -363,7 +444,7 @@ namespace WpfMpdClient
         Dictionary<ScopeSpecifier, string> search = new Dictionary<ScopeSpecifier, string>();
 
         if (tabBrowse.SelectedIndex == 0 && lstArtist.SelectedItem != null) {
-          string artist = lstArtist.SelectedItem.ToString();
+          string artist = SelectedArtist();
           if (artist == Mpc.NoArtist)
             artist = string.Empty;
           search[ScopeSpecifier.Artist] = artist;
@@ -374,7 +455,7 @@ namespace WpfMpdClient
           search[ScopeSpecifier.Genre] = genre;
         }
 
-        string album = list.SelectedItem.ToString();
+        string album = SelectedAlbum();
         if (album == Mpc.NoAlbum)
           album = string.Empty;
         search[ScopeSpecifier.Album] = album;
@@ -411,6 +492,8 @@ namespace WpfMpdClient
 
       if (m_Mpc.Connected)
         m_Mpc.Connection.Disconnect();
+      if (m_MpcIdle.Connected)
+        m_MpcIdle.Connection.Disconnect();
       Connect();
     }
 
@@ -433,49 +516,6 @@ namespace WpfMpdClient
         Connect();
       }));
     } // StartTimerHandler
-
-    private void TimerHandler(object sender, ElapsedEventArgs e)
-    {
-      if (!m_Mpc.Connected)
-        return;
-
-      MpdStatus status = m_Mpc.Status();
-      // Update db finished:
-      if (m_LastStatus != null && m_LastStatus.UpdatingDb > 0 && status.UpdatingDb <= 0){
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-          UpdateDbFinished();
-        }));
-      }
-
-      // Playlist changed
-      if (m_LastStatus != null && m_LastStatus.Playlist != status.Playlist) {
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-          PopulatePlaylist();
-        }));
-      }
-
-      m_LastStatus = status;
-
-      Dispatcher.BeginInvoke(new Action(() =>
-      {
-        MenuItem m = m_NotifyIconMenu.Items[1] as MenuItem;
-        m.Visibility = status.State != MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
-        m = m_NotifyIconMenu.Items[2] as MenuItem;
-        m.Visibility = status.State == MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
-
-        MpdFile file = m_Mpc.CurrentSong();
-        if (m_CurrentTrack == null || file == null || m_CurrentTrack.Id != file.Id) {
-          TrackChanged(file);
-          m_CurrentTrack = file;
-          m_CurrentTrackStart = DateTime.Now;
-        }
-        SelectCurrentTrack();
-        btnUpdate.IsEnabled = status.UpdatingDb <= 0;
-        playerControl.Update(status);
-      }));      
-    } // TimerHandler
 
     private void PopulatePlaylist()
     {
@@ -823,6 +863,7 @@ namespace WpfMpdClient
 
     public void Quit()
     {
+      DiskImageCache.DeleteCacheFiles();
       m_NotifyIcon.Visible = false;
       m_Close = true;
       Application.Current.Shutdown();
@@ -956,5 +997,38 @@ namespace WpfMpdClient
       if (chars.IndexOf(keyChar) == -1 && keyChar != 8)
         e.Handled = true;
     }
+
+    private string SelectedArtist()
+    {
+      ListboxEntry entry = lstArtist.SelectedItem as ListboxEntry;
+      if (entry != null) {
+        if (entry.Artist == Mpc.NoArtist)
+          return string.Empty;
+        return entry.Artist;
+      }
+      return string.Empty;
+    } // SelectedArtist
+
+    private string SelectedAlbum()
+    {
+      ListboxEntry entry = lstAlbums.SelectedItem as ListboxEntry;
+      if (entry != null) {
+        if (entry.Artist == Mpc.NoAlbum)
+          return string.Empty;
+        return entry.Album;
+      }
+      return string.Empty;
+    } // SelectedAlbum
+
+    private void LisboxItem_Loaded(object sender, RoutedEventArgs e)
+    {
+      StackPanel stackPanel = sender as StackPanel;
+      if (stackPanel != null){
+        ListboxEntry entry = stackPanel.DataContext as ListboxEntry;
+        if (entry != null) {
+          m_ArtDownloader.Add(entry, 0);
+        }
+      }
+    } 
   }
 }

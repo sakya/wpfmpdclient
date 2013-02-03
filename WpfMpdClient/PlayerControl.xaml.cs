@@ -32,6 +32,7 @@ namespace WpfMpdClient
     public event PlayerToggleHandler RepeatClicked;
 
     MpdStatus m_Status = null;
+    System.Timers.Timer m_Timer = null;
     string m_Artist = string.Empty;
     string m_Album = string.Empty;
     string m_Title = string.Empty;
@@ -41,6 +42,10 @@ namespace WpfMpdClient
     public PlayerControl()
     {
       InitializeComponent();
+
+      m_Timer = new System.Timers.Timer();
+      m_Timer.Interval = 1000;
+      m_Timer.Elapsed += TimerHandler;
     }
 
     public Mpc Mpc
@@ -48,6 +53,7 @@ namespace WpfMpdClient
       get;
       set;
     }
+
 
     public bool ShowStopButton
     {
@@ -63,7 +69,7 @@ namespace WpfMpdClient
       }
     }
 
-    public void Update(MpdStatus status)
+    public void Update(MpdStatus status, MpdFile currentSong)
     {
       m_Status = status;
       btnShuffle.IsChecked = status.Random;
@@ -74,11 +80,13 @@ namespace WpfMpdClient
         case MpdState.Play:
           btnPlay.Visibility = Visibility.Collapsed;
           btnPause.Visibility = Visibility.Visible;
+          m_Timer.Start();
           break;
         case MpdState.Pause:
         case MpdState.Stop:
           btnPlay.Visibility = Visibility.Visible;
           btnPause.Visibility = Visibility.Collapsed;
+          m_Timer.Stop();
           break;
       }
 
@@ -100,22 +108,21 @@ namespace WpfMpdClient
         sliVolume.Value = status.Volume;
       }
 
-      MpdFile file = Mpc.Connected ? Mpc.CurrentSong() : null;
-      if (file != null) {
-        lblTitle.Text = file.Title;        
-        if (!string.IsNullOrEmpty(file.Date))
-          lblAlbum.Text = string.Format("{0} ({1})", file.Album, file.Date);
+      if (currentSong != null) {
+        lblTitle.Text = currentSong.Title;        
+        if (!string.IsNullOrEmpty(currentSong.Date))
+          lblAlbum.Text = string.Format("{0} ({1})", currentSong.Album, currentSong.Date);
         else
-          lblAlbum.Text = file.Album;
-        lblArtist.Text = file.Artist;
+          lblAlbum.Text = currentSong.Album;
+        lblArtist.Text = currentSong.Artist;
 
-        if (file.Album != m_Album || file.Artist != m_Artist){
-          m_Album = file.Album;
-          m_Artist = file.Artist;
+        if (currentSong.Album != m_Album || currentSong.Artist != m_Artist){
+          m_Album = currentSong.Album;
+          m_Artist = currentSong.Artist;
           imgArt.Source = null;
           ThreadPool.QueueUserWorkItem(new WaitCallback(GetAlbumArt));
         }
-        m_Title = file.Title;
+        m_Title = currentSong.Title;
       }else{
         lblTitle.Text = Mpc.NoTitle;
         lblAlbum.Text = Mpc.NoAlbum;
@@ -214,5 +221,14 @@ namespace WpfMpdClient
       m_VolumeDragging = false;
     }
 
+    private void TimerHandler(object sender, System.Timers.ElapsedEventArgs e)
+    {
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        sliTime.Value += 1;
+        lblTimeBefore.Content = Utilities.FormatSeconds((int)sliTime.Value);
+        lblTimeAfter.Content = Utilities.FormatSeconds((int)sliTime.Maximum - (int)sliTime.Value);
+      }));
+    }
   }
 }

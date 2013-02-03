@@ -100,6 +100,14 @@ namespace WpfMpdClient
     string m_Token = string.Empty;
     string m_SessionKey = string.Empty;
 
+    public enum ImageSize
+    {
+      small,
+      medium,
+      large,
+      mega
+    }
+
     public Scrobbler(string apiKey, string apiSecret, string baseUrl, string sessionKey)
     {
       m_SessionKey = sessionKey;
@@ -278,6 +286,24 @@ namespace WpfMpdClient
       return null;
     } // GetTrackCorrection
 
+    public static string GetArtistArt(string baseUrl, ImageSize size, string apiKey, string artist)
+    {
+      Dictionary<string, string> parameters = new Dictionary<string, string>();
+      parameters["method"] = "artist.getInfo";
+      parameters["api_key"] = apiKey;
+      parameters["artist"] = artist;
+
+      XmlDocument xml = GetResponse(GetUrl(baseUrl, parameters));
+      if (xml != null) {
+        XmlNodeList xnList = xml.SelectNodes("/lfm/artist/image");
+        foreach (XmlNode xn in xnList) {
+          if (xn.Attributes["size"].Value == size.ToString())
+            return xn.InnerText;
+        }
+      }
+      return string.Empty;
+    } // GetArtistArt
+
     public static string GetArtistCorrection(string baseUrl, string apiKey, string artist)
     {
       Dictionary<string, string> parameters = new Dictionary<string,string>();
@@ -294,7 +320,7 @@ namespace WpfMpdClient
       return artist;
     } // GetArtistCorrection
 
-    public static string GetAlbumArt(string baseUrl, string apiKey, string artist, string album)
+    public static string GetAlbumArt(string baseUrl, ImageSize size, string apiKey, string artist, string album)
     {
       if (string.IsNullOrEmpty(artist) || string.IsNullOrEmpty(album))
         return string.Empty;
@@ -310,7 +336,7 @@ namespace WpfMpdClient
       if (xml != null){
         XmlNodeList xnList = xml.SelectNodes("/lfm/album/image");
         foreach (XmlNode xn in xnList) {
-          if (xn.Attributes["size"].Value == "mega")
+          if (xn.Attributes["size"].Value == size.ToString())
             return xn.InnerText;
         }
       }
@@ -419,7 +445,22 @@ namespace WpfMpdClient
 
     public static string GetAlbumArt(string artist, string album)
     {
-      return Scrobbler.GetAlbumArt(m_BaseUrl, api_key, artist, album);
+      return Scrobbler.GetAlbumArt(m_BaseUrl, ImageSize.mega, api_key, artist, album);
+    }
+
+    public static string GetAlbumArt(string artist, string album, ImageSize size)
+    {
+      return Scrobbler.GetAlbumArt(m_BaseUrl, size, api_key, artist, album);
+    }
+
+    public static string GetArtistArt(string artist)
+    {
+      return Scrobbler.GetArtistArt(m_BaseUrl, ImageSize.large, api_key, artist);
+    }
+
+    public static string GetArtistArt(string artist, ImageSize size)
+    {
+      return Scrobbler.GetArtistArt(m_BaseUrl, size, api_key, artist);
     }
   }
 
@@ -437,7 +478,22 @@ namespace WpfMpdClient
 
     public static string GetAlbumArt(string artist, string album)
     {
-      return Scrobbler.GetAlbumArt(m_BaseUrl, api_key, artist, album);
+      return Scrobbler.GetAlbumArt(m_BaseUrl, ImageSize.mega, api_key, artist, album);
+    }
+
+    public static string GetAlbumArt(string artist, string album, ImageSize size)
+    {
+      return Scrobbler.GetAlbumArt(m_BaseUrl, size, api_key, artist, album);
+    }
+
+    public static string GetArtistArt(string artist)
+    {
+      return Scrobbler.GetArtistArt(m_BaseUrl, ImageSize.large, api_key, artist);
+    }
+
+    public static string GetArtistArt(string artist, ImageSize size)
+    {
+      return Scrobbler.GetArtistArt(m_BaseUrl, size, api_key, artist);
     }
   }
 }

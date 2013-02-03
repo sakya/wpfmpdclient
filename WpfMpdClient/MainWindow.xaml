@@ -67,6 +67,18 @@
                       </Style.Resources>
                     </Style>
                   </ListBox.ItemContainerStyle>
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Horizontal" Loaded="LisboxItem_Loaded" >
+                        <Border Width="48" Height="48">
+                          <local:ImageLoader MaxWidth="48" MaxHeight="48" 
+                                             ImageUri="{Binding Path=ImageUrl}"
+                                             InitialImage="images/cd.png"/>
+                        </Border>
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Artist}" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
                 </ListBox>
               </DockPanel>
 
@@ -102,6 +114,18 @@
                       </Setter>
                     </Style>
                   </ListBox.ItemContainerStyle>
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Horizontal" Loaded="LisboxItem_Loaded">
+                        <Border Width="48" Height="48">
+                          <local:ImageLoader MaxWidth="48" MaxHeight="48" 
+                                             ImageUri="{Binding Path=ImageUrl}"
+                                             InitialImage="images/cd.png"/>
+                        </Border>
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Album}" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
                 </ListBox>
               </DockPanel>
             </Grid>
@@ -160,6 +184,18 @@
                       </Setter>
                     </Style>
                   </ListBox.ItemContainerStyle>
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Horizontal" Loaded="LisboxItem_Loaded">
+                        <Border Width="48" Height="48">
+                          <local:ImageLoader MaxWidth="48" MaxHeight="48" 
+                                             ImageUri="{Binding Path=ImageUrl}"
+                                             InitialImage="images/cd.png"/>
+                        </Border>
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Album}" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>                  
                 </ListBox>
               </DockPanel>
             </Grid>

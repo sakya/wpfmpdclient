@@ -39,6 +39,7 @@ Source: "..\WpfMpdClient\bin\release\Images\shuffle.png"; DestDir: "{app}\Images
 Source: "..\WpfMpdClient\bin\release\Images\quit.png"; DestDir: "{app}\Images"; Flags: ignoreversion
 Source: "..\WpfMpdClient\bin\release\Images\stop.png"; DestDir: "{app}\Images"; Flags: ignoreversion
 Source: "..\WpfMpdClient\bin\release\Images\donate.png"; DestDir: "{app}\Images"; Flags: ignoreversion
+Source: "..\WpfMpdClient\bin\release\Images\cd.png"; DestDir: "{app}\Images"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 

@@ -33,6 +33,8 @@ namespace Libmpc
   /// </summary>
   /// <param name="connection">The connection firing the event.</param>
   public delegate void MpcConnectionEventDelegate(MpcConnection connection);
+  public delegate void MpcConnectionIdleEventDelegate(MpcConnection connection, Mpc.Subsystems subsystems);
+
   /// <summary>
   /// Keeps the connection to the MPD server and handels the most basic structure of the
   /// MPD protocol. The high level commands are handeled in the <see cref="Libmpc.Mpc"/>
@@ -48,6 +50,7 @@ namespace Libmpc
     /// Is fired when the connection to the MPD server is closed.
     /// </summary>
     public event MpcConnectionEventDelegate OnDisconnected;
+    public event MpcConnectionIdleEventDelegate OnSubsystemsChanged;
 
     private static readonly string FIRST_LINE_PREFIX = "OK MPD ";
 
@@ -172,6 +175,50 @@ namespace Libmpc
       if (this.OnDisconnected != null)
         this.OnDisconnected.Invoke(this);
     }
+
+    /// <summary>
+    /// Puts the client in idle mode for the given subsystems
+    /// </summary>
+    /// <param name="subsystems">The subsystems to listen to.</param>
+    public void Idle(Mpc.Subsystems subsystems)
+    {      
+      StringBuilder subs = new StringBuilder();
+      foreach (Mpc.Subsystems s in Enum.GetValues(typeof(Mpc.Subsystems))){
+        if (s != Mpc.Subsystems.All && (subsystems & s) != 0)
+          subs.AppendFormat(" {0}", s.ToString());
+      }
+      string command = string.Format("idle {0}", subs.ToString());
+
+      try {
+        while (true){
+          this.CheckConnected();
+          this.writer.WriteLine(command);
+          this.writer.Flush();
+          MpdResponse res = this.readResponse();
+
+          Mpc.Subsystems eventSubsystems = Mpc.Subsystems.None;
+          foreach (string m in res.Message){
+            List<string> values = res.getValueList();
+            foreach (string sub in values){
+              Mpc.Subsystems s = Mpc.Subsystems.None;
+              if (Enum.TryParse<Mpc.Subsystems>(sub, out s)){
+                eventSubsystems |= s;
+              }
+            }
+          }
+
+          if (eventSubsystems != Mpc.Subsystems.None && this.OnSubsystemsChanged != null)
+            this.OnSubsystemsChanged(this, eventSubsystems);
+        }
+      }
+      catch (Exception) {
+        try {
+          this.Disconnect();
+        }
+        catch (Exception) { }
+      }
+    }
+
     /// <summary>
     /// Executes a simple command without arguments on the MPD server and returns the response.
     /// </summary>

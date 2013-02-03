@@ -29,12 +29,34 @@ namespace Libmpc
   /// </summary>
   /// <param name="connection">The connection firing the event.</param>
   public delegate void MpcEventDelegate(Mpc connection);
+  public delegate void MpcIdleEventDelegate(Mpc connection, Mpc.Subsystems subsystems);
+
   /// <summary>
   /// The Mpc class implements all commands for the MPD. It takes care of command building
   /// and parsing the response into .net objects.
   /// </summary>
   public class Mpc
   {
+    /// <summary>
+    /// Subsystems used for the idle mode
+    /// </summary>
+    public enum Subsystems
+    {
+      None = 0x00,
+      database = 0x01,
+      update = 0x02,
+      stored_playlist = 0x04,
+      playlist = 0x08,
+      player = 0x10,
+      mixer = 0x20,
+      output = 0x40,
+      options = 0x80,
+      sticker = 0x100,
+      subscription = 0x200,
+      message = 0x400,
+      All = 0x7fffffff,
+    }
+
     public const string NoArtist = "<No Artist>";
     public const string NoAlbum = "<No Album>";
     public const string NoTitle = "<No Title>";
@@ -78,6 +100,11 @@ namespace Libmpc
     /// Is fired when the connection to the MPD server is closed.
     /// </summary>
     public event MpcEventDelegate OnDisconnected;
+    /// <summary>
+    /// Is fired when a subsystem changed in idle mode.
+    /// </summary>
+    public event MpcIdleEventDelegate OnSubsystemsChanged;
+
     /// <summary>
     /// If the Mpc object has a connection that is connected to an MPD.
     /// </summary>
@@ -1106,6 +1133,30 @@ namespace Libmpc
     {
       this.getConnection().Exec("ping");
     }
+
+    /// <summary>
+    /// Puts the client in idle mode for the given subsystems
+    /// </summary>
+    /// <remarks>You cannot send other commands to a client in idle mode</remarks>
+    /// <param name="subsystems">The subsystems to listen to.</param>
+    public void Idle(Subsystems subsystems)
+    {
+      this.getConnection().OnSubsystemsChanged += OnSubsystemsChangedHandler;
+      System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(IdleThread), subsystems);      
+    }
+
+    private void IdleThread(object state)
+    {
+      Subsystems s = (Subsystems)state;
+      this.getConnection().Idle(s);
+    }
+
+    private void OnSubsystemsChangedHandler(MpcConnection connection, Mpc.Subsystems subsystems)
+    {
+      if (this.OnSubsystemsChanged != null)
+        this.OnSubsystemsChanged(this, subsystems);
+    }
+
     /// <summary>
     /// Requests the current statistics from the MPD,
     /// </summary>
