@@ -288,6 +288,7 @@ namespace WpfMpdClient
 
     public static string GetArtistArt(string baseUrl, ImageSize size, string apiKey, string artist)
     {
+      //artist = GetArtistCorrection(baseUrl, apiKey, artist);
       Dictionary<string, string> parameters = new Dictionary<string, string>();
       parameters["method"] = "artist.getInfo";
       parameters["api_key"] = apiKey;

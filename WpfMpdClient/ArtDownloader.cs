@@ -162,8 +162,9 @@ namespace WpfMpdClient
     {
       ListboxEntry entry = state as ListboxEntry;
       try {
-        if (m_Cache.ContainsKey(entry.Key))
-          entry.ImageUrl = m_Cache[entry.Key];
+        Uri uri = null;
+        if (m_Cache.TryGetValue(entry.Key, out uri))
+          entry.ImageUrl = uri;
         else {
           string url = string.Empty;
           if (entry.Type == ListboxEntry.EntryType.Artist)

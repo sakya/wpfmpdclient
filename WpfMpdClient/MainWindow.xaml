@@ -9,6 +9,7 @@
   <Window.Resources>
     <local:TrackConverter x:Key="TrackConverter" />
     <local:TimeConverter x:Key="TimeConverter" />
+    <local:IdConverter x:Key="IdConverter" />
 
     <ContextMenu x:Key="TrayIconContextMenu"
                  Placement="MousePoint">
@@ -58,28 +59,28 @@
 
               <DockPanel Grid.Row="0">
                 <TextBlock DockPanel.Dock="Top" Margin="2" Text="Artists:" />
-                <ListBox Margin="2,2,2,5" Name="lstArtist" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged">
-                  <ListBox.ItemContainerStyle>
+                <local:SearchableListBox Margin="2,2,2,5" x:Name="lstArtist" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged">
+                  <local:SearchableListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                       <Style.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
                       </Style.Resources>
                     </Style>
-                  </ListBox.ItemContainerStyle>
-                  <ListBox.ItemTemplate>
+                  </local:SearchableListBox.ItemContainerStyle>
+                  <local:SearchableListBox.ItemTemplate>
                     <DataTemplate>
                       <StackPanel Orientation="Horizontal" Loaded="LisboxItem_Loaded" >
                         <Border Width="48" Height="48">
-                          <local:ImageLoader MaxWidth="48" MaxHeight="48" 
+                          <local:ImageLoader MaxWidth="48" MaxHeight="48" Margin="2"
                                              ImageUri="{Binding Path=ImageUrl}"
                                              InitialImage="images/cd.png"/>
                         </Border>
                         <TextBlock VerticalAlignment="Center" Text="{Binding Path=Artist}" />
                       </StackPanel>
                     </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>
+                  </local:SearchableListBox.ItemTemplate>
+                </local:SearchableListBox>
               </DockPanel>
 
               <GridSplitter ResizeDirection="Rows" VerticalAlignment="Bottom"
@@ -88,8 +89,8 @@
 
               <DockPanel Grid.Row="1">
                 <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Albums:" />
-                <ListBox Margin="2" Grid.Row="3" SelectionMode="Single" Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
-                  <ListBox.ItemContainerStyle>
+                <local:SearchableListBox Margin="2" Grid.Row="3" SelectionMode="Single" x:Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
+                  <local:SearchableListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                       <Style.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
@@ -113,20 +114,20 @@
                         </Setter.Value>
                       </Setter>
                     </Style>
-                  </ListBox.ItemContainerStyle>
-                  <ListBox.ItemTemplate>
+                  </local:SearchableListBox.ItemContainerStyle>
+                  <local:SearchableListBox.ItemTemplate>
                     <DataTemplate>
                       <StackPanel Orientation="Horizontal" Loaded="LisboxItem_Loaded">
                         <Border Width="48" Height="48">
-                          <local:ImageLoader MaxWidth="48" MaxHeight="48" 
+                          <local:ImageLoader MaxWidth="48" MaxHeight="48" Margin="2"
                                              ImageUri="{Binding Path=ImageUrl}"
                                              InitialImage="images/cd.png"/>
                         </Border>
                         <TextBlock VerticalAlignment="Center" Text="{Binding Path=Album}" />
                       </StackPanel>
                     </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>
+                  </local:SearchableListBox.ItemTemplate>
+                </local:SearchableListBox>
               </DockPanel>
             </Grid>
           </TabItem>
@@ -158,8 +159,8 @@
 
               <DockPanel Grid.Row="1">
                 <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Albums:" />
-                <ListBox Margin="2" Grid.Row="3" SelectionMode="Single" Name="lstGenresAlbums" SelectionChanged="lstAlbums_SelectionChanged">
-                  <ListBox.ItemContainerStyle>
+                <local:SearchableListBox Margin="2" Grid.Row="3" SelectionMode="Single" x:Name="lstGenresAlbums" SelectionChanged="lstAlbums_SelectionChanged">
+                  <local:SearchableListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                       <Style.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
@@ -183,20 +184,20 @@
                         </Setter.Value>
                       </Setter>
                     </Style>
-                  </ListBox.ItemContainerStyle>
-                  <ListBox.ItemTemplate>
+                  </local:SearchableListBox.ItemContainerStyle>
+                  <local:SearchableListBox.ItemTemplate>
                     <DataTemplate>
                       <StackPanel Orientation="Horizontal" Loaded="LisboxItem_Loaded">
                         <Border Width="48" Height="48">
-                          <local:ImageLoader MaxWidth="48" MaxHeight="48" 
+                          <local:ImageLoader MaxWidth="48" MaxHeight="48" Margin="2"
                                              ImageUri="{Binding Path=ImageUrl}"
                                              InitialImage="images/cd.png"/>
                         </Border>
                         <TextBlock VerticalAlignment="Center" Text="{Binding Path=Album}" />
                       </StackPanel>
                     </DataTemplate>
-                  </ListBox.ItemTemplate>                  
-                </ListBox>
+                  </local:SearchableListBox.ItemTemplate>
+                </local:SearchableListBox>
               </DockPanel>
             </Grid>
           </TabItem>
@@ -377,6 +378,18 @@
           <ListView.ItemContainerStyle>
             <Style TargetType="ListViewItem">
               <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
+              <Style.Triggers>
+                <DataTrigger Value="True">
+                  <DataTrigger.Binding>
+                    <MultiBinding Converter="{StaticResource IdConverter}">
+                      <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}}" Path="CurrentTrackId"></Binding>
+                      <Binding Path="Id"></Binding>
+                    </MultiBinding>
+                  </DataTrigger.Binding>
+                  <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                  <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                </DataTrigger>
+              </Style.Triggers>
             </Style>
           </ListView.ItemContainerStyle>
           <ListView.View>

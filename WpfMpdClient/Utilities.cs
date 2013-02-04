@@ -14,6 +14,8 @@ using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Windows.Controls;
 using System.Threading;
+using System.Windows.Data;
+using System.Windows.Media;
 
 namespace WpfMpdClient
 {
@@ -51,28 +53,30 @@ namespace WpfMpdClient
             XmlNodeList xnList = doc.SelectNodes("/LyricsResult/url");
             if (xnList != null && xnList.Count == 1) {
               string lurl = xnList[0].InnerText;
-              using (Stream ldata = client.OpenRead(lurl)) {
-                StreamReader lreader = new StreamReader(ldata);
-                StringBuilder lsb = new StringBuilder();
-                while ((str = lreader.ReadLine()) != null)
-                  lsb.AppendLine(str);
+              if (!lurl.EndsWith("action=edit")){
+                using (Stream ldata = client.OpenRead(lurl)) {
+                  StreamReader lreader = new StreamReader(ldata);
+                  StringBuilder lsb = new StringBuilder();
+                  while ((str = lreader.ReadLine()) != null)
+                    lsb.AppendLine(str);
 
-                string lpage = lsb.ToString();
-                int start = lpage.IndexOf("</div>&#");
-                if (start < 0)
-                  start = lpage.IndexOf("</div><b>&#");
-                if (start >= 0) {
-                  start += 6;
-                  int end = lpage.IndexOf(";<!--", start);
-                  if (end >= 0) {
-                    end++;
-                    lpage = lpage.Substring(start, end - start);
-                    lpage = lpage.Replace("<br />", "\r\n");
-                    lpage = lpage.Replace("<br\r\n/>", "\r\n");
-                    string res = WebUtility.HtmlDecode(lpage);
-                    // Remove html tags (like <b>...</b>)
-                    res = Regex.Replace(res, @"<[^>]*>", string.Empty);
-                    return res;
+                  string lpage = lsb.ToString();
+                  int start = lpage.IndexOf("</div>&#");
+                  if (start < 0)
+                    start = lpage.IndexOf("</div><b>&#");
+                  if (start >= 0) {
+                    start += 6;
+                    int end = lpage.IndexOf(";<!--", start);
+                    if (end >= 0) {
+                      end++;
+                      lpage = lpage.Substring(start, end - start);
+                      lpage = lpage.Replace("<br />", "\r\n");
+                      lpage = lpage.Replace("<br\r\n/>", "\r\n");
+                      string res = WebUtility.HtmlDecode(lpage);
+                      // Remove html tags (like <b>...</b>)
+                      res = Regex.Replace(res, @"<[^>]*>", string.Empty);
+                      return res;
+                    }
                   }
                 }
               }
@@ -176,8 +180,24 @@ namespace WpfMpdClient
       }catch (Exception){
         return string.Empty;
       }
-
     } // DecryptString
+
+    public static T GetVisualChild<T>(DependencyObject parent) where T : Visual
+    {
+      T child = default(T);
+      int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
+      for (int i = 0; i < numVisuals; i++) {
+        Visual v = (Visual)VisualTreeHelper.GetChild(parent, i);
+        child = v as T;
+        if (child == null) {
+          child = GetVisualChild<T>(v);
+        }
+        if (child != null) {
+          break;
+        }
+      }
+      return child;
+    } // GetVisualChild
   }
 
   public class TrackConverter : System.Windows.Data.IValueConverter
@@ -224,6 +244,22 @@ namespace WpfMpdClient
     }
   }
 
+  public class IdConverter : IMultiValueConverter
+  {
+    public object Convert(object[] values, Type targetType, object parameter,
+        System.Globalization.CultureInfo culture)
+    {
+      int id1 = (int)values[0];
+      int id2 = (int)values[1];
+      return id1 == id2;
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter,
+        System.Globalization.CultureInfo culture)
+    {
+      throw new NotImplementedException();
+    }
+  }
   /// <summary>
   /// Listens keyboard globally.
   /// 

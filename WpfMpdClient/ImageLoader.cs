@@ -74,14 +74,17 @@ namespace WpfMpdClient
     public static void AddToCache(BitmapImage image)
     {
       m_Mutex.WaitOne();
-      JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-      Guid imageId = System.Guid.NewGuid();
-      string path = string.Format("{0}\\{1}", m_TempPath, imageId.ToString() + ".jpg");
-      encoder.Frames.Add(BitmapFrame.Create(image));
-      using (var filestream = new FileStream(path, FileMode.Create))
-        encoder.Save(filestream);   
+      try {
+        JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+        Guid imageId = System.Guid.NewGuid();
+        string path = string.Format("{0}\\{1}", m_TempPath, imageId.ToString() + ".jpg");
+        encoder.Frames.Add(BitmapFrame.Create(image));
+        using (var filestream = new FileStream(path, FileMode.Create))
+          encoder.Save(filestream);
 
-      m_Cache[image.UriSource] = path;
+        m_Cache[image.UriSource] = path;
+      } catch (Exception) { 
+      }
       m_Mutex.ReleaseMutex();
     }
 
@@ -125,7 +128,7 @@ namespace WpfMpdClient
     public
     ImageLoader()
     {
-      this.Loaded += this.OnLoaded;
+      Loaded += OnLoaded;
     }
 
     /// <summary>
@@ -146,12 +149,12 @@ namespace WpfMpdClient
     {
       get
       {
-        return this.GetValue(ImageUriProperty) as Uri;
+        return GetValue(ImageUriProperty) as Uri;
       }
 
       set
       {
-        this.SetValue(ImageUriProperty, value);
+        SetValue(ImageUriProperty, value);
       }
     }
 
@@ -222,21 +225,20 @@ namespace WpfMpdClient
       DownloadImage();
 
       // The image may be cached, in which case we will not use the initial image
-      if (this.loadedImage != null && !this.loadedImage.IsDownloading) {
-        this.Source = this.loadedImage;
+      if (loadedImage != null && !loadedImage.IsDownloading) {
+        Source = loadedImage;
       } else {
         // Create InitialImage source if path is specified
-        if (!string.IsNullOrEmpty(this.InitialImage)) {
+        if (!string.IsNullOrEmpty(InitialImage)) {
           BitmapImage initialImage = new BitmapImage();
 
           // Load the initial bitmap from the local resource
           initialImage.BeginInit();
-          initialImage.UriSource = new Uri(this.InitialImage, UriKind.Relative);
-          //initialImage.DecodePixelWidth = (int)this.Width;
+          initialImage.UriSource = new Uri(InitialImage, UriKind.Relative);
           initialImage.EndInit();
 
           // Set the initial image as the image source
-          this.Source = initialImage;
+          Source = initialImage;
         }
       }
 
@@ -258,15 +260,15 @@ namespace WpfMpdClient
         object sender,
         ExceptionEventArgs e)
     {
-      if (!string.IsNullOrWhiteSpace(this.LoadFailedImage)) {
+      if (!string.IsNullOrWhiteSpace(LoadFailedImage)) {
         BitmapImage failedImage = new BitmapImage();
 
         // Load the initial bitmap from the local resource
         failedImage.BeginInit();
-        failedImage.UriSource = new Uri(this.LoadFailedImage, UriKind.Relative);
-        failedImage.DecodePixelWidth = (int)this.Width;
+        failedImage.UriSource = new Uri(LoadFailedImage, UriKind.Relative);
+        failedImage.DecodePixelWidth = (int)Width;
         failedImage.EndInit();
-        this.Source = failedImage;
+        Source = failedImage;
       }
     }
 
@@ -285,7 +287,7 @@ namespace WpfMpdClient
         object sender,
         EventArgs e)
     {
-      this.Source = this.loadedImage;
+      Source = loadedImage;
       DiskImageCache.AddToCache(loadedImage);
     }
   }

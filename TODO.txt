@@ -10,9 +10,3 @@ http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeli
 -Change playlist order
 -Browse by year
 -Playlists
-
-
--Post update
--Keyboard search in listbox
--Cache on disk for images (artist/album)
--Genres albums cover art (missing artist)

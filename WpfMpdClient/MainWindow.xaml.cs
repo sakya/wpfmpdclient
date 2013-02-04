@@ -130,10 +130,26 @@ namespace WpfMpdClient
       m_Updater.Check();
 
       lstArtist.ItemsSource = m_ArtistsSource;
+      Type t = typeof(ListboxEntry);
+      lstArtist.SearchProperty = t.GetProperty("Artist");
+
       lstAlbums.ItemsSource = m_AlbumsSource;
+      lstAlbums.SearchProperty = t.GetProperty("Album");
+
       lstGenresAlbums.ItemsSource = m_GenresAlbumsSource;
+      lstGenresAlbums.SearchProperty = t.GetProperty("Album");
+
       m_ArtDownloader.Start();
     }
+
+    public int CurrentTrackId
+    {
+      get { return (int)GetValue(CurrentTrackIdProperty); }
+      set { SetValue(CurrentTrackIdProperty, value); }
+    }
+
+    public static readonly DependencyProperty CurrentTrackIdProperty = DependencyProperty.Register(
+        "CurrentTrackId", typeof(int), typeof(MainWindow), new PropertyMetadata(0, null));
 
     private void MpcIdleConnected(Mpc connection)
     {
@@ -166,9 +182,9 @@ namespace WpfMpdClient
           if (m_CurrentTrack == null || file == null || m_CurrentTrack.Id != file.Id) {
             TrackChanged(file);
             m_CurrentTrack = file;
+            CurrentTrackId = file != null ? file.Id : 0;
             m_CurrentTrackStart = DateTime.Now;
           }
-          SelectCurrentTrack();
         }));
       }
 
@@ -180,11 +196,12 @@ namespace WpfMpdClient
       }
 
       if ((subsystems & Mpc.Subsystems.update) != 0){
+        int lastUpdate = m_LastStatus != null ? m_LastStatus.UpdatingDb : -1;
         Dispatcher.BeginInvoke(new Action(() =>
         {
           btnUpdate.IsEnabled = status.UpdatingDb <= 0;
           // Update db finished:
-          if (m_LastStatus != null && m_LastStatus.UpdatingDb > 0 && status.UpdatingDb <= 0)
+          if (lastUpdate > 0 && status.UpdatingDb <= 0)
               UpdateDbFinished();
         }));
       }
@@ -224,7 +241,11 @@ namespace WpfMpdClient
             IPAddress ip = addresses[0];
             IPEndPoint ie = new IPEndPoint(ip, m_Settings.ServerPort);
 
+            if (m_Mpc.Connected)
+              m_Mpc.Connection.Disconnect();
             m_Mpc.Connection = new MpcConnection(ie);
+            if (m_MpcIdle.Connected)
+              m_MpcIdle.Connection.Disconnect();
             m_MpcIdle.Connection = new MpcConnection(ie);
           }
         }
@@ -346,6 +367,7 @@ namespace WpfMpdClient
         foreach (MpdFile file in list.FileList)
           m_Tracks.Add(file);
         lstTracks.ItemsSource = m_Tracks;
+        ScrollTracksToLeft();
       }
     }
 
@@ -392,24 +414,49 @@ namespace WpfMpdClient
       if (genre == Mpc.NoGenre)
         genre = string.Empty;
 
-      List<string> albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Genre, genre);
-      albums.Sort();
-      for (int i = 0; i < albums.Count; i++) {
-        if (string.IsNullOrEmpty(albums[i]))
-          albums[i] = Mpc.NoAlbum;
-        ListboxEntry entry = new ListboxEntry()
-        {
-          Type = ListboxEntry.EntryType.Album,
-          Artist = string.Empty,
-          Album = albums[i]
-        };
-        m_GenresAlbumsSource.Add(entry);
+      List<MpdFile> files = m_Mpc.Search(ScopeSpecifier.Genre, genre);
+      files.Sort(delegate(MpdFile p1, MpdFile p2){ return p2.Album.CompareTo(p1.Album); });
+      MpdFile lastFile = null;
+      MpdFile last = files.Count > 0 ? files[files.Count - 1] : null;
+      foreach (MpdFile file in files){
+        if (lastFile != null && lastFile.Album != file.Album || file == last){
+          string album = lastFile.Album;
+          if (string.IsNullOrEmpty(album))
+            album = Mpc.NoAlbum;
+          ListboxEntry entry = new ListboxEntry()
+          {
+            Type = ListboxEntry.EntryType.Album,
+            Artist = lastFile.Artist,
+            Album = album
+          };
+          m_GenresAlbumsSource.Add(entry);
+        }
+        lastFile = file;
       }
 
-      if (albums.Count > 0) {
+      if (m_GenresAlbumsSource.Count > 0) {
         lstGenresAlbums.SelectedIndex = 0;
         lstGenresAlbums.ScrollIntoView(m_GenresAlbumsSource[0]);
       }
+
+      //List<string> albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Genre, genre);
+      //albums.Sort();
+      //for (int i = 0; i < albums.Count; i++) {
+      //  if (string.IsNullOrEmpty(albums[i]))
+      //    albums[i] = Mpc.NoAlbum;
+      //  ListboxEntry entry = new ListboxEntry()
+      //  {
+      //    Type = ListboxEntry.EntryType.Album,
+      //    Artist = string.Empty,
+      //    Album = albums[i]
+      //  };
+      //  m_GenresAlbumsSource.Add(entry);
+      //}
+
+      //if (albums.Count > 0) {
+      //  lstGenresAlbums.SelectedIndex = 0;
+      //  lstGenresAlbums.ScrollIntoView(m_GenresAlbumsSource[0]);
+      //}
     }
 
     private void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -423,6 +470,7 @@ namespace WpfMpdClient
 
         m_Tracks = m_Mpc.ListPlaylistInfo(playlist);
         lstTracks.ItemsSource = m_Tracks;
+        ScrollTracksToLeft();
       } else {
         m_Tracks = null;
         lstTracks.ItemsSource = null;
@@ -443,25 +491,29 @@ namespace WpfMpdClient
       if (list.SelectedItem != null) {
         Dictionary<ScopeSpecifier, string> search = new Dictionary<ScopeSpecifier, string>();
 
+        ListBox listBox = null;
         if (tabBrowse.SelectedIndex == 0 && lstArtist.SelectedItem != null) {
           string artist = SelectedArtist();
           if (artist == Mpc.NoArtist)
             artist = string.Empty;
           search[ScopeSpecifier.Artist] = artist;
+          listBox = lstAlbums;
         } else if (tabBrowse.SelectedIndex == 1 && lstGenres.SelectedItem != null) {
           string genre = lstGenres.SelectedItem.ToString();
           if (genre == Mpc.NoGenre)
             genre = string.Empty;
           search[ScopeSpecifier.Genre] = genre;
+          listBox = lstGenresAlbums;
         }
 
-        string album = SelectedAlbum();
+        string album = SelectedAlbum(listBox);
         if (album == Mpc.NoAlbum)
           album = string.Empty;
         search[ScopeSpecifier.Album] = album;
 
         m_Tracks = m_Mpc.Find(search);
         lstTracks.ItemsSource = m_Tracks;
+        ScrollTracksToLeft();
       } else {
         m_Tracks = null;
         lstTracks.ItemsSource = null;
@@ -524,22 +576,6 @@ namespace WpfMpdClient
 
       List<MpdFile> tracks = m_Mpc.PlaylistInfo();
       lstPlaylist.ItemsSource = tracks;
-      SelectCurrentTrack();
-    }
-
-    private void SelectCurrentTrack()
-    {
-      List<MpdFile> playList = lstPlaylist.ItemsSource as List<MpdFile>;
-      if (playList != null){
-        if (m_CurrentTrack != null){
-          foreach (MpdFile f in playList){
-            if (f.Id == m_CurrentTrack.Id){
-              lstPlaylist.SelectedItem = f;
-              break;
-            }
-          }
-        }
-      }
     }
 
     private void PlayClickedHandler(object sender)
@@ -938,6 +974,7 @@ namespace WpfMpdClient
         }
         m_Tracks = m_Mpc.Search(searchBy, txtSearch.Text);
         lstTracks.ItemsSource = m_Tracks;
+        ScrollTracksToLeft();
       }else{
         m_Tracks = null;
         lstTracks.ItemsSource = null;
@@ -1009,9 +1046,12 @@ namespace WpfMpdClient
       return string.Empty;
     } // SelectedArtist
 
-    private string SelectedAlbum()
+    private string SelectedAlbum(ListBox listbox)
     {
-      ListboxEntry entry = lstAlbums.SelectedItem as ListboxEntry;
+      if (listbox == null)
+        return string.Empty;
+
+      ListboxEntry entry = listbox.SelectedItem as ListboxEntry;
       if (entry != null) {
         if (entry.Artist == Mpc.NoAlbum)
           return string.Empty;
@@ -1029,6 +1069,12 @@ namespace WpfMpdClient
           m_ArtDownloader.Add(entry, 0);
         }
       }
-    } 
+    }
+
+    private void ScrollTracksToLeft()
+    {
+      ScrollViewer listViewScrollViewer = Utilities.GetVisualChild<ScrollViewer>(lstTracks);
+      listViewScrollViewer.ScrollToLeftEnd();
+    }
   }
 }
