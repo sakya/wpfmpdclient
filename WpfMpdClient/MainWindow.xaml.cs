@@ -270,8 +270,10 @@ namespace WpfMpdClient
                                                   Artist = artists[i] };
         m_ArtistsSource.Add(entry);
       }
-      if (artists.Count > 0)
+      if (artists.Count > 0){
         lstArtist.SelectedIndex = 0;
+        lstArtist.ScrollIntoView(m_ArtistsSource[0]);
+      }
     }
 
     private void PopulateGenres()
@@ -286,8 +288,10 @@ namespace WpfMpdClient
           genres[i] = Mpc.NoGenre;
       }
       lstGenres.ItemsSource = genres;
-      if (genres.Count > 0)
+      if (genres.Count > 0){
         lstGenres.SelectedIndex = 0;
+        lstGenres.ScrollIntoView(genres[0]);
+      }
     }
 
     private void PopulatePlaylists()
@@ -298,8 +302,10 @@ namespace WpfMpdClient
       List<string> playlists = m_Mpc.ListPlaylists();
       playlists.Sort();
       lstPlaylists.ItemsSource = playlists;
-      if (playlists.Count > 0)
+      if (playlists.Count > 0){
         lstPlaylists.SelectedIndex = 0;
+        lstPlaylists.ScrollIntoView(playlists[0]);
+      }
     }
 
     private void PopulateFileSystemTree()
@@ -415,18 +421,21 @@ namespace WpfMpdClient
         genre = string.Empty;
 
       List<MpdFile> files = m_Mpc.Search(ScopeSpecifier.Genre, genre);
-      files.Sort(delegate(MpdFile p1, MpdFile p2){ return p2.Album.CompareTo(p1.Album); });
+      files.Sort(delegate(MpdFile p1, MpdFile p2)
+                 { 
+                   return string.Compare(p2.Album, p1.Album);
+                 });
       MpdFile lastFile = null;
       MpdFile last = files.Count > 0 ? files[files.Count - 1] : null;
       foreach (MpdFile file in files){
         if (lastFile != null && lastFile.Album != file.Album || file == last){
-          string album = lastFile.Album;
+          string album = file == last ? file.Album : lastFile.Album;
           if (string.IsNullOrEmpty(album))
             album = Mpc.NoAlbum;
           ListboxEntry entry = new ListboxEntry()
           {
             Type = ListboxEntry.EntryType.Album,
-            Artist = lastFile.Artist,
+            Artist = file == last ? file.Artist : lastFile.Artist,
             Album = album
           };
           m_GenresAlbumsSource.Add(entry);
