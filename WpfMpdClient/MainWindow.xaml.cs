@@ -423,7 +423,7 @@ namespace WpfMpdClient
       List<MpdFile> files = m_Mpc.Search(ScopeSpecifier.Genre, genre);
       files.Sort(delegate(MpdFile p1, MpdFile p2)
                  { 
-                   return string.Compare(p2.Album, p1.Album);
+                   return string.Compare(p1.Album, p2.Album);
                  });
       MpdFile lastFile = null;
       MpdFile last = files.Count > 0 ? files[files.Count - 1] : null;
@@ -836,6 +836,8 @@ namespace WpfMpdClient
         m_Settings.Serialize(Settings.GetSettingsFileName());
 
         m_LastfmScrobbler.SaveCache();
+
+        DiskImageCache.DeleteCacheFiles();
       }
     } // CloseHandler
 
@@ -907,8 +909,7 @@ namespace WpfMpdClient
     } // TrackChanged
 
     public void Quit()
-    {
-      DiskImageCache.DeleteCacheFiles();
+    {      
       m_NotifyIcon.Visible = false;
       m_Close = true;
       Application.Current.Shutdown();
