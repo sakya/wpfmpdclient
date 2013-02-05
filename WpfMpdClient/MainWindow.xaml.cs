@@ -129,6 +129,7 @@ namespace WpfMpdClient
       }
 
       m_Updater = new Updater(new Uri("http://www.sakya.it/updater/updater.php"), "WpfMpdClient", "Windows");
+      m_Updater.AppCurrentVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
       m_Updater.CheckCompletedDelegate += CheckCompleted;
       m_Updater.Check();
 
@@ -904,8 +905,8 @@ namespace WpfMpdClient
 
       if (m_NotifyIcon != null && track != null) {
         string trackText = string.Format("\"{0}\"\r\n{1}", track.Title, track.Artist);
-        if (trackText.Length > 64)
-          m_NotifyIcon.Text = string.Format("{0}...", trackText.Substring(0, 59));
+        if (trackText.Length >= 64)
+          m_NotifyIcon.Text = string.Format("{0}...", trackText.Substring(0, 60));
         else
           m_NotifyIcon.Text = trackText;
 
