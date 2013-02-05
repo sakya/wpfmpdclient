@@ -19,6 +19,7 @@ using System.ComponentModel;
 using CsUpdater;
 using System.Reflection;
 using System.Collections.ObjectModel;
+using WPF.JoshSmith.ServiceProviders.UI;
 
 namespace WpfMpdClient
 {
@@ -44,11 +45,13 @@ namespace WpfMpdClient
     ContextMenu m_NotifyIconMenu = null;
     WindowState m_StoredWindowState = WindowState.Normal;
     bool m_Close = false;
+    ListViewDragDropManager<MpdFile> m_DragDropManager = null;
 
     ArtDownloader m_ArtDownloader = new ArtDownloader();
     ObservableCollection<ListboxEntry> m_ArtistsSource = new ObservableCollection<ListboxEntry>();
     ObservableCollection<ListboxEntry> m_AlbumsSource = new ObservableCollection<ListboxEntry>();
     ObservableCollection<ListboxEntry> m_GenresAlbumsSource = new ObservableCollection<ListboxEntry>();
+    ObservableCollection<MpdFile> m_PlaylistTracks = new ObservableCollection<MpdFile>();
     #endregion
 
     public MainWindow()
@@ -138,6 +141,10 @@ namespace WpfMpdClient
 
       lstGenresAlbums.ItemsSource = m_GenresAlbumsSource;
       lstGenresAlbums.SearchProperty = t.GetProperty("Album");
+
+      lstPlaylist.ItemsSource = m_PlaylistTracks;
+      m_DragDropManager = new ListViewDragDropManager<MpdFile>(lstPlaylist);
+      m_DragDropManager.ProcessDrop += dragMgr_ProcessDrop;
 
       m_ArtDownloader.Start();
     }
@@ -584,7 +591,9 @@ namespace WpfMpdClient
         return;
 
       List<MpdFile> tracks = m_Mpc.PlaylistInfo();
-      lstPlaylist.ItemsSource = tracks;
+      m_PlaylistTracks.Clear();
+      foreach (MpdFile file in tracks)
+        m_PlaylistTracks.Add(file);
     }
 
     private void PlayClickedHandler(object sender)
@@ -1085,6 +1094,12 @@ namespace WpfMpdClient
     {
       ScrollViewer listViewScrollViewer = Utilities.GetVisualChild<ScrollViewer>(lstTracks);
       listViewScrollViewer.ScrollToLeftEnd();
+    }
+
+		private void dragMgr_ProcessDrop( object sender, ProcessDropEventArgs<MpdFile> e )
+		{
+      if (m_Mpc.Connected)
+        m_Mpc.Move(e.OldIndex, e.NewIndex);
     }
   }
 }

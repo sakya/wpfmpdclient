@@ -68,8 +68,11 @@
     <Compile Include="BrowserWindow.xaml.cs">
       <DependentUpon>BrowserWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DragAdorner.cs" />
     <Compile Include="GridViewColumnResize.cs" />
     <Compile Include="ImageLoader.cs" />
+    <Compile Include="ListViewDragDropManager.cs" />
+    <Compile Include="MouseUtilities.cs" />
     <Compile Include="PlayerControl.xaml.cs">
       <DependentUpon>PlayerControl.xaml</DependentUpon>
     </Compile>
