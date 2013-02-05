@@ -428,7 +428,7 @@ namespace WpfMpdClient
       if (genre == Mpc.NoGenre)
         genre = string.Empty;
 
-      List<MpdFile> files = m_Mpc.Search(ScopeSpecifier.Genre, genre);
+      List<MpdFile> files = m_Mpc.Find(ScopeSpecifier.Genre, genre);
       files.Sort(delegate(MpdFile p1, MpdFile p2)
                  { 
                    return string.Compare(p1.Album, p2.Album);
@@ -455,25 +455,6 @@ namespace WpfMpdClient
         lstGenresAlbums.SelectedIndex = 0;
         lstGenresAlbums.ScrollIntoView(m_GenresAlbumsSource[0]);
       }
-
-      //List<string> albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Genre, genre);
-      //albums.Sort();
-      //for (int i = 0; i < albums.Count; i++) {
-      //  if (string.IsNullOrEmpty(albums[i]))
-      //    albums[i] = Mpc.NoAlbum;
-      //  ListboxEntry entry = new ListboxEntry()
-      //  {
-      //    Type = ListboxEntry.EntryType.Album,
-      //    Artist = string.Empty,
-      //    Album = albums[i]
-      //  };
-      //  m_GenresAlbumsSource.Add(entry);
-      //}
-
-      //if (albums.Count > 0) {
-      //  lstGenresAlbums.SelectedIndex = 0;
-      //  lstGenresAlbums.ScrollIntoView(m_GenresAlbumsSource[0]);
-      //}
     }
 
     private void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
