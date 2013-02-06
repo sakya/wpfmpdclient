@@ -228,6 +228,9 @@ namespace WpfMpdClient
   {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
+      if (value == null)
+        return DateTime.MinValue;
+
       Int32 val = (Int32)value;
 
       DateTime d = new DateTime(2000, 1, 1, 0, 0, 0);
@@ -249,6 +252,9 @@ namespace WpfMpdClient
     public object Convert(object[] values, Type targetType, object parameter,
         System.Globalization.CultureInfo culture)
     {
+      if (values[0] == null || values[1] == null)
+        return false;
+
       int id1 = (int)values[0];
       int id2 = (int)values[1];
       return id1 == id2;
@@ -260,6 +266,25 @@ namespace WpfMpdClient
       throw new NotImplementedException();
     }
   }
+
+  public class ExpanderWidthConverter : System.Windows.Data.IValueConverter
+  {
+    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    {
+      if (value == null)
+        return 100.0;
+
+      double width = (double)value;
+      return width / 2;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    {
+      throw new NotImplementedException();
+    }
+  }
+
+
   /// <summary>
   /// Listens keyboard globally.
   /// 

@@ -181,7 +181,7 @@ namespace WpfMpdClient
     /// </summary>
     public class ListViewResizeBehavior
     {
-      private const int Margin = 25;
+      private const int Margin = 28;
       private const long RefreshTime = Timeout.Infinite;
       private const long Delay = 500;
 

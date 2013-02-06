@@ -76,6 +76,13 @@ namespace WpfMpdClient
       set;
     }
 
+    [XmlAttribute("showminiplayer")]
+    public bool ShowMiniPlayer
+    {
+      get;
+      set;
+    }
+
     [XmlAttribute("windowmaximized")]
     public bool WindowMaximized
     {
@@ -111,6 +118,22 @@ namespace WpfMpdClient
     {
       get { return m_WindowTop; }
       set { m_WindowTop = value; }
+    }
+
+    private double m_MiniWindowLeft = -1;
+    [XmlAttribute("miniwindowleft")]
+    public double MiniWindowLeft 
+    {
+      get { return m_MiniWindowLeft; }
+      set { m_MiniWindowLeft = value; }
+    }
+
+    private double m_MiniWindowTop = -1;
+    [XmlAttribute("miniwindowtop")]
+    public double MiniWindowTop
+    {
+      get { return m_MiniWindowTop; }
+      set { m_MiniWindowTop = value; }
     }
 
     [XmlAttribute("scrobbler")]

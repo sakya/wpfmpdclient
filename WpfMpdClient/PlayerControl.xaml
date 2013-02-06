@@ -30,7 +30,7 @@
       </Grid.ColumnDefinitions>
 
       <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" >
-        <Image Width="100" Source="images/cover.png"/>
+        <Image Name="imgArtDefault" Width="100" Source="images/cover.png"/>
       </Border>
       <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" >
         <Image Name="imgArt" Width="100" />
@@ -39,14 +39,14 @@
       <TextBlock Grid.Column="1" Name="lblAlbum" Text="&lt;No Album&gt;" Grid.Row="1" TextTrimming="CharacterEllipsis"  />
       <TextBlock Grid.Column="1" Name="lblArtist" Text="&lt;No Artist&gt;" Grid.Row="2"  TextTrimming="CharacterEllipsis" />
 
-      <DockPanel Grid.Column="2" Grid.RowSpan="3">
+      <DockPanel Grid.Column="2" Grid.RowSpan="3" Name="dockVolume">
         <Label Width="30" DockPanel.Dock="Top" Name="lblVolume" HorizontalContentAlignment="Center" Content="0" />
         <Slider HorizontalAlignment="Center" DockPanel.Dock="Bottom" Orientation="Vertical" Maximum="100" Minimum="0"
                 Name="sliVolume" Thumb.DragStarted="sliVolume_DragStarted" Thumb.DragCompleted="sliVolume_DragCompleted" ValueChanged="sliVolume_ValueChanged" />
       </DockPanel>        
     </Grid>
 
-    <Grid Grid.Row="1">
+    <Grid Name="gridTimeSlider" Grid.Row="1">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
@@ -84,7 +84,7 @@
             </StackPanel>
           </ToolTip>
         </Button.ToolTip>
-        <Image Source="Images/previous.png" Width="32"/>
+        <Image Name="imgPrevious" Source="Images/previous.png" Width="32"/>
       </Button>
       <Button Focusable="False" Margin="2" Name="btnPlay" Grid.Column="1" Click="btnPlay_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
         <Button.ToolTip>
@@ -94,7 +94,7 @@
             </StackPanel>
           </ToolTip>
         </Button.ToolTip>
-        <Image Source="Images/play.png" Width="32"/>
+        <Image Name="imgPlay" Source="Images/play.png" Width="32"/>
       </Button>
       <Button Focusable="False" Margin="2" Name="btnPause" Grid.Column="1" Click="btnPause_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent" Visibility="Collapsed">
         <Button.ToolTip>
@@ -104,7 +104,7 @@
             </StackPanel>
           </ToolTip>
         </Button.ToolTip>
-        <Image Source="Images/pause.png" Width="32"/>
+        <Image Name="imgPause" Source="Images/pause.png" Width="32"/>
       </Button>
       <Button Focusable="False" Margin="2" Name="btnStop" Grid.Column="2" Click="btnStop_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent" Visibility="Collapsed">
         <Button.ToolTip>
@@ -114,7 +114,7 @@
             </StackPanel>
           </ToolTip>
         </Button.ToolTip>
-        <Image Source="Images/stop.png" Width="32"/>
+        <Image Name="imgStop" Source="Images/stop.png" Width="32"/>
       </Button>      
       <Button Focusable="False" Margin="2" Name="btnForward" Grid.Column="3" Click="btnForward_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
         <Button.ToolTip>
@@ -124,7 +124,7 @@
             </StackPanel>
           </ToolTip>
         </Button.ToolTip>
-        <Image Source="Images/next.png" Width="32"/>
+        <Image Name="imgNext" Source="Images/next.png" Width="32"/>
       </Button>
       <ToggleButton Focusable="False" Margin="2" Name="btnShuffle" Grid.Column="4" Click="btnShuffle_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
         <ToggleButton.ToolTip>
@@ -134,7 +134,7 @@
             </StackPanel>
           </ToolTip>
         </ToggleButton.ToolTip>
-        <Image Source="Images/shuffle.png" Width="32"/>
+        <Image Name="imgShuffle" Source="Images/shuffle.png" Width="32"/>
       </ToggleButton>
       <ToggleButton Focusable="False" Margin="2" Name="btnRepeat" Grid.Column="5" Click="btnRepeat_Click" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
         <ToggleButton.ToolTip>
@@ -144,7 +144,7 @@
             </StackPanel>
           </ToolTip>
         </ToggleButton.ToolTip>
-        <Image Source="Images/repeat.png" Width="32"/>
+        <Image Name="imgRepeat" Source="Images/repeat.png" Width="32"/>
       </ToggleButton>
     </Grid>
   </Grid>

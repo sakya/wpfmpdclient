@@ -16,21 +16,8 @@ using System.Threading;
 
 namespace WpfMpdClient
 {
-  /// <summary>
-  /// Logica di interazione per PlayerControl.xaml
-  /// </summary>
   public partial class PlayerControl : UserControl
   {
-    public delegate void PlayHandler(object sender);
-    public delegate void PlayerToggleHandler(object sender, bool value);
-    public event PlayHandler PlayClicked;
-    public event PlayHandler PauseClicked;
-    public event PlayHandler StopClicked;
-    public event PlayHandler BackClicked;
-    public event PlayHandler ForwardClicked;
-    public event PlayerToggleHandler RandomClicked;
-    public event PlayerToggleHandler RepeatClicked;
-
     MpdStatus m_Status = null;
     System.Timers.Timer m_Timer = null;
     string m_Artist = string.Empty;
@@ -38,6 +25,7 @@ namespace WpfMpdClient
     string m_Title = string.Empty;
     bool m_TimeDragging = false;
     bool m_VolumeDragging = false;
+    bool m_IgnoreVolumeChange = false;
 
     public PlayerControl()
     {
@@ -54,6 +42,48 @@ namespace WpfMpdClient
       set;
     }
 
+    public double CoverArtWidth
+    {
+      get { return imgArt.Width; }
+      set 
+      {
+        imgArt.Width = value;
+        imgArtDefault.Width = value;
+      }
+    }
+
+    public double ButtonsWidth
+    {
+      get { return imgPrevious.Width; }
+      set 
+      {
+        imgPrevious.Width = value;
+        imgPlay.Width = value;
+        imgPause.Width = value;
+        imgStop.Width = value;
+        imgNext.Width = value;
+        imgShuffle.Width = value;
+        imgRepeat.Width = value;
+      }
+    }
+
+    public bool ShowVolume
+    {
+      get { return dockVolume.Visibility == System.Windows.Visibility.Visible; }
+      set 
+      {
+        dockVolume.Visibility = value ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed; 
+      }
+    }
+
+    public bool ShowTimeSlider
+    {
+      get { return gridTimeSlider.Visibility == System.Windows.Visibility.Visible; }
+      set 
+      {
+        gridTimeSlider.Visibility = value ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed; 
+      }
+    }
 
     public bool ShowStopButton
     {
@@ -105,7 +135,9 @@ namespace WpfMpdClient
 
       if (!m_VolumeDragging) {
         lblVolume.Content = string.Format("{0}", status.Volume);
+        m_IgnoreVolumeChange = true;
         sliVolume.Value = status.Volume;
+        m_IgnoreVolumeChange = false;
       }
 
       if (currentSong != null) {
@@ -145,32 +177,32 @@ namespace WpfMpdClient
 
     private void btnBack_Click(object sender, RoutedEventArgs e)
     {
-      if (BackClicked != null)
-        BackClicked(this);
+      if (Mpc.Connected)
+        Mpc.Previous();
     }
 
     private void btnPlay_Click(object sender, RoutedEventArgs e)
     {
-      if (PlayClicked != null)
-        PlayClicked(this);
+      if (Mpc.Connected)
+        Mpc.Play();
     }
 
     private void btnPause_Click(object sender, RoutedEventArgs e)
     {
-      if (PauseClicked != null)
-        PauseClicked(this);
+      if (Mpc.Connected)
+        Mpc.Pause(true);
     }
 
     private void btnStop_Click(object sender, RoutedEventArgs e)
     {
-      if (StopClicked != null)
-        StopClicked(this);
+      if (Mpc.Connected)
+        Mpc.Stop();
     }
 
     private void btnForward_Click(object sender, RoutedEventArgs e)
     {
-      if (ForwardClicked != null)
-        ForwardClicked(this);
+      if (Mpc.Connected)
+        Mpc.Next();
     }
 
     private void sliTime_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
@@ -193,22 +225,24 @@ namespace WpfMpdClient
 
     private void btnShuffle_Click(object sender, RoutedEventArgs e)
     {
-      if (RandomClicked != null)
-        RandomClicked(this, btnShuffle.IsChecked == true);
+      if (Mpc.Connected)
+        Mpc.Random(btnShuffle.IsChecked == true);
     }
 
     private void btnRepeat_Click(object sender, RoutedEventArgs e)
     {
-      if (RepeatClicked != null)
-        RepeatClicked(this, btnRepeat.IsChecked == true);
+      if (Mpc.Connected)
+        Mpc.Repeat(btnRepeat.IsChecked == true);
     }
 
     private void sliVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-      try {
-        Mpc.SetVol((int)sliVolume.Value);
-      }catch (Exception) {}
-      lblVolume.Content = string.Format("{0}", (int)sliVolume.Value);
+      if (!m_IgnoreVolumeChange) {
+        try {
+          Mpc.SetVol((int)sliVolume.Value);
+        }catch (Exception) {}
+        lblVolume.Content = string.Format("{0}", (int)sliVolume.Value);
+      }
     }
 
     private void sliVolume_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
@@ -223,12 +257,14 @@ namespace WpfMpdClient
 
     private void TimerHandler(object sender, System.Timers.ElapsedEventArgs e)
     {
-      Dispatcher.BeginInvoke(new Action(() =>
-      {
-        sliTime.Value += 1;
-        lblTimeBefore.Content = Utilities.FormatSeconds((int)sliTime.Value);
-        lblTimeAfter.Content = Utilities.FormatSeconds((int)sliTime.Maximum - (int)sliTime.Value);
-      }));
+      if (ShowTimeSlider){
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          sliTime.Value += 1;
+          lblTimeBefore.Content = Utilities.FormatSeconds((int)sliTime.Value);
+          lblTimeAfter.Content = Utilities.FormatSeconds((int)sliTime.Maximum - (int)sliTime.Value);
+        }));
+      }
     }
   }
 }

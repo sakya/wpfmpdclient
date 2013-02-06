@@ -250,7 +250,8 @@ namespace Libmpc
           this.Disconnect();
         }
         catch (Exception) { }
-        throw;
+        return new MpdResponse(new ReadOnlyCollection<string>(new List<string>()));
+        //throw;
       }
     }
     /// <summary>
@@ -292,7 +293,8 @@ namespace Libmpc
       catch (Exception) {
         try { this.Disconnect(); }
         catch (Exception) { }
-        throw;
+        return new MpdResponse(new ReadOnlyCollection<string>(new List<string>()));
+        //throw;
       }
     }
 

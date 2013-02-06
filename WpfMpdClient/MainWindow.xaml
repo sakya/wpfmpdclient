@@ -10,6 +10,7 @@
     <local:TrackConverter x:Key="TrackConverter" />
     <local:TimeConverter x:Key="TimeConverter" />
     <local:IdConverter x:Key="IdConverter" />
+    <local:ExpanderWidthConverter x:Key="ExpanderWidthConverter" />
 
     <ContextMenu x:Key="TrayIconContextMenu"
                  Placement="MousePoint">
@@ -193,7 +194,10 @@
                                              ImageUri="{Binding Path=ImageUrl}"
                                              InitialImage="images/cd.png"/>
                         </Border>
-                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Album}" />
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                          <TextBlock FontWeight="Bold" Text="{Binding Path=Album}" />
+                          <TextBlock Text="{Binding Path=Artist}" />
+                        </StackPanel>
                       </StackPanel>
                     </DataTemplate>
                   </local:SearchableListBox.ItemTemplate>
@@ -326,18 +330,18 @@
           <ListView.View>
             <GridView>
               <GridViewColumn Header="Track" DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}" />
-              <GridViewColumn DisplayMemberBinding="{Binding Title}">
+              <GridViewColumn Width="250" DisplayMemberBinding="{Binding Title}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Content="Title" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
               </GridViewColumn>
               <GridViewColumn Header="Time" DisplayMemberBinding="{Binding Time,Converter={StaticResource TimeConverter}}" />
-              <GridViewColumn DisplayMemberBinding="{Binding Artist}">
+              <GridViewColumn Width="150" DisplayMemberBinding="{Binding Artist}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Content="Artist" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
               </GridViewColumn>
-              <GridViewColumn DisplayMemberBinding="{Binding Album}">
+              <GridViewColumn Width="150" DisplayMemberBinding="{Binding Album}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Content="Album" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
@@ -395,18 +399,18 @@
           <ListView.View>
             <GridView>
               <GridViewColumn Header="Track" DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}" />
-              <GridViewColumn DisplayMemberBinding="{Binding Title}">
+              <GridViewColumn Width="200" DisplayMemberBinding="{Binding Title}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Content="Title" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
               </GridViewColumn>
               <GridViewColumn Header="Time" DisplayMemberBinding="{Binding Time,Converter={StaticResource TimeConverter}}" />
-              <GridViewColumn DisplayMemberBinding="{Binding Artist}">
+              <GridViewColumn Width="150" DisplayMemberBinding="{Binding Artist}">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Content="Artist" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
               </GridViewColumn>
-              <GridViewColumn DisplayMemberBinding="{Binding Album}" local:GridViewColumnResize.Width="*">
+              <GridViewColumn Width="150" DisplayMemberBinding="{Binding Album}" local:GridViewColumnResize.Width="*">
                 <GridViewColumn.Header>
                   <GridViewColumnHeader Content="Album" HorizontalContentAlignment="Left"/>
                 </GridViewColumn.Header>
@@ -414,19 +418,28 @@
             </GridView>
           </ListView.View>
         </ListView>
-       
-        <Expander Grid.Column="1" Header="Lyrics" ExpandDirection="Left" >
+
+        <Expander Grid.Column="1" Header="Info" ExpandDirection="Left">
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" MinWidth="5"/>
-              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=ActualWidth, Converter={StaticResource ExpanderWidthConverter}}"/>
             </Grid.ColumnDefinitions>
             <GridSplitter ResizeDirection="Columns" ResizeBehavior="CurrentAndNext" HorizontalAlignment="Left" 
                           VerticalAlignment="Stretch" Width="5"/>
 
-            <ScrollViewer Grid.Column="1" Name="scrLyrics" VerticalScrollBarVisibility="Visible">
-              <TextBlock Margin="2" TextWrapping="Wrap" Name="txtLyrics" MinWidth="150" />
-            </ScrollViewer>
+            <TabControl Grid.Column="1">
+              <TabItem Header="Lyrics">
+                <ScrollViewer Name="scrLyrics" VerticalScrollBarVisibility="Visible">
+                  <TextBlock Margin="2" TextWrapping="Wrap" Name="txtLyrics" MinWidth="150" />
+                </ScrollViewer>
+              </TabItem>
+              <TabItem Header="Artist">
+                <ScrollViewer Name="scrArtist" VerticalScrollBarVisibility="Visible">
+                  <TextBlock Margin="2" TextWrapping="Wrap" Name="txtArtist" MinWidth="150" />
+                </ScrollViewer>
+              </TabItem>
+            </TabControl>
           </Grid>
         </Expander>
         
@@ -484,6 +497,7 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
           <RowDefinition Height="*" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -512,13 +526,16 @@
         <CheckBox Margin="0,4,0,0" Grid.Row="4" Grid.Column="1" Name="chkShowFilesystem" VerticalAlignment="Center" />
 
         <Label VerticalContentAlignment="Center" Grid.Row="5" Content="Minimize to tray:" />
-        <CheckBox Margin="0,4,0,0" Grid.Row="5" Grid.Column="1" Name="chkMinimizeToTray" VerticalAlignment="Center" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="5" Grid.Column="1" Name="chkMinimizeToTray" Checked="chkTray_Changed" Unchecked="chkTray_Changed" VerticalAlignment="Center" />
 
         <Label VerticalContentAlignment="Center" Grid.Row="6" Content="Close to tray:" />
-        <CheckBox Margin="0,4,0,0" Grid.Row="6" Grid.Column="1" Name="chkCloseToTray" VerticalAlignment="Center" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="6" Grid.Column="1" Name="chkCloseToTray" Checked="chkTray_Changed" Unchecked="chkTray_Changed" VerticalAlignment="Center" />
 
-        <Label VerticalContentAlignment="Center" Grid.Row="7" Content="Enable last.fm scrobbler:" />
-        <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal">
+        <Label VerticalContentAlignment="Center" Grid.Row="7" Content="Show player controls:" />
+        <CheckBox Margin="0,4,0,0" Grid.Row="7" Grid.Column="1" Name="chkShowMiniPlayer" VerticalAlignment="Center" />
+
+        <Label VerticalContentAlignment="Center" Grid.Row="8" Content="Enable last.fm scrobbler:" />
+        <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal">
           <CheckBox Margin="0,4,0,0"  Name="chkScrobbler" VerticalAlignment="Center" />
           <Button IsEnabled="{Binding ElementName=chkScrobbler, Path=IsChecked}" Margin="2" Name="btnScrobblerAuthorize" Content="Authorize" Click="btnScrobblerAuthorize_Click">
             <Button.ToolTip>
@@ -535,8 +552,8 @@
           </Button>
         </StackPanel>
 
-        <Button Margin="2" Grid.Row="8" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
-        <Button Margin="2" Grid.Row="9" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
+        <Button Margin="2" Grid.Row="9" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+        <Button Margin="2" Grid.Row="10" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
       </Grid>
     </TabItem>
     <TabItem Header="About">

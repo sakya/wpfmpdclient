@@ -99,6 +99,7 @@ namespace WpfMpdClient
     ScrobblerCache m_Cache = null;
     string m_Token = string.Empty;
     string m_SessionKey = string.Empty;
+    static Dictionary<string, string> m_ArtistCorrectionsCache = new Dictionary<string,string>();
 
     public enum ImageSize
     {
@@ -305,8 +306,32 @@ namespace WpfMpdClient
       return string.Empty;
     } // GetArtistArt
 
+    public static string GetArtistInfo(string baseUrl, string apiKey, string artist)
+    {
+      Dictionary<string, string> parameters = new Dictionary<string, string>();
+      parameters["method"] = "artist.getInfo";
+      parameters["api_key"] = apiKey;
+      parameters["artist"] = artist;
+
+      XmlDocument xml = GetResponse(GetUrl(baseUrl, parameters));
+      if (xml != null) {
+        XmlNodeList xnList = xml.SelectNodes("/lfm/artist/bio/content");
+        if (xnList != null && xnList.Count > 0){
+          string res = WebUtility.HtmlDecode(xnList[0].InnerText);
+          // Remove html tags (like <b>...</b>)
+          res = System.Text.RegularExpressions.Regex.Replace(res, @"<[^>]*>", string.Empty);
+          return res;
+        }
+      }
+      return string.Empty;
+    } // GetArtistInfo
+
     public static string GetArtistCorrection(string baseUrl, string apiKey, string artist)
     {
+      string correction = string.Empty;
+      if (m_ArtistCorrectionsCache.TryGetValue(artist, out correction))
+        return correction;
+
       Dictionary<string, string> parameters = new Dictionary<string,string>();
       parameters["method"] = "artist.getCorrection";
       parameters["api_key"] = apiKey;
@@ -315,9 +340,14 @@ namespace WpfMpdClient
       XmlDocument xml = GetResponse(GetUrl(baseUrl, parameters));
       if (xml != null){
         XmlNodeList xnList = xml.SelectNodes("/lfm/corrections/correction/artist/name");
-        if (xnList != null && xnList.Count > 0)
-          return xnList[0].InnerText;
+        if (xnList != null && xnList.Count > 0){
+          correction = xnList[0].InnerText;
+          m_ArtistCorrectionsCache[artist] = correction;
+          return correction;
+        }
       }
+
+      m_ArtistCorrectionsCache[artist] = artist;
       return artist;
     } // GetArtistCorrection
 
@@ -463,6 +493,11 @@ namespace WpfMpdClient
     {
       return Scrobbler.GetArtistArt(m_BaseUrl, size, api_key, artist);
     }
+
+    public static string GetArtistInfo(string artist)
+    {
+      return Scrobbler.GetArtistInfo(m_BaseUrl, api_key, artist);
+    }
   }
 
   public class LibrefmScrobbler : Scrobbler
@@ -495,6 +530,11 @@ namespace WpfMpdClient
     public static string GetArtistArt(string artist, ImageSize size)
     {
       return Scrobbler.GetArtistArt(m_BaseUrl, size, api_key, artist);
+    }
+
+    public static string GetArtistInfo(string artist)
+    {
+      return Scrobbler.GetArtistInfo(m_BaseUrl, api_key, artist);
     }
   }
 }

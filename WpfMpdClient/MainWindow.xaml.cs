@@ -45,7 +45,9 @@ namespace WpfMpdClient
     ContextMenu m_NotifyIconMenu = null;
     WindowState m_StoredWindowState = WindowState.Normal;
     bool m_Close = false;
+    bool m_IgnoreDisconnect = false;
     ListViewDragDropManager<MpdFile> m_DragDropManager = null;
+    MiniPlayerWindow m_MiniPlayer = null;
 
     ArtDownloader m_ArtDownloader = new ArtDownloader();
     ObservableCollection<ListboxEntry> m_ArtistsSource = new ObservableCollection<ListboxEntry>();
@@ -77,7 +79,10 @@ namespace WpfMpdClient
         chkShowFilesystem.IsChecked = m_Settings.ShowFilesystemTab;
         chkMinimizeToTray.IsChecked = m_Settings.MinimizeToTray;
         chkCloseToTray.IsChecked = m_Settings.CloseToTray;
+        chkShowMiniPlayer.IsChecked = m_Settings.ShowMiniPlayer;
         chkScrobbler.IsChecked = m_Settings.Scrobbler;
+
+        chkTray_Changed(null, null);
       } else
         m_Settings = new Settings();
       m_LastfmScrobbler = new LastfmScrobbler(Utilities.DecryptString(m_Settings.ScrobblerSessionKey));
@@ -107,13 +112,6 @@ namespace WpfMpdClient
       tabFileSystem.Visibility = m_Settings.ShowFilesystemTab ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
       playerControl.ShowStopButton = m_Settings.ShowStopButton;
       playerControl.Mpc = m_Mpc;
-      playerControl.PlayClicked += PlayClickedHandler;
-      playerControl.PauseClicked += PauseClickedHandler;
-      playerControl.BackClicked += BackClickedHandler;
-      playerControl.ForwardClicked += ForwardClickedHandler;
-      playerControl.RandomClicked += RandomClickedHandler;
-      playerControl.RepeatClicked += RepeatClickedHandler;
-      playerControl.StopClicked += StopClickedHandler;
 
       m_NotifyIcon = new System.Windows.Forms.NotifyIcon();
       m_NotifyIcon.Icon = new System.Drawing.Icon("mpd_icon.ico", new System.Drawing.Size(32,32));
@@ -147,7 +145,7 @@ namespace WpfMpdClient
       m_DragDropManager = new ListViewDragDropManager<MpdFile>(lstPlaylist);
       m_DragDropManager.ProcessDrop += dragMgr_ProcessDrop;
 
-      m_ArtDownloader.Start();
+      m_ArtDownloader.Start();      
     }
 
     public int CurrentTrackId
@@ -187,6 +185,9 @@ namespace WpfMpdClient
 
           MpdFile file = m_Mpc.CurrentSong();
           playerControl.Update(status, file);          
+          if (m_MiniPlayer != null)
+            m_MiniPlayer.Update(status, file);
+
           if (m_CurrentTrack == null || file == null || m_CurrentTrack.Id != file.Id) {
             TrackChanged(file);
             m_CurrentTrack = file;
@@ -232,7 +233,7 @@ namespace WpfMpdClient
 
     private void MpcDisconnected(Mpc connection)
     {
-      if (m_Settings.AutoReconnect && m_ReconnectTimer == null){
+      if (!m_IgnoreDisconnect  && m_Settings.AutoReconnect && m_ReconnectTimer == null){
         m_ReconnectTimer = new Timer();
         m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
         m_ReconnectTimer.Elapsed += ReconnectTimerHandler;
@@ -249,12 +250,14 @@ namespace WpfMpdClient
             IPAddress ip = addresses[0];
             IPEndPoint ie = new IPEndPoint(ip, m_Settings.ServerPort);
 
+            m_IgnoreDisconnect = true;
             if (m_Mpc.Connected)
               m_Mpc.Connection.Disconnect();
             m_Mpc.Connection = new MpcConnection(ie);
             if (m_MpcIdle.Connected)
               m_MpcIdle.Connection.Disconnect();
             m_MpcIdle.Connection = new MpcConnection(ie);
+            m_IgnoreDisconnect = false;
           }
         }
         catch (Exception ex) {
@@ -533,6 +536,7 @@ namespace WpfMpdClient
       m_Settings.ShowFilesystemTab = chkShowFilesystem.IsChecked == true;
       m_Settings.MinimizeToTray = chkMinimizeToTray.IsChecked == true;
       m_Settings.CloseToTray = chkCloseToTray.IsChecked == true;
+      m_Settings.ShowMiniPlayer = chkShowMiniPlayer.IsChecked == true;
       m_Settings.Scrobbler = chkScrobbler.IsChecked == true;
 
       m_Settings.Serialize(Settings.GetSettingsFileName());
@@ -540,11 +544,13 @@ namespace WpfMpdClient
       playerControl.ShowStopButton = m_Settings.ShowStopButton;
       tabFileSystem.Visibility = m_Settings.ShowFilesystemTab ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
 
+      m_IgnoreDisconnect = true;
       if (m_Mpc.Connected)
         m_Mpc.Connection.Disconnect();
       if (m_MpcIdle.Connected)
         m_MpcIdle.Connection.Disconnect();
       Connect();
+      m_IgnoreDisconnect = false;
     }
 
     private void ReconnectTimerHandler(object sender, ElapsedEventArgs e)
@@ -576,48 +582,6 @@ namespace WpfMpdClient
       m_PlaylistTracks.Clear();
       foreach (MpdFile file in tracks)
         m_PlaylistTracks.Add(file);
-    }
-
-    private void PlayClickedHandler(object sender)
-    {
-      if (m_Mpc.Connected)
-        m_Mpc.Play();
-    }
-
-    private void PauseClickedHandler(object sender)
-    {
-      if (m_Mpc.Connected)
-        m_Mpc.Pause(true);
-    }
-
-    private void StopClickedHandler(object sender)
-    {
-      if (m_Mpc.Connected)
-        m_Mpc.Stop();
-    }
-
-    private void BackClickedHandler(object sender)
-    {
-      if (m_Mpc.Connected)
-        m_Mpc.Previous();
-    }
-
-    private void ForwardClickedHandler(object sender)
-    {
-      if (m_Mpc.Connected)
-        m_Mpc.Next();
-    }
-
-    private void RandomClickedHandler(object sender, bool random)
-    {
-      if (m_Mpc.Connected)
-        m_Mpc.Random(random);
-    }
-
-    private void RepeatClickedHandler(object sender, bool repeat)
-    {
-      if (m_Mpc.Connected)
-        m_Mpc.Repeat(repeat);
     }
 
     private void ContextMenu_Click(object sender, RoutedEventArgs args)
@@ -759,11 +723,11 @@ namespace WpfMpdClient
       if (This.m_Mpc.Connected){
         switch (This.m_Mpc.Status().State){
           case MpdState.Play:
-            This.PauseClickedHandler(null);
+            This.mnuPause_Click(null, null);
             break;
           case MpdState.Pause:
           case MpdState.Stop:
-            This.PlayClickedHandler(null);
+            This.mnuPlay_Click(null, null);
             break;
         }
       }
@@ -771,12 +735,12 @@ namespace WpfMpdClient
 
     public static void NextTrack()
     {
-      This.ForwardClickedHandler(null);
+      This.mnuNext_Click(null, null);
     }
 
     public static void PreviousTrack()
     {
-      This.BackClickedHandler(null);
+      This.mnuPrevious_Click(null, null);
     }
 
     private void btnClear_Click(object sender, RoutedEventArgs e)
@@ -811,6 +775,18 @@ namespace WpfMpdClient
 
           m_NotifyIcon.Visible = true;
           m_NotifyIcon.ShowBalloonTip(2000);
+
+          if (m_Settings.ShowMiniPlayer){
+            if (m_MiniPlayer == null){
+              m_MiniPlayer = new MiniPlayerWindow(m_Mpc, m_Settings);
+              if (m_Settings.MiniWindowLeft >= 0 && m_Settings.MiniWindowTop >= 0){
+                m_MiniPlayer.Left = m_Settings.MiniWindowLeft;
+                m_MiniPlayer.Top = m_Settings.MiniWindowTop;
+              }
+              m_MiniPlayer.Update(m_LastStatus, m_CurrentTrack);
+            }
+            m_MiniPlayer.Show();
+          }
         }
         e.Cancel = true;
       }
@@ -853,8 +829,11 @@ namespace WpfMpdClient
         m_NotifyIconMenu.IsOpen = !m_NotifyIconMenu.IsOpen;
       }else if (e.Button == System.Windows.Forms.MouseButtons.Left){
         m_NotifyIconMenu.IsOpen = false;
+        m_MiniPlayer.Close();
+        m_MiniPlayer = null;
         Show();
         WindowState = m_StoredWindowState;
+        Activate();
         Focus();
         m_NotifyIcon.Visible = false;
       }
@@ -883,8 +862,12 @@ namespace WpfMpdClient
       }
 
       System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetLyrics), track);
+      if (track != null && (m_CurrentTrack == null || m_CurrentTrack.Artist != track.Artist))
+        System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetArtistInfo), track.Artist);
+      else if (track == null)
+        System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetArtistInfo), string.Empty);
 
-      if (m_NotifyIcon != null && track != null) {
+      if (m_NotifyIcon != null && track != null && (m_MiniPlayer == null || !m_MiniPlayer.IsVisible)) {
         string trackText = string.Format("\"{0}\"\r\n{1}", track.Title, track.Artist);
         if (trackText.Length >= 64)
           m_NotifyIcon.Text = string.Format("{0}...", trackText.Substring(0, 60));
@@ -923,24 +906,47 @@ namespace WpfMpdClient
 
     private void mnuPlay_Click(object sender, RoutedEventArgs e)
     {
-      PlayClickedHandler(null);
+      if (m_Mpc.Connected)
+        m_Mpc.Play();
     }
 
     private void mnuPause_Click(object sender, RoutedEventArgs e)
     {
-      PauseClickedHandler(null);
+      if (m_Mpc.Connected)
+        m_Mpc.Pause(true);
+    }
+
+    private void GetArtistInfo(object state)
+    {
+      string artist = (string)state;
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        txtArtist.Text = !string.IsNullOrEmpty(artist) ? "Downloading info" : string.Empty;
+      }));
+
+      if (!string.IsNullOrEmpty(artist)) {
+        string info = LastfmScrobbler.GetArtistInfo(artist);
+        if (string.IsNullOrEmpty(info))
+          info = "No info found";
+
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          txtArtist.Text = info;
+          scrArtist.ScrollToTop();
+        }));
+      }
     }
 
     private void GetLyrics(object state)
     {
       MpdFile track = state as MpdFile;
-      if (track == null)
-        return;
-
       Dispatcher.BeginInvoke(new Action(() =>
       {
         txtLyrics.Text = track != null ? "Downloading lyrics" : string.Empty;
       }));
+
+      if (track == null)
+        return;
 
       if (m_CurrentTrack != null) {
         string lyrics = Utilities.GetLyrics(track.Artist, track.Title);
@@ -1082,6 +1088,11 @@ namespace WpfMpdClient
 		{
       if (m_Mpc.Connected)
         m_Mpc.Move(e.OldIndex, e.NewIndex);
+    }
+
+    private void chkTray_Changed(object sender, RoutedEventArgs e)
+    {
+      chkShowMiniPlayer.IsEnabled = chkCloseToTray.IsChecked == true || chkMinimizeToTray.IsChecked == true;
     }
   }
 }

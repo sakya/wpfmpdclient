@@ -1,0 +1,16 @@
+﻿<Window x:Class="WpfMpdClient.MiniPlayerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WpfMpdClient"
+        WindowStyle="None" ShowInTaskbar="False"
+        Topmost="True" SizeToContent="Height"
+        Title="MiniPlayerWindow" Height="108" Width="300"
+        ResizeMode="NoResize" LocationChanged="Window_LocationChanged">
+    <Grid>
+    <Border BorderThickness="1" BorderBrush="Black">
+      <local:PlayerControl x:Name="playerControl" CoverArtWidth="50" ShowVolume="False" 
+                           ShowTimeSlider="False" ShowStopButton="False" 
+                           ButtonsWidth="24"/>
+    </Border>
+  </Grid>
+</Window>

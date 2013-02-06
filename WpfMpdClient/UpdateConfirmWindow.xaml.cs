@@ -13,9 +13,6 @@ using System.Windows.Shapes;
 
 namespace WpfMpdClient
 {
-  /// <summary>
-  /// Interaction logic for UpdateConfirmWindow.xaml
-  /// </summary>
   public partial class UpdateConfirmWindow : Window
   {
     public UpdateConfirmWindow(CsUpdater.UpdaterApp app)

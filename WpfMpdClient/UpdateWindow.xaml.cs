@@ -15,9 +15,6 @@ using System.Diagnostics;
 
 namespace WpfMpdClient
 {
-  /// <summary>
-  /// Interaction logic for UpdateWindow.xaml
-  /// </summary>
   public partial class UpdateWindow : Window
   {
     Updater m_Updater = null;

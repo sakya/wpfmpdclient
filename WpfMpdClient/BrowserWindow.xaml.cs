@@ -13,9 +13,6 @@ using System.Windows.Shapes;
 
 namespace WpfMpdClient
 {
-  /// <summary>
-  /// Interaction logic for BrowserWindow.xaml
-  /// </summary>
   public partial class BrowserWindow : Window
   {
     public BrowserWindow()

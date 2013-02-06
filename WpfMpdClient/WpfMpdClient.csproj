@@ -72,6 +72,9 @@
     <Compile Include="GridViewColumnResize.cs" />
     <Compile Include="ImageLoader.cs" />
     <Compile Include="ListViewDragDropManager.cs" />
+    <Compile Include="MiniPlayerWindow.xaml.cs">
+      <DependentUpon>MiniPlayerWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MouseUtilities.cs" />
     <Compile Include="PlayerControl.xaml.cs">
       <DependentUpon>PlayerControl.xaml</DependentUpon>
@@ -112,6 +115,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="MiniPlayerWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PlayerControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
