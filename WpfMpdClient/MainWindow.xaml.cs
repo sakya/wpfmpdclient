@@ -146,6 +146,7 @@ namespace WpfMpdClient
       m_DragDropManager.ProcessDrop += dragMgr_ProcessDrop;
 
       m_ArtDownloader.Start();      
+      txtStatus.Text = "Not connected";
     }
 
     public int CurrentTrackId
@@ -159,8 +160,10 @@ namespace WpfMpdClient
 
     private void MpcIdleConnected(Mpc connection)
     {
-      if (!string.IsNullOrEmpty(m_Settings.Password))
-        m_MpcIdle.Password(m_Settings.Password);
+      if (!string.IsNullOrEmpty(m_Settings.Password)){
+        if (!m_MpcIdle.Password(m_Settings.Password))
+          return;
+      }
 
       MpcIdleSubsystemsChanged(m_MpcIdle, Mpc.Subsystems.All);
       m_MpcIdle.Idle(Mpc.Subsystems.player | Mpc.Subsystems.playlist | Mpc.Subsystems.stored_playlist | Mpc.Subsystems.update |
@@ -220,9 +223,14 @@ namespace WpfMpdClient
 
     private void MpcConnected(Mpc connection)
     {
-      if (!string.IsNullOrEmpty(m_Settings.Password))
-        m_Mpc.Password(m_Settings.Password);
+      if (!string.IsNullOrEmpty(m_Settings.Password)){
+        if (!m_Mpc.Password(m_Settings.Password)){
+          MessageBox.Show("Error connecting to server:\r\nWrong password", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+          return;
+        }
+      }
 
+      txtStatus.Text = string.Format("Connected to {0}:{1}", m_Settings.ServerAddress, m_Settings.ServerPort);
       MpdStatistics stats = m_Mpc.Stats();      
       PopulateGenres();
       PopulatePlaylists();
@@ -233,6 +241,7 @@ namespace WpfMpdClient
 
     private void MpcDisconnected(Mpc connection)
     {
+      txtStatus.Text = "Not connected";
       if (!m_IgnoreDisconnect  && m_Settings.AutoReconnect && m_ReconnectTimer == null){
         m_ReconnectTimer = new Timer();
         m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
@@ -244,6 +253,7 @@ namespace WpfMpdClient
     private void Connect()
     {
       if (!string.IsNullOrEmpty(m_Settings.ServerAddress)) {
+        txtStatus.Text = string.Format("Connecting to {0}:{1}...", m_Settings.ServerAddress, m_Settings.ServerPort);
         try {
           IPAddress[] addresses = System.Net.Dns.GetHostAddresses(m_Settings.ServerAddress);
           if (addresses.Length > 0) {
