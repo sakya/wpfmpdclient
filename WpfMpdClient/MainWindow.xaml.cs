@@ -839,8 +839,10 @@ namespace WpfMpdClient
         m_NotifyIconMenu.IsOpen = !m_NotifyIconMenu.IsOpen;
       }else if (e.Button == System.Windows.Forms.MouseButtons.Left){
         m_NotifyIconMenu.IsOpen = false;
-        m_MiniPlayer.Close();
-        m_MiniPlayer = null;
+        if (m_MiniPlayer != null){
+          m_MiniPlayer.Close();
+          m_MiniPlayer = null;
+        }
         Show();
         WindowState = m_StoredWindowState;
         Activate();

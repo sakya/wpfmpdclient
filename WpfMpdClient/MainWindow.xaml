@@ -79,7 +79,7 @@
                           <Border Width="48" Height="48">
                             <local:ImageLoader MaxWidth="48" MaxHeight="48" Margin="2"
                                              ImageUri="{Binding Path=ImageUrl}"
-                                             InitialImage="images/cd.png"/>
+                                             InitialImage="images/cd.png" LoadFailedImage="images/cd.png"/>
                           </Border>
                           <TextBlock VerticalAlignment="Center" Text="{Binding Path=Artist}" />
                         </StackPanel>
@@ -126,7 +126,7 @@
                           <Border Width="48" Height="48">
                             <local:ImageLoader MaxWidth="48" MaxHeight="48" Margin="2"
                                              ImageUri="{Binding Path=ImageUrl}"
-                                             InitialImage="images/cd.png"/>
+                                             InitialImage="images/cd.png" LoadFailedImage="images/cd.png"/>
                           </Border>
                           <TextBlock VerticalAlignment="Center" Text="{Binding Path=Album}" />
                         </StackPanel>
@@ -196,7 +196,7 @@
                           <Border Width="48" Height="48">
                             <local:ImageLoader MaxWidth="48" MaxHeight="48" Margin="2"
                                              ImageUri="{Binding Path=ImageUrl}"
-                                             InitialImage="images/cd.png"/>
+                                             InitialImage="images/cd.png" LoadFailedImage="images/cd.png"/>
                           </Border>
                           <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                             <TextBlock FontWeight="Bold" Text="{Binding Path=Album}" />

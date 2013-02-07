@@ -234,9 +234,8 @@ namespace Libmpc
       if (command.Contains("\n"))
         throw new ArgumentException("command contains newline");
 
-      this.CheckConnected();
-
       try {
+        this.CheckConnected();
         m_Mutex.WaitOne();
         this.writer.WriteLine(command);
         this.writer.Flush();
@@ -279,9 +278,8 @@ namespace Libmpc
           throw new ArgumentException("argument[" + i + "] contains newline");
       }
 
-      this.CheckConnected();
-
       try {
+        this.CheckConnected();
         m_Mutex.WaitOne();
         this.writer.WriteLine(string.Format("{0} {1}", command, string.Join(" ", argument)));
         this.writer.Flush();

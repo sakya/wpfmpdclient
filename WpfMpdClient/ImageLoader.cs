@@ -266,7 +266,6 @@ namespace WpfMpdClient
         // Load the initial bitmap from the local resource
         failedImage.BeginInit();
         failedImage.UriSource = new Uri(LoadFailedImage, UriKind.Relative);
-        failedImage.DecodePixelWidth = (int)Width;
         failedImage.EndInit();
         Source = failedImage;
       }

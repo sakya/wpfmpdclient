@@ -113,7 +113,7 @@ namespace WpfMpdClient
             nsmgr.AddNamespace("ab", "http://api.chartlyrics.com/");
             XmlNodeList xnList = doc.SelectNodes("//ab:Lyric", nsmgr);
             if (xnList != null && xnList.Count == 1)
-              return xnList[0].InnerText;
+              return WebUtility.HtmlDecode(xnList[0].InnerText);
           }
         }
       }
