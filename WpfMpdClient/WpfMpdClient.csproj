@@ -99,6 +99,7 @@
     <Compile Include="BrowserWindow.xaml.cs">
       <DependentUpon>BrowserWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ConfigurableListView.cs" />
     <Compile Include="DragAdorner.cs" />
     <Compile Include="GridViewColumnResize.cs" />
     <Compile Include="ImageLoader.cs" />

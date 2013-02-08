@@ -302,6 +302,8 @@ namespace Libmpc
         if (this.autoConnect)
           this.Connect();
         else
+          if (this.OnDisconnected != null)
+            this.OnDisconnected.Invoke(this);
           throw new NotConnectedException();
       }
 

@@ -31,10 +31,12 @@ namespace WpfMpdClient
       Exception e = (Exception)args.ExceptionObject;
       StringBuilder sb = new StringBuilder();
       sb.AppendLine(string.Format("{0}", DateTime.Now));
-      sb.AppendLine(string.Format("OS: {0} {1} {2}",
+      sb.AppendLine(string.Format("OS : {0} {1} {2}",
                                  System.Environment.OSVersion.Platform,
                                  System.Environment.OSVersion.ServicePack,
                                  System.Environment.OSVersion.Version));
+      sb.AppendLine(string.Format("MPD: {0}", WpfMpdClient.MainWindow.MpdVersion()));
+
       sb.AppendLine(e.Message);
       sb.AppendLine(e.StackTrace);
 

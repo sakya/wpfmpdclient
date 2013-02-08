@@ -149,6 +149,20 @@ namespace WpfMpdClient
       set;
     }
 
+    [XmlElement("trackslistview")]
+    public List<ConfigurableListView.ColumnInfo> TracksListView
+    {
+      get;
+      set;
+    }
+
+    [XmlElement("playlistview")]
+    public List<ConfigurableListView.ColumnInfo> PlayListView
+    {
+      get;
+      set;
+    }
+
     public static string GetSettingsFileName()
     {
       return string.Format("{0}\\wpfmpdclient\\settings.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));

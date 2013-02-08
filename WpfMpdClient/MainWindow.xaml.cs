@@ -83,6 +83,9 @@ namespace WpfMpdClient
         chkScrobbler.IsChecked = m_Settings.Scrobbler;
 
         chkTray_Changed(null, null);
+
+        lstTracks.SetColumnsInfo(m_Settings.TracksListView);
+        lstPlaylist.SetColumnsInfo(m_Settings.PlayListView);
       } else
         m_Settings = new Settings();
       m_LastfmScrobbler = new LastfmScrobbler(Utilities.DecryptString(m_Settings.ScrobblerSessionKey));
@@ -230,7 +233,7 @@ namespace WpfMpdClient
         }
       }
 
-      txtStatus.Text = string.Format("Connected to {0}:{1}", m_Settings.ServerAddress, m_Settings.ServerPort);
+      txtStatus.Text = string.Format("Connected to {0}:{1} [MPD v.{2}]", m_Settings.ServerAddress, m_Settings.ServerPort, m_Mpc.Connection.Version);
       MpdStatistics stats = m_Mpc.Stats();      
       PopulateGenres();
       PopulatePlaylists();
@@ -241,12 +244,14 @@ namespace WpfMpdClient
 
     private void MpcDisconnected(Mpc connection)
     {
-      txtStatus.Text = "Not connected";
-      if (!m_IgnoreDisconnect  && m_Settings.AutoReconnect && m_ReconnectTimer == null){
-        m_ReconnectTimer = new Timer();
-        m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
-        m_ReconnectTimer.Elapsed += ReconnectTimerHandler;
-        m_ReconnectTimer.Start();
+      if (!connection.Connected){
+        txtStatus.Text = "Not connected";
+        if (!m_IgnoreDisconnect  && m_Settings.AutoReconnect && m_ReconnectTimer == null){
+          m_ReconnectTimer = new Timer();
+          m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
+          m_ReconnectTimer.Elapsed += ReconnectTimerHandler;
+          m_ReconnectTimer.Start();
+        }
       }
     }
 
@@ -271,7 +276,8 @@ namespace WpfMpdClient
           }
         }
         catch (Exception ex) {
-          MessageBox.Show(string.Format("Error connecting to server:\r\n{0}", ex.Message), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+          txtStatus.Text = string.Empty;
+          MessageBox.Show(string.Format("Error connecting to server:\r\n{0}\r\n{1}", ex.Message, ex.StackTrace), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
       }
     } // Connect
@@ -560,6 +566,7 @@ namespace WpfMpdClient
       if (m_MpcIdle.Connected)
         m_MpcIdle.Connection.Disconnect();
       Connect();
+      tabBrowse.SelectedIndex = 0;
       m_IgnoreDisconnect = false;
     }
 
@@ -716,6 +723,13 @@ namespace WpfMpdClient
       m_About.hyperlink_RequestNavigate(sender, e);
     }
 
+    public static string MpdVersion()
+    {
+      if (This.m_Mpc != null && This.m_Mpc.Connected)
+        return This.m_Mpc.Connection.Version;
+      return string.Empty;
+    }
+
     public static void Stop()
     {
       if (This.m_Mpc.Connected) {
@@ -810,6 +824,9 @@ namespace WpfMpdClient
         m_Settings.WindowTop = Top;
         m_Settings.WindowWidth = ActualWidth;
         m_Settings.WindowHeight = ActualHeight;
+        m_Settings.TracksListView = lstTracks.GetColumnsInfo();
+        m_Settings.PlayListView = lstPlaylist.GetColumnsInfo();
+
         m_Settings.Serialize(Settings.GetSettingsFileName());
 
         m_LastfmScrobbler.SaveCache();
@@ -960,17 +977,15 @@ namespace WpfMpdClient
       if (track == null)
         return;
 
-      if (m_CurrentTrack != null) {
-        string lyrics = Utilities.GetLyrics(track.Artist, track.Title);
-        if (string.IsNullOrEmpty(lyrics))
-          lyrics = "No lyrics found";
+      string lyrics = Utilities.GetLyrics(track.Artist, track.Title);
+      if (string.IsNullOrEmpty(lyrics))
+        lyrics = "No lyrics found";
 
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-          txtLyrics.Text = lyrics;
-          scrLyrics.ScrollToTop();
-        }));
-      }
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        txtLyrics.Text = lyrics;
+        scrLyrics.ScrollToTop();
+      }));
     }
 
     private void btnSearch_Click(object sender, RoutedEventArgs e)
@@ -1093,7 +1108,8 @@ namespace WpfMpdClient
     private void ScrollTracksToLeft()
     {
       ScrollViewer listViewScrollViewer = Utilities.GetVisualChild<ScrollViewer>(lstTracks);
-      listViewScrollViewer.ScrollToLeftEnd();
+      if (listViewScrollViewer != null)
+        listViewScrollViewer.ScrollToLeftEnd();
     }
 
 		private void dragMgr_ProcessDrop( object sender, ProcessDropEventArgs<MpdFile> e )

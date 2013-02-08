@@ -252,12 +252,16 @@ namespace WpfMpdClient
     public object Convert(object[] values, Type targetType, object parameter,
         System.Globalization.CultureInfo culture)
     {
-      if (values[0] == null || values[1] == null)
-        return false;
+      try {
+        if (values[0] == null || values[1] == null)
+          return false;
 
-      int id1 = (int)values[0];
-      int id2 = (int)values[1];
-      return id1 == id2;
+        Int32 id1 = (Int32)values[0];
+        Int32 id2 = (Int32)values[1];
+        return id1 == id2;
+      }catch (Exception){
+        return false;
+      }
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter,

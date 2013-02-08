@@ -11,7 +11,7 @@
     <local:TimeConverter x:Key="TimeConverter" />
     <local:IdConverter x:Key="IdConverter" />
     <local:ExpanderWidthConverter x:Key="ExpanderWidthConverter" />
-
+  
     <ContextMenu x:Key="TrayIconContextMenu"
                  Placement="MousePoint">
       <MenuItem Name="mnuPrevious" Header="Previous track" Click="mnuPrevious_Click">
@@ -305,7 +305,7 @@
           <GridSplitter ResizeDirection="Columns" HorizontalAlignment="Right" 
                       VerticalAlignment="Stretch" Width="5" Grid.RowSpan="2"/>
 
-          <ListView Margin="2" Grid.Column="1" Name="lstTracks" SelectionMode="Extended" SelectionChanged="lstTracks_SelectionChanged" >
+          <local:ConfigurableListView Margin="2" Grid.Column="1" x:Name="lstTracks" SelectionMode="Extended" SelectionChanged="lstTracks_SelectionChanged" >
             <ListView.ItemContainerStyle>
               <Style TargetType="ListViewItem">
                 <Style.Resources>
@@ -333,13 +333,21 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
               <GridView>
-                <GridViewColumn Header="Track" DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}" />
-                <GridViewColumn Width="250" DisplayMemberBinding="{Binding Title}">
+                <GridViewColumn DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}">
                   <GridViewColumn.Header>
+                      <GridViewColumnHeader Content="Track" HorizontalContentAlignment="Left"/>
+                  </GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn Width="250" DisplayMemberBinding="{Binding Title}">
+                  <GridViewColumn.Header>                    
                     <GridViewColumnHeader Content="Title" HorizontalContentAlignment="Left"/>
                   </GridViewColumn.Header>
                 </GridViewColumn>
-                <GridViewColumn Header="Time" DisplayMemberBinding="{Binding Time,Converter={StaticResource TimeConverter}}" />
+                <GridViewColumn DisplayMemberBinding="{Binding Time,Converter={StaticResource TimeConverter}}">
+                  <GridViewColumn.Header>
+                    <GridViewColumnHeader Content="Time" HorizontalContentAlignment="Left"/>
+                  </GridViewColumn.Header>
+                </GridViewColumn>
                 <GridViewColumn Width="150" DisplayMemberBinding="{Binding Artist}">
                   <GridViewColumn.Header>
                     <GridViewColumnHeader Content="Artist" HorizontalContentAlignment="Left"/>
@@ -367,7 +375,7 @@
                 </GridViewColumn>
               </GridView>
             </ListView.View>
-          </ListView>
+          </local:ConfigurableListView>
         </Grid>
       </TabItem>
       <TabItem Header="Now Playing">
@@ -382,7 +390,7 @@
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
 
-          <ListView Margin="2" Name="lstPlaylist" SelectionMode="Single" local:GridViewColumnResize.Enabled="True">
+          <local:ConfigurableListView Margin="2" x:Name="lstPlaylist" SelectionMode="Single" local:GridViewColumnResize.Enabled="True">
             <ListView.ItemContainerStyle>
               <Style TargetType="ListViewItem">
                 <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
@@ -390,8 +398,8 @@
                   <DataTrigger Value="True">
                     <DataTrigger.Binding>
                       <MultiBinding Converter="{StaticResource IdConverter}">
-                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}}" Path="CurrentTrackId"></Binding>
-                        <Binding Path="Id"></Binding>
+                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}}" Path="CurrentTrackId" />
+                        <Binding Path="Id" />
                       </MultiBinding>
                     </DataTrigger.Binding>
                     <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
@@ -402,13 +410,21 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
               <GridView>
-                <GridViewColumn Header="Track" DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}" />
+                <GridViewColumn DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}">
+                  <GridViewColumn.Header>
+                    <GridViewColumnHeader Content="Track" HorizontalContentAlignment="Left"/>
+                  </GridViewColumn.Header>
+                </GridViewColumn>
                 <GridViewColumn Width="200" DisplayMemberBinding="{Binding Title}">
                   <GridViewColumn.Header>
                     <GridViewColumnHeader Content="Title" HorizontalContentAlignment="Left"/>
                   </GridViewColumn.Header>
                 </GridViewColumn>
-                <GridViewColumn Header="Time" DisplayMemberBinding="{Binding Time,Converter={StaticResource TimeConverter}}" />
+                <GridViewColumn DisplayMemberBinding="{Binding Time,Converter={StaticResource TimeConverter}}">
+                  <GridViewColumn.Header>
+                    <GridViewColumnHeader Content="Time" HorizontalContentAlignment="Left"/>
+                  </GridViewColumn.Header>
+                </GridViewColumn>
                 <GridViewColumn Width="150" DisplayMemberBinding="{Binding Artist}">
                   <GridViewColumn.Header>
                     <GridViewColumnHeader Content="Artist" HorizontalContentAlignment="Left"/>
@@ -421,7 +437,7 @@
                 </GridViewColumn>
               </GridView>
             </ListView.View>
-          </ListView>
+          </local:ConfigurableListView>
 
           <Expander Grid.Column="1" Header="Info" ExpandDirection="Left">
             <Grid>
