@@ -30,25 +30,22 @@ using System.Windows.Shapes;
 
 namespace WpfMpdClient
 {
-  public partial class UpdateConfirmWindow : Window
+  public partial class BugReportWindow : Window
   {
-    public UpdateConfirmWindow(CsUpdater.UpdaterApp app)
+    public BugReportWindow()
     {
       InitializeComponent();
-
-      Title = string.Format("Update to v.{0}", app.Version);
-      txtText.Text = "A new update is available.\r\nDownload and install it now?";
-      txtChangelog.Text = app.Changelog;
     }
 
-    private void btnYes_Click(object sender, RoutedEventArgs e)
+    public string Email
+    {
+      get { return txtEmail.Text; }
+      set { txtEmail.Text = value; }
+    }
+
+    private void Button_Click(object sender, RoutedEventArgs e)
     {
       DialogResult = true;
-    }
-
-    private void btnNo_Click(object sender, RoutedEventArgs e)
-    {
-      DialogResult = false;
     }
   }
 }

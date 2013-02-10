@@ -1,4 +1,21 @@
-﻿using System;
+﻿//    WpfMpdClient
+//    Copyright (C) 2012, 2013 Paolo Iommarini
+//    sakya_tg@yahoo.it
+//
+//    This program is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -725,7 +742,7 @@ namespace WpfMpdClient
 
     public static string MpdVersion()
     {
-      if (This.m_Mpc != null && This.m_Mpc.Connected)
+      if (This != null && This.m_Mpc != null && This.m_Mpc.Connected)
         return This.m_Mpc.Connection.Version;
       return string.Empty;
     }
@@ -896,6 +913,12 @@ namespace WpfMpdClient
       else if (track == null)
         System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetArtistInfo), string.Empty);
 
+      if (track != null && (m_CurrentTrack == null || m_CurrentTrack.Artist != track.Artist || m_CurrentTrack.Album != track.Album))
+        System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetAlbumInfo), new List<string>() { track.Artist, track.Album});
+      else if (track == null)
+        System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(GetAlbumInfo), new List<string>() { string.Empty, string.Empty});
+
+
       if (m_NotifyIcon != null && track != null && (m_MiniPlayer == null || !m_MiniPlayer.IsVisible)) {
         string trackText = string.Format("\"{0}\"\r\n{1}", track.Title, track.Artist);
         if (trackText.Length >= 64)
@@ -962,6 +985,29 @@ namespace WpfMpdClient
         {
           txtArtist.Text = info;
           scrArtist.ScrollToTop();
+        }));
+      }
+    }
+
+    private void GetAlbumInfo(object state)
+    {
+      List<string> values = state as List<string>;
+      string artist = values[0];
+      string album = values[1];
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        txtAlbum.Text = !string.IsNullOrEmpty(artist) && !string.IsNullOrEmpty(album) ? "Downloading info" : string.Empty;
+      }));
+
+      if (!string.IsNullOrEmpty(artist) && !string.IsNullOrEmpty(album)) {
+        string info = LastfmScrobbler.GetAlbumInfo(artist, album);
+        if (string.IsNullOrEmpty(info))
+          info = "No info found";
+
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          txtAlbum.Text = info;
+          scrAlbum.ScrollToTop();
         }));
       }
     }

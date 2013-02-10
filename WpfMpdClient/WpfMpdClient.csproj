@@ -99,6 +99,9 @@
     <Compile Include="BrowserWindow.xaml.cs">
       <DependentUpon>BrowserWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BugReportWindow.xaml.cs">
+      <DependentUpon>BugReportWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ConfigurableListView.cs" />
     <Compile Include="DragAdorner.cs" />
     <Compile Include="GridViewColumnResize.cs" />
@@ -122,6 +125,10 @@
     </Compile>
     <Compile Include="Utilities.cs" />
     <Page Include="BrowserWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="BugReportWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

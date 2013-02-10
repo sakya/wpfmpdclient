@@ -1,4 +1,21 @@
-﻿using System;
+﻿//    WpfMpdClient
+//    Copyright (C) 2012, 2013 Paolo Iommarini
+//    sakya_tg@yahoo.it
+//
+//    This program is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +26,7 @@ using System.IO;
 using System.Web;
 using System.Collections.Specialized;
 using System.Xml.Serialization;
+using System.Threading;
 
 namespace WpfMpdClient
 {
@@ -94,12 +112,42 @@ namespace WpfMpdClient
     } // Serialize
   }
 
+  public class XmlCache
+  {
+    private const int m_MaxCacheElements = 50;
+    private List<Uri> m_Keys = new List<Uri>();
+    private Dictionary<Uri, XmlDocument> m_XmlCache = new Dictionary<Uri, XmlDocument>();
+    private Mutex m_Mutex = new Mutex();
+
+    public void Add(Uri uri, XmlDocument doc)
+    {
+      m_Mutex.WaitOne();
+      if (m_Keys.Count == m_MaxCacheElements) {
+        m_XmlCache.Remove(m_Keys[0]);
+        m_Keys.RemoveAt(0);
+      } 
+      m_XmlCache[uri] = doc;
+      m_Keys.Add(uri);
+      m_Mutex.ReleaseMutex();
+    }
+
+    public XmlDocument Get(Uri uri)
+    {
+      XmlDocument doc = null;
+      m_Mutex.WaitOne();
+      m_XmlCache.TryGetValue(uri, out doc);
+      m_Mutex.ReleaseMutex();
+      return doc;
+    }
+  }
+
   public class Scrobbler
   {    
     ScrobblerCache m_Cache = null;
     string m_Token = string.Empty;
     string m_SessionKey = string.Empty;
     static Dictionary<string, string> m_ArtistCorrectionsCache = new Dictionary<string,string>();
+    static XmlCache m_XmlCache = new XmlCache();
 
     public enum ImageSize
     {
@@ -374,8 +422,33 @@ namespace WpfMpdClient
       return string.Empty;
     } // GetAlbumArt
 
+    public static string GetAlbumInfo(string baseUrl, string apiKey, string artist, string album)
+    {
+      Dictionary<string, string> parameters = new Dictionary<string, string>();
+      parameters["method"] = "album.getInfo";
+      parameters["api_key"] = apiKey;
+      parameters["artist"] = artist;
+      parameters["album"] = album;
+
+      XmlDocument xml = GetResponse(GetUrl(baseUrl, parameters));
+      if (xml != null) {
+        XmlNodeList xnList = xml.SelectNodes("/lfm/album/wiki/content");
+        if (xnList != null && xnList.Count > 0) {
+          string res = WebUtility.HtmlDecode(xnList[0].InnerText);
+          // Remove html tags (like <b>...</b>)
+          res = System.Text.RegularExpressions.Regex.Replace(res, @"<[^>]*>", string.Empty);
+          return res;
+        }
+      }
+      return string.Empty;
+    } // GetAlbumInfo
+
     private static XmlDocument GetResponse(Uri url)
     {
+      XmlDocument tDoc = m_XmlCache.Get(url);
+      if (tDoc != null)
+        return tDoc;
+
       using (WebClient client = new WebClient()) {
         try{
           using (Stream data = client.OpenRead(url)) {
@@ -388,6 +461,8 @@ namespace WpfMpdClient
             string xml = sb.ToString();
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml);
+
+            m_XmlCache.Add(url, doc);
             return doc;
           }
         }catch (Exception){
@@ -484,6 +559,11 @@ namespace WpfMpdClient
       return Scrobbler.GetAlbumArt(m_BaseUrl, size, api_key, artist, album);
     }
 
+    public static string GetAlbumInfo(string artist, string album)
+    {
+      return Scrobbler.GetAlbumInfo(m_BaseUrl, api_key, artist, album);
+    }
+
     public static string GetArtistArt(string artist)
     {
       return Scrobbler.GetArtistArt(m_BaseUrl, ImageSize.large, api_key, artist);
@@ -520,6 +600,11 @@ namespace WpfMpdClient
     public static string GetAlbumArt(string artist, string album, ImageSize size)
     {
       return Scrobbler.GetAlbumArt(m_BaseUrl, size, api_key, artist, album);
+    }
+
+    public static string GetAlbumInfo(string artist, string album)
+    {
+      return Scrobbler.GetAlbumInfo(m_BaseUrl, api_key, artist, album);
     }
 
     public static string GetArtistArt(string artist)

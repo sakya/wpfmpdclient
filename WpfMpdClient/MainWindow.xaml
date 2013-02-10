@@ -455,6 +455,11 @@
                     <TextBlock Margin="2" TextWrapping="Wrap" Name="txtLyrics" />
                   </ScrollViewer>
                 </TabItem>
+                <TabItem Header="Album">
+                  <ScrollViewer Name="scrAlbum" VerticalScrollBarVisibility="Visible">
+                    <TextBlock Margin="2" TextWrapping="Wrap" Name="txtAlbum"/>
+                  </ScrollViewer>
+                </TabItem>                
                 <TabItem Header="Artist">
                   <ScrollViewer Name="scrArtist" VerticalScrollBarVisibility="Visible">
                     <TextBlock Margin="2" TextWrapping="Wrap" Name="txtArtist"/>

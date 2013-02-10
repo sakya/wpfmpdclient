@@ -1,0 +1,36 @@
+﻿<Window x:Class="WpfMpdClient.BugReportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStartupLocation="CenterScreen"
+        Title="Bug report" Height="250" Width="300">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <TextBlock Grid.ColumnSpan="2" TextWrapping="Wrap">
+      WpfMpdClient crashed.<LineBreak/>
+      Would you like to send a bug report?
+      <LineBreak/>
+      <LineBreak/>
+      No private informations will be sent.
+      <LineBreak/>
+      <LineBreak/>
+      Write your email if you want to be informed on bug fix or to be asked for more details (optional).
+    </TextBlock>
+
+    <Label Grid.Row="1" Content="Email (optional):"/>
+    <TextBox Grid.Row="1" Grid.Column="1" Name="txtEmail"/>
+
+    <UniformGrid Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Right" Rows="1" Columns="2">
+      <Button MinWidth="80" Margin="2" Content="No" IsCancel="True" />
+      <Button Margin="2" Content="Yes" IsDefault="True" Click="Button_Click" />
+    </UniformGrid>
+  </Grid>
+</Window>
