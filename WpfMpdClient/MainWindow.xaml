@@ -456,13 +456,36 @@
                   </ScrollViewer>
                 </TabItem>
                 <TabItem Header="Album">
-                  <ScrollViewer Name="scrAlbum" VerticalScrollBarVisibility="Visible">
-                    <TextBlock Margin="2" TextWrapping="Wrap" Name="txtAlbum"/>
+                    <ScrollViewer Name="scrAlbum" VerticalScrollBarVisibility="Visible">
+                    <StackPanel Orientation="Vertical">
+                      <Label Margin="0,5,0,5" Padding="0" >
+                        <TextBlock>
+                        <Bold>Data from</Bold>
+                        <Hyperlink NavigateUri="http://www.last.fm/"
+                                   Hyperlink.RequestNavigate="hyperlink_RequestNavigate">
+                          <TextBlock><Bold>Last.fm</Bold></TextBlock>
+                        </Hyperlink>
+                      </TextBlock>
+                      </Label>
+                      <TextBlock Margin="2" TextWrapping="Wrap" Name="txtAlbum"/>
+                    </StackPanel>
                   </ScrollViewer>
                 </TabItem>                
                 <TabItem Header="Artist">
                   <ScrollViewer Name="scrArtist" VerticalScrollBarVisibility="Visible">
-                    <TextBlock Margin="2" TextWrapping="Wrap" Name="txtArtist"/>
+                    <StackPanel Orientation="Vertical">
+                      <Label Margin="0,5,0,5" Padding="0" >
+                        <TextBlock>
+                        <Bold>Data from</Bold>
+                        <Hyperlink NavigateUri="http://www.last.fm/"
+                                   Hyperlink.RequestNavigate="hyperlink_RequestNavigate">
+                          <TextBlock><Bold>Last.fm</Bold></TextBlock>
+                        </Hyperlink>
+                      </TextBlock>
+                      </Label>
+
+                      <TextBlock Margin="2" TextWrapping="Wrap" Name="txtArtist"/>
+                    </StackPanel>
                   </ScrollViewer>
                 </TabItem>
               </TabControl>
@@ -524,6 +547,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
@@ -560,7 +584,7 @@
           <Label VerticalContentAlignment="Center" Grid.Row="7" Content="Show player controls:" />
           <CheckBox Margin="0,4,0,0" Grid.Row="7" Grid.Column="1" Name="chkShowMiniPlayer" VerticalAlignment="Center" />
 
-          <Label VerticalContentAlignment="Center" Grid.Row="8" Content="Enable last.fm scrobbler:" />
+          <Label VerticalContentAlignment="Center" Grid.Row="8" Content="Enable Last.fm scrobbler:" />
           <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal">
             <CheckBox Margin="0,4,0,0"  Name="chkScrobbler" VerticalAlignment="Center" />
             <Button IsEnabled="{Binding ElementName=chkScrobbler, Path=IsChecked}" Margin="2" Name="btnScrobblerAuthorize" Content="Authorize" Click="btnScrobblerAuthorize_Click">
@@ -568,7 +592,7 @@
                 <ToolTip>
                   <StackPanel>
                     <TextBlock>
-                    To activate scrobbling you need to authorize WpfMpdClient on your last.fm account.
+                    To activate scrobbling you need to authorize WpfMpdClient on your Last.fm account.
                     <LineBreak />
                     This needs to be done only one time.
                     </TextBlock>
@@ -578,8 +602,23 @@
             </Button>
           </StackPanel>
 
-          <Button Margin="2" Grid.Row="9" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
-          <Button Margin="2" Grid.Row="10" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
+          <Label VerticalContentAlignment="Center" Grid.Row="9" Content="Info's language:" />
+          <ComboBox Grid.Row="9" Grid.Column="1" Name="cmbLastFmLang">
+            <ComboBoxItem>Default (English)</ComboBoxItem>
+            <ComboBoxItem>French</ComboBoxItem>
+            <ComboBoxItem>German</ComboBoxItem>
+            <ComboBoxItem>Italian</ComboBoxItem>
+            <ComboBoxItem>Japanese</ComboBoxItem>
+            <ComboBoxItem>Polish</ComboBoxItem>
+            <ComboBoxItem>Portuguese</ComboBoxItem>
+            <ComboBoxItem>Russian</ComboBoxItem>
+            <ComboBoxItem>Spanish</ComboBoxItem>
+            <ComboBoxItem>Swedish</ComboBoxItem>
+            <ComboBoxItem>Turkish</ComboBoxItem>
+          </ComboBox>
+
+          <Button Margin="2" Grid.Row="10" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+          <Button Margin="2" Grid.Row="11" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
         </Grid>
       </TabItem>
       <TabItem Header="About">
@@ -607,6 +646,15 @@
                                Hyperlink.RequestNavigate="hyperlink_RequestNavigate">
                 <TextBlock Text="More Info" />
               </Hyperlink>
+            </Label>
+            <Label Margin="0,5,0,5" Padding="0" >
+                <TextBlock>
+                  <Bold>All album/artist data and album/artist images provided by</Bold>
+                  <Hyperlink NavigateUri="http://www.last.fm/"
+                             Hyperlink.RequestNavigate="hyperlink_RequestNavigate">
+                  <TextBlock><Bold>Last.fm</Bold></TextBlock>
+                  </Hyperlink>
+                </TextBlock>
             </Label>
           </StackPanel>
 

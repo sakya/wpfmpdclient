@@ -354,11 +354,13 @@ namespace WpfMpdClient
       return string.Empty;
     } // GetArtistArt
 
-    public static string GetArtistInfo(string baseUrl, string apiKey, string artist)
+    public static string GetArtistInfo(string baseUrl, string apiKey, string lang, string artist)
     {
       Dictionary<string, string> parameters = new Dictionary<string, string>();
       parameters["method"] = "artist.getInfo";
       parameters["api_key"] = apiKey;
+      if (!string.IsNullOrEmpty(lang))
+        parameters["lang"] = lang;
       parameters["artist"] = artist;
 
       XmlDocument xml = GetResponse(GetUrl(baseUrl, parameters));
@@ -422,11 +424,13 @@ namespace WpfMpdClient
       return string.Empty;
     } // GetAlbumArt
 
-    public static string GetAlbumInfo(string baseUrl, string apiKey, string artist, string album)
+    public static string GetAlbumInfo(string baseUrl, string apiKey, string lang, string artist, string album)
     {
       Dictionary<string, string> parameters = new Dictionary<string, string>();
       parameters["method"] = "album.getInfo";
       parameters["api_key"] = apiKey;
+      if (!string.IsNullOrEmpty(lang))
+        parameters["lang"] = lang;
       parameters["artist"] = artist;
       parameters["album"] = album;
 
@@ -559,9 +563,9 @@ namespace WpfMpdClient
       return Scrobbler.GetAlbumArt(m_BaseUrl, size, api_key, artist, album);
     }
 
-    public static string GetAlbumInfo(string artist, string album)
+    public static string GetAlbumInfo(string artist, string album, string lang)
     {
-      return Scrobbler.GetAlbumInfo(m_BaseUrl, api_key, artist, album);
+      return Scrobbler.GetAlbumInfo(m_BaseUrl, api_key, lang, artist, album);
     }
 
     public static string GetArtistArt(string artist)
@@ -574,9 +578,9 @@ namespace WpfMpdClient
       return Scrobbler.GetArtistArt(m_BaseUrl, size, api_key, artist);
     }
 
-    public static string GetArtistInfo(string artist)
+    public static string GetArtistInfo(string lang, string artist)
     {
-      return Scrobbler.GetArtistInfo(m_BaseUrl, api_key, artist);
+      return Scrobbler.GetArtistInfo(m_BaseUrl, api_key, lang, artist);
     }
   }
 
@@ -602,9 +606,9 @@ namespace WpfMpdClient
       return Scrobbler.GetAlbumArt(m_BaseUrl, size, api_key, artist, album);
     }
 
-    public static string GetAlbumInfo(string artist, string album)
+    public static string GetAlbumInfo(string artist, string album, string lang)
     {
-      return Scrobbler.GetAlbumInfo(m_BaseUrl, api_key, artist, album);
+      return Scrobbler.GetAlbumInfo(m_BaseUrl, api_key, lang, artist, album);
     }
 
     public static string GetArtistArt(string artist)
@@ -617,9 +621,9 @@ namespace WpfMpdClient
       return Scrobbler.GetArtistArt(m_BaseUrl, size, api_key, artist);
     }
 
-    public static string GetArtistInfo(string artist)
+    public static string GetArtistInfo(string lang, string artist)
     {
-      return Scrobbler.GetArtistInfo(m_BaseUrl, api_key, artist);
+      return Scrobbler.GetArtistInfo(m_BaseUrl, api_key, lang, artist);
     }
   }
 }

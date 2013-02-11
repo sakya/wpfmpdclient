@@ -65,6 +65,7 @@ namespace WpfMpdClient
     bool m_IgnoreDisconnect = false;
     ListViewDragDropManager<MpdFile> m_DragDropManager = null;
     MiniPlayerWindow m_MiniPlayer = null;
+    List<string> m_Languages = new List<string>() { string.Empty, "fr", "de", "it", "jp", "pl", "pt", "ru", "es", "sv", "tr" };
 
     ArtDownloader m_ArtDownloader = new ArtDownloader();
     ObservableCollection<ListboxEntry> m_ArtistsSource = new ObservableCollection<ListboxEntry>();
@@ -98,6 +99,9 @@ namespace WpfMpdClient
         chkCloseToTray.IsChecked = m_Settings.CloseToTray;
         chkShowMiniPlayer.IsChecked = m_Settings.ShowMiniPlayer;
         chkScrobbler.IsChecked = m_Settings.Scrobbler;
+        cmbLastFmLang.SelectedIndex = m_Languages.IndexOf(m_Settings.InfoLanguage);
+        if (cmbLastFmLang.SelectedIndex == -1)
+          cmbLastFmLang.SelectedIndex = 0;
 
         chkTray_Changed(null, null);
 
@@ -192,7 +196,7 @@ namespace WpfMpdClient
 
     private void MpcIdleSubsystemsChanged(Mpc connection, Mpc.Subsystems subsystems)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       MpdStatus status = m_Mpc.Status();
@@ -301,7 +305,7 @@ namespace WpfMpdClient
 
     private void PopulateArtists()
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       m_ArtistsSource.Clear();
@@ -322,7 +326,7 @@ namespace WpfMpdClient
 
     private void PopulateGenres()
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       List<string> genres = m_Mpc.List(ScopeSpecifier.Genre);
@@ -340,7 +344,7 @@ namespace WpfMpdClient
 
     private void PopulatePlaylists()
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       List<string> playlists = m_Mpc.ListPlaylists();
@@ -354,7 +358,7 @@ namespace WpfMpdClient
 
     private void PopulateFileSystemTree()
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       treeFileSystem.Items.Clear();
@@ -423,7 +427,7 @@ namespace WpfMpdClient
 
     private void lstArtist_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       if (lstArtist.SelectedItem == null) {
@@ -451,7 +455,7 @@ namespace WpfMpdClient
 
     private void lstGenres_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       if (lstGenres.SelectedItem == null) {
@@ -495,7 +499,7 @@ namespace WpfMpdClient
 
     private void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       ListBox list = sender as ListBox;
@@ -518,7 +522,7 @@ namespace WpfMpdClient
 
     private void lstAlbums_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       ListBox list = sender as ListBox;
@@ -571,6 +575,7 @@ namespace WpfMpdClient
       m_Settings.CloseToTray = chkCloseToTray.IsChecked == true;
       m_Settings.ShowMiniPlayer = chkShowMiniPlayer.IsChecked == true;
       m_Settings.Scrobbler = chkScrobbler.IsChecked == true;
+      m_Settings.InfoLanguage = cmbLastFmLang.SelectedIndex < 0 ? m_Languages[0] : m_Languages[cmbLastFmLang.SelectedIndex];
 
       m_Settings.Serialize(Settings.GetSettingsFileName());
 
@@ -609,7 +614,7 @@ namespace WpfMpdClient
 
     private void PopulatePlaylist()
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       List<MpdFile> tracks = m_Mpc.PlaylistInfo();
@@ -620,7 +625,7 @@ namespace WpfMpdClient
 
     private void ContextMenu_Click(object sender, RoutedEventArgs args)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       MenuItem item = sender as MenuItem;
@@ -650,7 +655,7 @@ namespace WpfMpdClient
 
     private void TracksContextMenu_Click(object sender, RoutedEventArgs args)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       MenuItem mnuItem = sender as MenuItem;
@@ -676,7 +681,7 @@ namespace WpfMpdClient
 
     private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       if (e.AddedItems.Count > 0){
@@ -700,7 +705,7 @@ namespace WpfMpdClient
 
     private void tabBrowse_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       if (e.AddedItems.Count > 0) {
@@ -723,7 +728,7 @@ namespace WpfMpdClient
 
     private void lstPlaylist_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       ListViewItem item = sender as ListViewItem;
@@ -977,7 +982,7 @@ namespace WpfMpdClient
       }));
 
       if (!string.IsNullOrEmpty(artist)) {
-        string info = LastfmScrobbler.GetArtistInfo(artist);
+        string info = LastfmScrobbler.GetArtistInfo(m_Settings.InfoLanguage, artist);
         if (string.IsNullOrEmpty(info))
           info = "No info found";
 
@@ -1000,7 +1005,7 @@ namespace WpfMpdClient
       }));
 
       if (!string.IsNullOrEmpty(artist) && !string.IsNullOrEmpty(album)) {
-        string info = LastfmScrobbler.GetAlbumInfo(artist, album);
+        string info = LastfmScrobbler.GetAlbumInfo(artist, album, m_Settings.InfoLanguage);
         if (string.IsNullOrEmpty(info))
           info = "No info found";
 
@@ -1036,7 +1041,7 @@ namespace WpfMpdClient
 
     private void btnSearch_Click(object sender, RoutedEventArgs e)
     {
-      if (!m_Mpc.Connected)
+      if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       if (!string.IsNullOrEmpty(txtSearch.Text)){

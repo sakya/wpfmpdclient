@@ -17,7 +17,6 @@
 //    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using System.IO;
@@ -151,6 +150,12 @@ namespace WpfMpdClient
     {
       get { return m_MiniWindowTop; }
       set { m_MiniWindowTop = value; }
+    }
+
+    [XmlAttribute("infolanguage")]
+    public string InfoLanguage {
+      get;
+      set;
     }
 
     [XmlAttribute("scrobbler")]

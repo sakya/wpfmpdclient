@@ -17,7 +17,6 @@
 //    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -46,8 +45,9 @@ namespace WpfMpdClient
       m_App = app;
       m_Updater.DownloadingDelegate += Download;
       m_Updater.DownloadCompletedDelegate += DownloadCompleted;
+      m_Updater.DownloadFailedDelegate += DownloadFailed;
 
-      m_Updater.Download(m_App.Url, string.Format("{0}\\temp\\{1}", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), m_App.FileName));
+      m_Updater.Download(m_App.Url, string.Format("{0}\\{1}", System.IO.Path.GetTempPath(), m_App.FileName));
     }
 
     private void Download(string filename, double percentage)
@@ -58,12 +58,23 @@ namespace WpfMpdClient
 
     private void DownloadCompleted(string filename)
     {
-      ProcessStartInfo psInfo = new ProcessStartInfo(filename);
-      psInfo.UseShellExecute = true;
-      Process process = Process.Start(psInfo);
+      if (!System.IO.File.Exists(filename)){
+        MessageBox.Show("Failed to download and install the update.\nPlease download and install the update manually.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+        Process.Start(new ProcessStartInfo("http://www.sakya.it/wordpress/?page_id=250"));
+      }else{
+        ProcessStartInfo psInfo = new ProcessStartInfo(filename);
+        psInfo.UseShellExecute = true;
+        Process process = Process.Start(psInfo);
       
-      MainWindow main = Owner as MainWindow;
-      main.Quit();
+        MainWindow main = Owner as MainWindow;
+        main.Quit();
+      }
+    }
+
+    private void DownloadFailed(string filename, Exception exception)
+    {
+        MessageBox.Show(string.Format("Failed to download the update.\n\n{0}", exception.Message),
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
   }
 }
