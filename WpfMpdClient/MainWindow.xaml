@@ -304,7 +304,7 @@
 
           <GridSplitter ResizeDirection="Columns" HorizontalAlignment="Right" 
                       VerticalAlignment="Stretch" Width="5" Grid.RowSpan="2"/>
-
+         
           <local:ConfigurableListView Margin="2" Grid.Column="1" x:Name="lstTracks" SelectionMode="Extended" SelectionChanged="lstTracks_SelectionChanged" >
             <ListView.ItemContainerStyle>
               <Style TargetType="ListViewItem">
@@ -335,7 +335,7 @@
               <GridView>
                 <GridViewColumn DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}">
                   <GridViewColumn.Header>
-                      <GridViewColumnHeader Content="Track" HorizontalContentAlignment="Left"/>
+                      <GridViewColumnHeader Content="#" HorizontalContentAlignment="Left"/>
                   </GridViewColumn.Header>
                 </GridViewColumn>
                 <GridViewColumn Width="250" DisplayMemberBinding="{Binding Title}">
@@ -390,7 +390,48 @@
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
 
-          <local:ConfigurableListView Margin="2" x:Name="lstPlaylist" SelectionMode="Single" local:GridViewColumnResize.Enabled="True">
+          <ListBox Margin="2" Name="lstPlaylistStyled" SelectionMode="Single">
+            <ListBox.ItemContainerStyle>
+              <Style TargetType="ListBoxItem">
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
+                <EventSetter Event="Selected" Handler="lstPlaylist_Selected" />
+                <Style.Triggers>
+                  <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                      <MultiBinding Converter="{StaticResource IdConverter}">
+                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}}" Path="CurrentTrackId" />
+                        <Binding Path="Id" />
+                      </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                  </DataTrigger>
+                </Style.Triggers>                
+              </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="2">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Text="{Binding Title}"/>
+                    <DockPanel>
+                      <TextBlock Text="{Binding Artist}"/>
+                      <TextBlock Text=" - "/>
+                      <TextBlock Text="{Binding Album}"/>
+                    </DockPanel>
+                  </DockPanel>
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Time,Converter={StaticResource TimeConverter}}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <local:ConfigurableListView Margin="2" Visibility="Collapsed" x:Name="lstPlaylist" SelectionMode="Single" local:GridViewColumnResize.Enabled="True">
             <ListView.ItemContainerStyle>
               <Style TargetType="ListViewItem">
                 <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
@@ -412,7 +453,7 @@
               <GridView>
                 <GridViewColumn DisplayMemberBinding="{Binding Track,Converter={StaticResource TrackConverter}}">
                   <GridViewColumn.Header>
-                    <GridViewColumnHeader Content="Track" HorizontalContentAlignment="Left"/>
+                    <GridViewColumnHeader Content="#" HorizontalContentAlignment="Left"/>
                   </GridViewColumn.Header>
                 </GridViewColumn>
                 <GridViewColumn Width="200" DisplayMemberBinding="{Binding Title}">
@@ -533,9 +574,107 @@
           </ScrollViewer>
         </Grid>
       </TabItem>
+
+      <TabItem Name="tabMessages" Header="Messages">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="100" Width="1*"/>
+            <ColumnDefinition MinWidth="100" Width="4*"/>
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition MinHeight="100" Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <DockPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="2">
+            <TextBlock DockPanel.Dock="Top" Margin="2" Text="Channels:" />
+            <ListBox Margin="2,2,5,2" Name="lstChannels" SelectionMode="Single" SelectionChanged="lstChannels_SelectionChanged">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Name="channelName" Text="{Binding Name}"/>
+                  <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Subscribed}" Value="True">
+                      <Setter TargetName="channelName" Property="FontWeight" Value="Bold"/>
+                    </DataTrigger>
+                  </DataTemplate.Triggers>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+              <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                  <EventSetter Event="MouseDoubleClick" Handler="ChannelItem_DoubleClick" />
+                  <!--<Style.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+                  </Style.Resources>-->
+                </Style>
+              </ListBox.ItemContainerStyle>
+            </ListBox>
+          </DockPanel>
+
+          <GridSplitter ResizeDirection="Columns" HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                        Grid.Row="0" Grid.RowSpan="2"
+                        Width="5"/>
+
+          <DockPanel Grid.Row="0" Grid.Column="1">
+            <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Messages:" />
+            <ListBox Margin="2,2,2,5" Name="lstMessages" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" FontStyle="Italic" Text="{Binding DateTime}"/>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding Message}" TextWrapping="Wrap"/>
+                  </DockPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>              
+              <ListBox.GroupStyle>
+                <GroupStyle>
+                  <GroupStyle.ContainerStyle>
+                    <Style TargetType="{x:Type GroupItem}">
+                      <Setter Property="Template">
+                        <Setter.Value>
+                          <ControlTemplate TargetType="{x:Type GroupItem}">
+                            <Expander Tag="{Binding Path=Name, Mode=OneWay}" IsExpanded="True" Loaded="Expander_Loaded" Unloaded="Expander_Unloaded">
+                              <Expander.Header>
+                                <DockPanel>
+                                  <TextBlock FontWeight="Bold" Text="{Binding Path=Name}"/>
+                                  <TextBlock FontWeight="Bold" Text=": "/>
+                                  <TextBlock FontWeight="Bold" 
+                                    				Text="{Binding Path=ItemCount}"/>
+                                  <TextBlock FontWeight="Bold" Text=" message(s)"/>
+                                </DockPanel>
+                              </Expander.Header>
+                              <ItemsPresenter Margin="5,0,0,0" />
+                            </Expander>
+                          </ControlTemplate>
+                        </Setter.Value>
+                      </Setter>
+                    </Style>
+                  </GroupStyle.ContainerStyle>
+                </GroupStyle>
+              </ListBox.GroupStyle>
+              <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                  <!--<Style.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+                  </Style.Resources>-->
+                </Style>
+              </ListBox.ItemContainerStyle>
+            </ListBox>
+          </DockPanel>
+          
+          <DockPanel Grid.Row="1" Grid.Column="1">
+            <ComboBox Width="100" Name="cmbChannnels" IsEditable="True" DisplayMemberPath="Name" />
+            <Button Name="btnSendMessage" IsDefault="True" DockPanel.Dock="Right" Content="Send" Click="btnSendMessage_Click"/>
+            <TextBox Margin="2" DockPanel.Dock="Left" Name="txtMessage"/>
+          </DockPanel>
+        </Grid>
+      </TabItem>
+
       <TabItem Header="Settings">
         <Grid>
           <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -603,7 +742,7 @@
           </StackPanel>
 
           <Label VerticalContentAlignment="Center" Grid.Row="9" Content="Info's language:" />
-          <ComboBox Grid.Row="9" Grid.Column="1" Name="cmbLastFmLang">
+          <ComboBox Grid.Row="9" Grid.Column="1" Margin="2" Name="cmbLastFmLang">
             <ComboBoxItem>Default (English)</ComboBoxItem>
             <ComboBoxItem>French</ComboBoxItem>
             <ComboBoxItem>German</ComboBoxItem>
@@ -617,8 +756,14 @@
             <ComboBoxItem>Turkish</ComboBoxItem>
           </ComboBox>
 
-          <Button Margin="2" Grid.Row="10" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
-          <Button Margin="2" Grid.Row="11" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
+          <Label VerticalContentAlignment="Center" Grid.Row="10" Content="Playlist style:" />
+          <ComboBox Grid.Row="10" Grid.Column="1" Margin="2" Name="cmbPlaylistStyle">
+            <ComboBoxItem>Columns</ComboBoxItem>
+            <ComboBoxItem>Single column</ComboBoxItem>
+          </ComboBox>
+
+          <Button Margin="2" Grid.Row="11" Name="btnApplySettings" Content="Apply" Click="btnApplySettings_Click"/>
+          <Button Margin="2" Grid.Row="12" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
         </Grid>
       </TabItem>
       <TabItem Header="About">

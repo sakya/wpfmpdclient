@@ -1,5 +1,5 @@
 http://www.iconfinder.com/search/?q=iconset%3Adefaulticon
-http://mpd.wikia.com/wiki/Protocol_Reference
+http://www.musicpd.org/doc/protocol/
 
 http://api.wikia.com/wiki/LyricWiki_API
 http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeling%20Less
@@ -9,3 +9,7 @@ http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeli
 -Libre.fm scrobbling
 -Browse by year
 -Playlists
+
+-Client to client protocol
+-Styled list for playlist and tracks
+-Use stickers to save album and artist image links?

@@ -161,6 +161,13 @@ namespace WpfMpdClient
           }
         }
 
+        foreach (MenuItem i in m_ConextMenu.Items){
+          if (!orderedItems.Contains(i)){
+            i.IsChecked = false;
+            orderedItems.Add(i);
+          }
+        }
+
         m_ConextMenu.Items.Clear();
         foreach (MenuItem item in orderedItems)
           m_ConextMenu.Items.Add(item);

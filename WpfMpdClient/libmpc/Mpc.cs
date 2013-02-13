@@ -1094,6 +1094,9 @@ namespace Libmpc
     /// <returns>The commands the current user has access to.</returns>
     public List<string> Commands()
     {
+      if (getConnection().Commands != null)
+        return getConnection().Commands;
+
       MpdResponse response = this.getConnection().Exec("commands");
 
       if (response.IsError)
@@ -1386,6 +1389,90 @@ namespace Libmpc
           );
     }
 
+    /// <summary>
+    /// Returns a list of all channels
+    /// </summary>
+    /// <returns>A list of all channels.</returns>
+    public List<string> Channels()
+    {
+      MpdResponse response = this.getConnection().Exec("channels");
+
+      if (response.IsError)
+        throw new MpdResponseException(response.ErrorCode, response.ErrorMessage);
+
+      return response.getValueList();
+    }
+
+    /// <summary>
+    /// Subscribe to a channel. The channel is created if it does not exist already. The name may consist of alphanumeric ASCII characters plus underscore, dash, dot and colon.
+    /// </summary>
+    /// <returns>If the action was successful.</returns>
+    public bool ChannelSubscribe(string channel)
+    {
+      if (channel == null)
+        throw new ArgumentNullException("channel");
+
+      return !this.getConnection().Exec("subscribe", new string[] { channel }).IsError;
+    }
+
+    /// <summary>
+    /// Unsubscribe from a channel.
+    /// </summary>
+    /// <returns>If the action was successful.</returns>
+    public bool ChannelUnsubscribe(string channel)
+    {
+      if (channel == null)
+        throw new ArgumentNullException("channel");
+
+      return !this.getConnection().Exec("unsubscribe", new string[] { channel }).IsError;
+    }
+
+    /// <summary>
+    /// Send a message to the specified channel.
+    /// </summary>
+    /// <returns>If the action was successful.</returns>
+    public bool ChannelSendMessage(string channel, string message)
+    {
+      if (channel == null)
+        throw new ArgumentNullException("channel");
+      if (message == null)
+        throw new ArgumentNullException("message");
+
+      message = EscapeString(message);
+      return !this.getConnection().Exec("sendmessage", new string[] { channel, message }).IsError;
+    }
+
+
+    /// <summary>
+    /// Reads messages for this client.
+    /// </summary>
+    /// <returns>If the action was successful.</returns>
+    public List<MpdMessage> ReadChannelsMessages()
+    {
+      MpdResponse response = this.getConnection().Exec("readmessages");
+
+      if (response.IsError)
+        throw new MpdResponseException(response.ErrorCode, response.ErrorMessage);
+
+      List<MpdMessage> result = new List<MpdMessage>();
+
+      Regex LINE_REGEX = new Regex("^(?<key>[A-Z_a-z]*):[ ]{0,1}(?<value>.*)$");
+      string channel = string.Empty;
+      foreach (string line in response.Message) {
+        Match match = LINE_REGEX.Match(line);
+        if (match.Success) {
+          string key = match.Result("${key}");
+          string value = match.Result("${value}");
+          if (key != null && value != null) {
+            if (key == "channel")
+              channel = key;
+            else if (key == "message") 
+              result.Add(new MpdMessage() { Channel = channel, Message = value, DateTime = DateTime.Now });
+          }
+        }
+      }
+      return result;
+    }
     #endregion
 
     private string toTag(ScopeSpecifier scopeSpecifier)

@@ -314,4 +314,50 @@ namespace Libmpc
 
     #endregion
   }
+
+  public class MpdMessage : System.ComponentModel.INotifyPropertyChanged
+  {
+    private string m_Channel = string.Empty;
+    private DateTime m_DateTime = DateTime.MinValue;
+    private string m_Message = string.Empty;
+    public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+
+    public string Channel
+    {
+      get { return m_Channel; }
+      set
+      {
+        m_Channel = value;
+        OnPropertyChanged("Channel");
+      }
+    }
+
+    public DateTime DateTime
+    {
+      get { return m_DateTime; }
+      set
+      {
+        m_DateTime = value;
+        OnPropertyChanged("DateTime");
+      }
+    }
+
+    public string Message
+    {
+      get { return m_Message; }
+      set
+      {
+        m_Message = value;
+        OnPropertyChanged("Message");
+      }
+    }
+
+    protected void OnPropertyChanged(string name)
+    {
+      System.ComponentModel.PropertyChangedEventHandler handler = PropertyChanged;
+      if (handler != null) {
+        handler(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+      }
+    }
+  }
 }

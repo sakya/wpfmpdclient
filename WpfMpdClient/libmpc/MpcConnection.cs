@@ -59,6 +59,7 @@ namespace Libmpc
 
     private static readonly Regex ACK_REGEX = new Regex("^ACK \\[(?<code>[0-9]*)@(?<nr>[0-9]*)] \\{(?<command>[a-z]*)} (?<message>.*)$");
 
+    private List<string> m_Commands = null;
     private Mutex m_Mutex = new Mutex();
     private IPEndPoint ipEndPoint = null;
 
@@ -88,6 +89,12 @@ namespace Libmpc
       get { return this.autoConnect; }
       set { this.autoConnect = value; }
     }
+
+    public List<string> Commands
+    {
+      get { return m_Commands; }
+    }
+
     /// <summary>
     /// Creates a new MpdConnection.
     /// </summary>
@@ -156,6 +163,9 @@ namespace Libmpc
       this.writer.Flush();
 
       this.readResponse();
+
+      MpdResponse response = Exec("commands");
+      m_Commands = response.getValueList();
 
       if (this.OnConnected != null)
         this.OnConnected.Invoke(this);
@@ -234,6 +244,9 @@ namespace Libmpc
       if (command.Contains("\n"))
         throw new ArgumentException("command contains newline");
 
+      if (m_Commands != null && !m_Commands.Contains(command))
+        return new MpdResponse(new ReadOnlyCollection<string>(new List<string>()));
+
       try {
         this.CheckConnected();
         m_Mutex.WaitOne();
@@ -277,6 +290,9 @@ namespace Libmpc
         if (argument[i].Contains("\n"))
           throw new ArgumentException("argument[" + i + "] contains newline");
       }
+
+      if (m_Commands != null && !m_Commands.Contains(command))
+        return new MpdResponse(new ReadOnlyCollection<string>(new List<string>()));
 
       try {
         this.CheckConnected();

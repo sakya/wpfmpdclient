@@ -42,6 +42,42 @@ namespace WpfMpdClient
 {
   public partial class MainWindow : Window
   {
+    public class MpdChannel : INotifyPropertyChanged
+    {
+      public event PropertyChangedEventHandler PropertyChanged;
+
+      private string m_Name = string.Empty;
+      private bool m_Subscribed = false;
+
+      public string Name
+      {
+        get { return m_Name; }
+        set
+        {
+          m_Name = value;
+          OnPropertyChanged("Name");
+        }
+      }
+
+      public bool Subscribed
+      {
+        get { return m_Subscribed; }
+        set
+        {
+          m_Subscribed = value;
+          OnPropertyChanged("Subscribed");
+        }
+      }
+
+      protected void OnPropertyChanged(string name)
+      {
+        PropertyChangedEventHandler handler = PropertyChanged;
+        if (handler != null) {
+          handler(this, new PropertyChangedEventArgs(name));
+        }
+      }
+    }
+
     static MainWindow This = null;
 
     #region Private members
@@ -72,6 +108,9 @@ namespace WpfMpdClient
     ObservableCollection<ListboxEntry> m_AlbumsSource = new ObservableCollection<ListboxEntry>();
     ObservableCollection<ListboxEntry> m_GenresAlbumsSource = new ObservableCollection<ListboxEntry>();
     ObservableCollection<MpdFile> m_PlaylistTracks = new ObservableCollection<MpdFile>();
+    ObservableCollection<MpdMessage> m_Messages = new ObservableCollection<MpdMessage>();
+    ObservableCollection<MpdChannel> m_Channels = new ObservableCollection<MpdChannel>();
+    List<Expander> m_MessagesExpanders = new List<Expander>();
     #endregion
 
     public MainWindow()
@@ -102,6 +141,7 @@ namespace WpfMpdClient
         cmbLastFmLang.SelectedIndex = m_Languages.IndexOf(m_Settings.InfoLanguage);
         if (cmbLastFmLang.SelectedIndex == -1)
           cmbLastFmLang.SelectedIndex = 0;
+        cmbPlaylistStyle.SelectedIndex = m_Settings.StyledPlaylist ? 1 : 0;
 
         chkTray_Changed(null, null);
 
@@ -136,6 +176,8 @@ namespace WpfMpdClient
       tabFileSystem.Visibility = m_Settings.ShowFilesystemTab ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
       playerControl.ShowStopButton = m_Settings.ShowStopButton;
       playerControl.Mpc = m_Mpc;
+      lstPlaylist.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+      lstPlaylistStyled.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
 
       m_NotifyIcon = new System.Windows.Forms.NotifyIcon();
       m_NotifyIcon.Icon = new System.Drawing.Icon("mpd_icon.ico", new System.Drawing.Size(32,32));
@@ -166,8 +208,16 @@ namespace WpfMpdClient
       lstGenresAlbums.SearchProperty = t.GetProperty("Album");
 
       lstPlaylist.ItemsSource = m_PlaylistTracks;
-      m_DragDropManager = new ListViewDragDropManager<MpdFile>(lstPlaylist);
+      lstPlaylistStyled.ItemsSource = m_PlaylistTracks;
+      m_DragDropManager = new ListViewDragDropManager<MpdFile>(m_Settings.StyledPlaylist ? lstPlaylistStyled : lstPlaylist);
       m_DragDropManager.ProcessDrop += dragMgr_ProcessDrop;
+
+      lstChannels.ItemsSource = m_Channels;
+      cmbChannnels.ItemsSource = m_Channels;
+      lstMessages.ItemsSource = m_Messages;
+      CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(lstMessages.ItemsSource);
+      PropertyGroupDescription group = new PropertyGroupDescription("Channel");
+      view.GroupDescriptions.Add(group);
 
       m_ArtDownloader.Start();      
       txtStatus.Text = "Not connected";
@@ -190,8 +240,12 @@ namespace WpfMpdClient
       }
 
       MpcIdleSubsystemsChanged(m_MpcIdle, Mpc.Subsystems.All);
-      m_MpcIdle.Idle(Mpc.Subsystems.player | Mpc.Subsystems.playlist | Mpc.Subsystems.stored_playlist | Mpc.Subsystems.update |
-                     Mpc.Subsystems.mixer | Mpc.Subsystems.options);
+
+      Mpc.Subsystems subsystems = Mpc.Subsystems.player | Mpc.Subsystems.playlist | Mpc.Subsystems.stored_playlist | Mpc.Subsystems.update |
+                                  Mpc.Subsystems.mixer | Mpc.Subsystems.options;
+      if (m_Mpc.Commands().Contains("channels"))
+        subsystems |= Mpc.Subsystems.message | Mpc.Subsystems.subscription;
+      m_MpcIdle.Idle(subsystems);
     }
 
     private void MpcIdleSubsystemsChanged(Mpc connection, Mpc.Subsystems subsystems)
@@ -242,6 +296,11 @@ namespace WpfMpdClient
         }));
       }
 
+      if ((subsystems & Mpc.Subsystems.subscription) != 0)
+        PopulateChannels();
+      if ((subsystems & Mpc.Subsystems.message) != 0)
+        PopulateMessages();
+
       m_LastStatus = status;
     }
 
@@ -253,6 +312,10 @@ namespace WpfMpdClient
           return;
         }
       }
+
+      List<string> commands = m_Mpc.Commands();
+      if (!commands.Contains("channels"))
+        tabMessages.Visibility = System.Windows.Visibility.Collapsed;
 
       txtStatus.Text = string.Format("Connected to {0}:{1} [MPD v.{2}]", m_Settings.ServerAddress, m_Settings.ServerPort, m_Mpc.Connection.Version);
       MpdStatistics stats = m_Mpc.Stats();      
@@ -576,11 +639,17 @@ namespace WpfMpdClient
       m_Settings.ShowMiniPlayer = chkShowMiniPlayer.IsChecked == true;
       m_Settings.Scrobbler = chkScrobbler.IsChecked == true;
       m_Settings.InfoLanguage = cmbLastFmLang.SelectedIndex < 0 ? m_Languages[0] : m_Languages[cmbLastFmLang.SelectedIndex];
+      m_Settings.StyledPlaylist = cmbPlaylistStyle.SelectedIndex == 1;
 
       m_Settings.Serialize(Settings.GetSettingsFileName());
 
       playerControl.ShowStopButton = m_Settings.ShowStopButton;
       tabFileSystem.Visibility = m_Settings.ShowFilesystemTab ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
+      lstPlaylist.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+      lstPlaylistStyled.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+      m_DragDropManager.Selector = m_Settings.StyledPlaylist ? lstPlaylistStyled : lstPlaylist;
+      m_DragDropManager.ProcessDrop += dragMgr_ProcessDrop;
 
       m_IgnoreDisconnect = true;
       if (m_Mpc.Connected)
@@ -604,7 +673,8 @@ namespace WpfMpdClient
 
     private void StartTimerHandler(object sender, ElapsedEventArgs e)
     {
-      m_StartTimer.Stop();
+      if (m_StartTimer != null)
+        m_StartTimer.Stop();
       m_StartTimer = null;
       Dispatcher.BeginInvoke(new Action(() =>
       {
@@ -684,11 +754,12 @@ namespace WpfMpdClient
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
-      if (e.AddedItems.Count > 0){
+      if (e.AddedItems.Count > 0) {
         TabItem tab = e.AddedItems[0] as TabItem;
         if (tab == null)
           return;
-      }
+      } else
+        return;
 
       if (tabControl.SelectedIndex == 1){
 
@@ -699,7 +770,10 @@ namespace WpfMpdClient
           sb.AppendLine(m_Mpc.Stats().ToString());
           sb.AppendLine(m_Mpc.Status().ToString());
           txtServerStatus.Text = sb.ToString();
-        }));      
+        }));
+      } else if (tabControl.SelectedIndex == 3) {
+        PopulateChannels();
+        //PopulateMessages();
       }
     }
 
@@ -712,7 +786,8 @@ namespace WpfMpdClient
         TabItem tab = e.AddedItems[0] as TabItem;
         if (tab == null)
           return;
-      }
+      } else
+        return;
 
       if (tabBrowse.SelectedIndex == 0)
         lstAlbums_SelectionChanged(lstAlbums, null);
@@ -726,12 +801,19 @@ namespace WpfMpdClient
         btnSearch_Click(null, null);
     }
 
+    private void lstPlaylist_Selected(object sender, RoutedEventArgs e)
+    {
+      ListBoxItem item = sender as ListBoxItem;
+      if (item != null)
+        item.IsSelected = false;
+    }
+
     private void lstPlaylist_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
-      ListViewItem item = sender as ListViewItem;
+      ListBoxItem item = sender as ListBoxItem;
       if (item != null) {
         MpdFile file = item.DataContext as MpdFile;
         if (file != null) {
@@ -1173,5 +1255,110 @@ namespace WpfMpdClient
     {
       chkShowMiniPlayer.IsEnabled = chkCloseToTray.IsChecked == true || chkMinimizeToTray.IsChecked == true;
     }
+
+    #region Client to client Messages
+    private void PopulateChannels()
+    {
+      if (m_Mpc == null || !m_Mpc.Connected)
+        return;
+
+      List<string> channels = m_Mpc.Channels();
+      List<MpdChannel> NewChannels = new List<MpdChannel>();
+      foreach (string c in channels) {
+        MpdChannel ch = GetChannel(c);
+        NewChannels.Add(new MpdChannel() { Name = c, 
+                                           Subscribed = ch != null ? ch.Subscribed : false });
+      }
+
+      m_Channels.Clear();
+      foreach (MpdChannel c in NewChannels)
+        m_Channels.Add(c);
+    }
+
+    private void PopulateMessages()
+    {
+      if (m_Mpc == null || !m_Mpc.Connected)
+        return;
+
+      List<MpdMessage> messages = m_Mpc.ReadChannelsMessages();
+      foreach (MpdMessage m in messages)
+        m_Messages.Add(m);
+    }
+
+    private void lstChannels_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+
+    }
+
+    private void btnSendMessage_Click(object sender, RoutedEventArgs e)
+    {
+      if (m_Mpc == null || !m_Mpc.Connected)
+        return;
+
+      string channel = cmbChannnels.Text;
+      if (!string.IsNullOrEmpty(channel) && !string.IsNullOrEmpty(txtMessage.Text)) {
+        channel = channel.Trim();
+        m_Mpc.ChannelSubscribe(channel);
+        if (m_Mpc.ChannelSendMessage(channel, txtMessage.Text)) {
+          m_Messages.Add(new MpdMessage() { Channel = channel, Message = txtMessage.Text, DateTime = DateTime.Now });
+          txtMessage.Clear();
+          MpdChannel c = GetChannel(channel);
+          if (c != null)
+            c.Subscribed = true;
+          else
+            m_Channels.Add(new MpdChannel() { Name=channel, Subscribed=true });
+
+          Expander exp = GetExpander(channel);
+          if (exp != null)
+            exp.IsExpanded = true;
+        }      
+      }
+    }
+
+    private Expander GetExpander(string name)
+    {
+      foreach (Expander e in m_MessagesExpanders) {
+        if (e.Tag as string == name)
+          return e;
+      }
+      return null;
+    }
+
+    private MpdChannel GetChannel(string name)
+    {
+      foreach (MpdChannel c in m_Channels) {
+        if (c.Name == name)
+          return c;
+      }
+      return null;       
+    }
+
+    private void Expander_Loaded(object sender, RoutedEventArgs e)
+    {
+      m_MessagesExpanders.Add(sender as Expander);
+    }
+
+    private void Expander_Unloaded(object sender, RoutedEventArgs e)
+    {
+      m_MessagesExpanders.Remove(sender as Expander);
+    }
+
+    private void ChannelItem_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+      ListBoxItem item = sender as ListBoxItem;
+      if (item != null) {
+        MpdChannel ch = item.Content as MpdChannel;
+        if (ch != null){
+          bool res = false;
+          if (ch.Subscribed)
+            res = m_Mpc.ChannelUnsubscribe(ch.Name);
+          else
+            res = m_Mpc.ChannelSubscribe(ch.Name);
+          if (res)
+            ch.Subscribed = !ch.Subscribed;
+        }
+      }
+    }
+    #endregion
   }
 }

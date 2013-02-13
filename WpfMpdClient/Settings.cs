@@ -158,6 +158,12 @@ namespace WpfMpdClient
       set;
     }
 
+    [XmlAttribute("styledplaylist")]
+    public bool StyledPlaylist {
+      get;
+      set;
+    }
+
     [XmlAttribute("scrobbler")]
     public bool Scrobbler {
       get;
