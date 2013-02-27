@@ -33,11 +33,61 @@ using System.Windows.Controls;
 using System.Threading;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Documents;
+using System.Windows.Navigation;
 
 namespace WpfMpdClient
 {
   public class Utilities
   {
+    public static void RenderHtml(TextBlock textBlock, string text, RequestNavigateEventHandler handler)
+    {
+      textBlock.Text = text;
+      
+      List<Inline> newInlines = new List<Inline>();;
+      InlineCollection message = textBlock.Inlines;
+
+      foreach (Inline inline in message){
+        Run run = inline as Run;
+        if (run != null){
+          string inlineText = run.Text;
+          inlineText = inlineText.Replace("<br>", "\r\n");
+          // Match hyperlinks:
+          Match match = Regex.Match(inlineText, @"\<a\s+href=[""'](?<link>[^']+)[""']\>(?<text>.*?)\</a\>", RegexOptions.IgnoreCase);
+          int lastIndex = 0;
+          while (match.Success){
+            newInlines.Add(new Run(text.Substring(lastIndex, match.Index - lastIndex)));
+            string link = match.Groups["link"].Value;
+            string linkText = match.Groups["text"].Value;
+
+            Hyperlink hyperLink = new Hyperlink() { NavigateUri = new Uri(link) };
+            hyperLink.Inlines.Add(linkText);
+            if (handler != null)
+              hyperLink.RequestNavigate += handler;
+            newInlines.Add(hyperLink);
+
+            lastIndex = match.Index + match.Length;
+            match = match.NextMatch();
+          }
+
+          if (lastIndex < text.Length)
+            newInlines.Add(new Run(text.Substring(lastIndex)));
+        }else
+          newInlines.Add(inline);
+      }
+
+      // Remove other tags:
+      foreach (Inline i in newInlines){
+        Run run = i as Run;
+        if (run != null)
+          run.Text = System.Text.RegularExpressions.Regex.Replace(run.Text, @"<[^>]*>", string.Empty);
+      }
+
+      textBlock.Inlines.Clear();
+      foreach (Inline i in newInlines)
+        textBlock.Inlines.Add(i);
+    } // RenderHtml
+
     public static string FormatSeconds(int seconds)
     {
       DateTime d = new DateTime(2000, 1, 1, 0, 0, 0);

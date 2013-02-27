@@ -378,6 +378,7 @@
           </local:ConfigurableListView>
         </Grid>
       </TabItem>
+
       <TabItem Header="Now Playing">
         <Grid>
           <Grid.RowDefinitions>
@@ -434,6 +435,7 @@
           <local:ConfigurableListView Margin="2" Visibility="Collapsed" x:Name="lstPlaylist" SelectionMode="Single" local:GridViewColumnResize.Enabled="True">
             <ListView.ItemContainerStyle>
               <Style TargetType="ListViewItem">
+                <EventSetter Event="Selected" Handler="lstPlaylist_Selected" />
                 <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
                 <Style.Triggers>
                   <DataTrigger Value="True">
@@ -558,6 +560,7 @@
           <local:PlayerControl x:Name="playerControl" Grid.Row="2" Grid.ColumnSpan="2" />
         </Grid>
       </TabItem>
+
       <TabItem Header="Server">
         <Grid>
           <Grid.RowDefinitions>
@@ -602,10 +605,6 @@
               <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                   <EventSetter Event="MouseDoubleClick" Handler="ChannelItem_DoubleClick" />
-                  <!--<Style.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
-                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
-                  </Style.Resources>-->
                 </Style>
               </ListBox.ItemContainerStyle>
             </ListBox>
@@ -654,10 +653,6 @@
               </ListBox.GroupStyle>
               <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
-                  <!--<Style.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
-                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
-                  </Style.Resources>-->
                 </Style>
               </ListBox.ItemContainerStyle>
             </ListBox>
@@ -766,6 +761,7 @@
           <Button Margin="2" Grid.Row="12" Name="btnCheckUpdates" Content="Check for updates" Click="btnCheckUpdates_Click"/>
         </Grid>
       </TabItem>
+
       <TabItem Header="About">
         <Grid>
           <Grid.RowDefinitions>

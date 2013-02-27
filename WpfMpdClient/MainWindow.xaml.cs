@@ -1070,7 +1070,7 @@ namespace WpfMpdClient
 
         Dispatcher.BeginInvoke(new Action(() =>
         {
-          txtArtist.Text = info;
+          Utilities.RenderHtml(txtArtist, info, hyperlink_RequestNavigate);
           scrArtist.ScrollToTop();
         }));
       }
@@ -1093,7 +1093,7 @@ namespace WpfMpdClient
 
         Dispatcher.BeginInvoke(new Action(() =>
         {
-          txtAlbum.Text = info;
+          Utilities.RenderHtml(txtAlbum, info, hyperlink_RequestNavigate);
           scrAlbum.ScrollToTop();
         }));
       }

@@ -3,6 +3,7 @@ http://www.musicpd.org/doc/protocol/
 
 http://api.wikia.com/wiki/LyricWiki_API
 http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeling%20Less
+http://wpfthemes.codeplex.com/
 
 -Scrobbling: http://www.lastfm.it/api/scrobbling
 
@@ -11,5 +12,5 @@ http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=Airbag&song=Feeli
 -Playlists
 
 -Client to client protocol
--Styled list for playlist and tracks
+-Styled list for playlist
 -Use stickers to save album and artist image links?

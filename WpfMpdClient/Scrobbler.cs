@@ -368,8 +368,6 @@ namespace WpfMpdClient
         XmlNodeList xnList = xml.SelectNodes("/lfm/artist/bio/content");
         if (xnList != null && xnList.Count > 0){
           string res = WebUtility.HtmlDecode(xnList[0].InnerText);
-          // Remove html tags (like <b>...</b>)
-          res = System.Text.RegularExpressions.Regex.Replace(res, @"<[^>]*>", string.Empty);
           return res;
         }
       }
@@ -439,8 +437,6 @@ namespace WpfMpdClient
         XmlNodeList xnList = xml.SelectNodes("/lfm/album/wiki/content");
         if (xnList != null && xnList.Count > 0) {
           string res = WebUtility.HtmlDecode(xnList[0].InnerText);
-          // Remove html tags (like <b>...</b>)
-          res = System.Text.RegularExpressions.Regex.Replace(res, @"<[^>]*>", string.Empty);
           return res;
         }
       }

@@ -495,7 +495,7 @@ namespace WPF.JoshSmith.ServiceProviders.UI
         int index = -1;
         for (int i = 0; i < this.selector.Items.Count; ++i) {
           ContentControl item = this.GetListViewItem(i);
-          if (this.IsMouseOver(item)) {
+          if (item != null && this.IsMouseOver(item)) {
             index = i;
             break;
           }
