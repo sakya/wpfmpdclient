@@ -117,6 +117,9 @@ namespace WpfMpdClient
 
     public void Update(MpdStatus status, MpdFile currentSong)
     {
+      if (status == null)
+        return;
+
       m_Status = status;
       btnShuffle.IsChecked = status.Random;
       btnRepeat.IsChecked = status.Repeat;

@@ -53,7 +53,7 @@ namespace WpfMpdClient
           string inlineText = run.Text;
           inlineText = inlineText.Replace("<br>", "\r\n");
           // Match hyperlinks:
-          Match match = Regex.Match(inlineText, @"\<a\s+href=[""'](?<link>[^']+)[""']\>(?<text>.*?)\</a\>", RegexOptions.IgnoreCase);
+          Match match = Regex.Match(inlineText, @"\<a\s[^>]*href=[""'](?<link>[^'>""]+)[""'][^>]*\>(?<text>.*?)\</a\>", RegexOptions.IgnoreCase);
           int lastIndex = 0;
           while (match.Success){
             newInlines.Add(new Run(text.Substring(lastIndex, match.Index - lastIndex)));

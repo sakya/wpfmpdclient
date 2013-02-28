@@ -199,6 +199,7 @@ namespace WpfMpdClient
       string fromCache = DiskImageCache.GetFromCache(ImageUri);
       loadedImage = new BitmapImage();
       loadedImage.BeginInit();
+      loadedImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
       loadedImage.CacheOption = BitmapCacheOption.OnDemand;
       loadedImage.DownloadCompleted += OnDownloadCompleted;
       loadedImage.DownloadFailed += OnDownloadFailed;
