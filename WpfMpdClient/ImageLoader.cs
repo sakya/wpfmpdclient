@@ -203,6 +203,7 @@ namespace WpfMpdClient
       loadedImage.CacheOption = BitmapCacheOption.OnDemand;
       loadedImage.DownloadCompleted += OnDownloadCompleted;
       loadedImage.DownloadFailed += OnDownloadFailed;
+      loadedImage.DecodeFailed += OnDecodeFailed;
       loadedImage.UriSource = !string.IsNullOrEmpty(fromCache) ? new Uri(fromCache) : ImageUri;
       loadedImage.EndInit();
     }
@@ -289,6 +290,19 @@ namespace WpfMpdClient
     {
       Source = loadedImage;
       DiskImageCache.AddToCache(loadedImage);
+    }
+
+    private void OnDecodeFailed<TEventArgs>(object sender, TEventArgs e)
+    {
+      if (!string.IsNullOrWhiteSpace(LoadFailedImage)) {
+        BitmapImage failedImage = new BitmapImage();
+
+        // Load the initial bitmap from the local resource
+        failedImage.BeginInit();
+        failedImage.UriSource = new Uri(LoadFailedImage, UriKind.Relative);
+        failedImage.EndInit();
+        Source = failedImage;
+      }
     }
   }
 }
