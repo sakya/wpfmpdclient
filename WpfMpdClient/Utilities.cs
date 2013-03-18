@@ -60,11 +60,16 @@ namespace WpfMpdClient
             string link = match.Groups["link"].Value;
             string linkText = match.Groups["text"].Value;
 
-            Hyperlink hyperLink = new Hyperlink() { NavigateUri = new Uri(link) };
-            hyperLink.Inlines.Add(linkText);
-            if (handler != null)
-              hyperLink.RequestNavigate += handler;
-            newInlines.Add(hyperLink);
+            Uri uri = null;
+            if (Uri.TryCreate(link, UriKind.Absolute, out uri)) {
+              Hyperlink hyperLink = new Hyperlink() { NavigateUri = uri };
+              hyperLink.Inlines.Add(linkText);
+              if (handler != null)
+                hyperLink.RequestNavigate += handler;
+              newInlines.Add(hyperLink);
+            } else {
+              newInlines.Add(new Run(linkText));
+            }
 
             lastIndex = match.Index + match.Length;
             match = match.NextMatch();

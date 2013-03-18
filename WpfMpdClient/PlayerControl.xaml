@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WpfMpdClient"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
   <Grid>
@@ -33,7 +34,8 @@
         <Image Name="imgArtDefault" Width="100" Source="images/cover.png"/>
       </Border>
       <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" >
-        <Image Name="imgArt" Width="100" />
+        <local:ImageLoader x:Name="imgArt" Width="100" 
+                           ImageUri="{Binding Path=ImageUrl}"/>
       </Border>
       <TextBlock Grid.Column="1" Name="lblTitle" FontWeight="Bold" Text="&lt;No Title&gt;" TextTrimming="CharacterEllipsis" />
       <TextBlock Grid.Column="1" Name="lblAlbum" Text="&lt;No Album&gt;" Grid.Row="1" TextTrimming="CharacterEllipsis"  />

@@ -253,8 +253,12 @@ namespace WpfMpdClient
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
-      MpdStatus status = m_Mpc.Status();
-
+      MpdStatus status = null;
+      try{
+        status = m_Mpc.Status();
+      }catch{
+        return;
+      }
       if ((subsystems & Mpc.Subsystems.player) != 0 || (subsystems & Mpc.Subsystems.mixer) != 0 ||
           (subsystems & Mpc.Subsystems.options) != 0){
         Dispatcher.BeginInvoke(new Action(() =>
@@ -372,7 +376,14 @@ namespace WpfMpdClient
         return;
 
       m_ArtistsSource.Clear();
-      List<string> artists = m_Mpc.List(ScopeSpecifier.Artist);
+      List<string> artists = null;
+      try{
+        artists = m_Mpc.List(ScopeSpecifier.Artist);
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
+
       artists.Sort();
       for (int i = 0; i < artists.Count; i++) {
         if (string.IsNullOrEmpty(artists[i]))
@@ -392,7 +403,14 @@ namespace WpfMpdClient
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
-      List<string> genres = m_Mpc.List(ScopeSpecifier.Genre);
+      List<string> genres = null;
+      try{
+        genres = m_Mpc.List(ScopeSpecifier.Genre);
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
+
       genres.Sort();
       for (int i = 0; i < genres.Count; i++) {
         if (string.IsNullOrEmpty(genres[i]))
@@ -410,7 +428,13 @@ namespace WpfMpdClient
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
-      List<string> playlists = m_Mpc.ListPlaylists();
+      List<string> playlists = null;
+      try{
+        playlists = m_Mpc.ListPlaylists();
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
       playlists.Sort();
       lstPlaylists.ItemsSource = playlists;
       if (playlists.Count > 0){
@@ -444,7 +468,13 @@ namespace WpfMpdClient
     private void PopulateFileSystemTree(ItemCollection items, string path)
     {
       items.Clear();
-      MpdDirectoryListing list = m_Mpc.LsInfo(path);
+      MpdDirectoryListing list = null;
+      try{
+        list = m_Mpc.LsInfo(path);
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
       foreach (string dir in list.DirectoryList){
         TreeViewItem item = new TreeViewItem();
         item.Header = path != null ? dir.Remove(0, path.Length + 1) : dir;
@@ -479,7 +509,13 @@ namespace WpfMpdClient
     {
       TreeViewItem treeItem = treeFileSystem.SelectedItem as TreeViewItem;
       if (treeItem != null){
-        MpdDirectoryListing list = m_Mpc.LsInfo(treeItem.Tag != null ? treeItem.Tag.ToString() : null);
+        MpdDirectoryListing list = null;
+        try{
+          list = m_Mpc.LsInfo(treeItem.Tag != null ? treeItem.Tag.ToString() : null);
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
         m_Tracks = new List<MpdFile>();
         foreach (MpdFile file in list.FileList)
           m_Tracks.Add(file);
@@ -500,7 +536,13 @@ namespace WpfMpdClient
 
       m_AlbumsSource.Clear();
       string artist = SelectedArtist();
-      List<string> albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Artist, artist);
+      List<string> albums = null;
+      try{
+        albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Artist, artist);
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
       albums.Sort();
       for (int i = 0; i < albums.Count; i++) {
         if (string.IsNullOrEmpty(albums[i]))
@@ -531,7 +573,13 @@ namespace WpfMpdClient
       if (genre == Mpc.NoGenre)
         genre = string.Empty;
 
-      List<MpdFile> files = m_Mpc.Find(ScopeSpecifier.Genre, genre);
+      List<MpdFile> files = null;
+      try{
+        files = m_Mpc.Find(ScopeSpecifier.Genre, genre);
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
       files.Sort(delegate(MpdFile p1, MpdFile p2)
                  { 
                    return string.Compare(p1.Album, p2.Album);
@@ -568,8 +616,13 @@ namespace WpfMpdClient
       ListBox list = sender as ListBox;
       if (list.SelectedItem != null) {
         string playlist = list.SelectedItem.ToString();
-
-        m_Tracks = m_Mpc.ListPlaylistInfo(playlist);
+        
+        try{
+          m_Tracks = m_Mpc.ListPlaylistInfo(playlist);
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
         lstTracks.ItemsSource = m_Tracks;
         ScrollTracksToLeft();
       } else {
@@ -612,7 +665,12 @@ namespace WpfMpdClient
           album = string.Empty;
         search[ScopeSpecifier.Album] = album;
 
-        m_Tracks = m_Mpc.Find(search);
+        try{
+          m_Tracks = m_Mpc.Find(search);
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
         lstTracks.ItemsSource = m_Tracks;
         ScrollTracksToLeft();
       } else {
@@ -687,7 +745,13 @@ namespace WpfMpdClient
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
-      List<MpdFile> tracks = m_Mpc.PlaylistInfo();
+      List<MpdFile> tracks = null;
+      try{
+        tracks = m_Mpc.PlaylistInfo();
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
       m_PlaylistTracks.Clear();
       foreach (MpdFile file in tracks)
         m_PlaylistTracks.Add(file);
@@ -702,25 +766,43 @@ namespace WpfMpdClient
       if (item.Name == "mnuDeletePlaylist") {
         string playlist = lstPlaylists.SelectedItem.ToString();
         if (Utilities.Confirm("Delete", string.Format("Delete playlist \"{0}\"?", playlist))){
-          m_Mpc.Rm(playlist);
-          PopulatePlaylists();
+          try{
+            m_Mpc.Rm(playlist);
+            PopulatePlaylists();
+          }catch (Exception ex){
+            ShowException(ex);
+            return;
+          }
         }
         return;
       }
 
       if (item.Name == "mnuAddReplace" || item.Name == "mnuAddReplacePlay"){
-        m_Mpc.Clear();
+        try{
+          m_Mpc.Clear();
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
         if (lstPlaylist.Items.Count > 0)
           lstPlaylist.ScrollIntoView(lstPlaylist.Items[0]);
       }
 
       if (m_Tracks != null){
         foreach (MpdFile f in m_Tracks){
-          m_Mpc.Add(f.File);
+          try{
+            m_Mpc.Add(f.File);
+          }catch (Exception){}
         }
       }        
-      if (item.Name == "mnuAddReplacePlay")
-        m_Mpc.Play();
+      if (item.Name == "mnuAddReplacePlay"){
+        try{
+          m_Mpc.Play();
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
+      }        
     }
 
     private void TracksContextMenu_Click(object sender, RoutedEventArgs args)
@@ -730,7 +812,12 @@ namespace WpfMpdClient
 
       MenuItem mnuItem = sender as MenuItem;
       if (mnuItem.Name == "mnuAddReplace" || mnuItem.Name == "mnuAddReplacePlay"){
-        m_Mpc.Clear();
+        try{
+          m_Mpc.Clear();
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
         if (lstPlaylist.Items.Count > 0)
           lstPlaylist.ScrollIntoView(lstPlaylist.Items[0]);
       }
@@ -745,8 +832,14 @@ namespace WpfMpdClient
 
     private void btnUpdate_Click(object sender, RoutedEventArgs e)
     {
-      if (m_Mpc.Connected)
-        m_Mpc.Update();
+      if (m_Mpc.Connected){
+        try{
+          m_Mpc.Update();
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
+      }
     }
 
     private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -817,7 +910,12 @@ namespace WpfMpdClient
       if (item != null) {
         MpdFile file = item.DataContext as MpdFile;
         if (file != null) {
-          m_Mpc.Play(file.Pos);
+          try{
+            m_Mpc.Play(file.Pos);
+          }catch (Exception ex){
+            ShowException(ex);
+            return;
+          }
         }
       }
     }
@@ -840,7 +938,12 @@ namespace WpfMpdClient
         switch (This.m_Mpc.Status().State) {
           case MpdState.Play:
           case MpdState.Pause:
-            This.m_Mpc.Stop();
+            try{
+              This.m_Mpc.Stop();
+            }catch (Exception ex){
+              This.ShowException(ex);
+              return;
+            }
             break;
         }
       }
@@ -874,14 +977,24 @@ namespace WpfMpdClient
     private void btnClear_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected){
-        m_Mpc.Clear();
+        try{
+          m_Mpc.Clear();
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
       }
     }
 
     private void btnSave_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected){
-        m_Mpc.Save(txtPlaylist.Text);
+        try{
+          m_Mpc.Save(txtPlaylist.Text);
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
         txtPlaylist.Clear();
         PopulatePlaylists();
       }
@@ -1045,14 +1158,26 @@ namespace WpfMpdClient
 
     private void mnuPlay_Click(object sender, RoutedEventArgs e)
     {
-      if (m_Mpc.Connected)
-        m_Mpc.Play();
+      if (m_Mpc.Connected){
+        try{
+          m_Mpc.Play();
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
+      }
     }
 
     private void mnuPause_Click(object sender, RoutedEventArgs e)
     {
-      if (m_Mpc.Connected)
-        m_Mpc.Pause(true);
+      if (m_Mpc.Connected){
+        try{
+          m_Mpc.Pause(true);
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
+      }
     }
 
     private void GetArtistInfo(object state)
@@ -1139,7 +1264,12 @@ namespace WpfMpdClient
             searchBy = ScopeSpecifier.Title;
             break;
         }
-        m_Tracks = m_Mpc.Search(searchBy, txtSearch.Text);
+        try{
+          m_Tracks = m_Mpc.Search(searchBy, txtSearch.Text);
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
         lstTracks.ItemsSource = m_Tracks;
         ScrollTracksToLeft();
       }else{
@@ -1247,13 +1377,24 @@ namespace WpfMpdClient
 
 		private void dragMgr_ProcessDrop( object sender, ProcessDropEventArgs<MpdFile> e )
 		{
-      if (m_Mpc.Connected)
-        m_Mpc.Move(e.OldIndex, e.NewIndex);
+      if (m_Mpc.Connected){
+        try{
+          m_Mpc.Move(e.OldIndex, e.NewIndex);
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }
+      }
     }
 
     private void chkTray_Changed(object sender, RoutedEventArgs e)
     {
       chkShowMiniPlayer.IsEnabled = chkCloseToTray.IsChecked == true || chkMinimizeToTray.IsChecked == true;
+    }
+
+    private void ShowException(Exception ex)
+    {
+      MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     #region Client to client Messages
@@ -1262,7 +1403,13 @@ namespace WpfMpdClient
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
-      List<string> channels = m_Mpc.Channels();
+      List<string> channels = null;
+      try{
+        channels = m_Mpc.Channels();
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
       List<MpdChannel> NewChannels = new List<MpdChannel>();
       foreach (string c in channels) {
         MpdChannel ch = GetChannel(c);
@@ -1280,7 +1427,13 @@ namespace WpfMpdClient
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
-      List<MpdMessage> messages = m_Mpc.ReadChannelsMessages();
+      List<MpdMessage> messages = null;
+      try{
+        messages = m_Mpc.ReadChannelsMessages();
+      }catch (Exception ex){
+        ShowException(ex);
+        return;
+      }
       foreach (MpdMessage m in messages)
         m_Messages.Add(m);
     }
@@ -1298,7 +1451,12 @@ namespace WpfMpdClient
       string channel = cmbChannnels.Text;
       if (!string.IsNullOrEmpty(channel) && !string.IsNullOrEmpty(txtMessage.Text)) {
         channel = channel.Trim();
-        m_Mpc.ChannelSubscribe(channel);
+        try{
+          m_Mpc.ChannelSubscribe(channel);
+        }catch (Exception ex){
+          ShowException(ex);
+          return;
+        }        
         if (m_Mpc.ChannelSendMessage(channel, txtMessage.Text)) {
           m_Messages.Add(new MpdMessage() { Channel = channel, Message = txtMessage.Text, DateTime = DateTime.Now });
           txtMessage.Clear();
@@ -1350,15 +1508,20 @@ namespace WpfMpdClient
         MpdChannel ch = item.Content as MpdChannel;
         if (ch != null){
           bool res = false;
-          if (ch.Subscribed)
-            res = m_Mpc.ChannelUnsubscribe(ch.Name);
-          else
-            res = m_Mpc.ChannelSubscribe(ch.Name);
+          try{
+            if (ch.Subscribed)
+              res = m_Mpc.ChannelUnsubscribe(ch.Name);
+            else
+              res = m_Mpc.ChannelSubscribe(ch.Name);
+          }catch (Exception ex){
+            ShowException(ex);
+            return;
+          }
           if (res)
             ch.Subscribed = !ch.Subscribed;
         }
       }
-    }
+    }    
     #endregion
   }
 }
