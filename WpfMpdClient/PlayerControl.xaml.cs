@@ -196,32 +196,42 @@ namespace WpfMpdClient
 
     private void btnBack_Click(object sender, RoutedEventArgs e)
     {
-      if (Mpc.Connected)
-        Mpc.Previous();
+      try{
+        if (Mpc.Connected)
+          Mpc.Previous();
+      }catch (Exception) {}
     }
 
     private void btnPlay_Click(object sender, RoutedEventArgs e)
     {
-      if (Mpc.Connected)
-        Mpc.Play();
+      try{
+        if (Mpc.Connected)
+          Mpc.Play();
+      }catch (Exception) {}
     }
 
     private void btnPause_Click(object sender, RoutedEventArgs e)
     {
-      if (Mpc.Connected)
-        Mpc.Pause(true);
+      try{
+        if (Mpc.Connected)
+          Mpc.Pause(true);
+      }catch (Exception) {}
     }
 
     private void btnStop_Click(object sender, RoutedEventArgs e)
     {
-      if (Mpc.Connected)
-        Mpc.Stop();
+      try{
+        if (Mpc.Connected)
+          Mpc.Stop();
+      }catch (Exception) {}
     }
 
     private void btnForward_Click(object sender, RoutedEventArgs e)
     {
-      if (Mpc.Connected)
-        Mpc.Next();
+      try{
+        if (Mpc.Connected)
+          Mpc.Next();
+      }catch (Exception) {}
     }
 
     private void sliTime_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
@@ -231,8 +241,10 @@ namespace WpfMpdClient
 
     private void sliTime_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
     {
-      if (m_Status != null && Mpc.Connected)
-        Mpc.Seek(m_Status.Song, (int)sliTime.Value);
+      try{
+        if (m_Status != null && Mpc.Connected)
+          Mpc.Seek(m_Status.Song, (int)sliTime.Value);        
+      }catch (Exception) {}
       m_TimeDragging = false;
     }
 
@@ -244,14 +256,18 @@ namespace WpfMpdClient
 
     private void btnShuffle_Click(object sender, RoutedEventArgs e)
     {
-      if (Mpc.Connected)
-        Mpc.Random(btnShuffle.IsChecked == true);
+      try{
+        if (Mpc.Connected)
+          Mpc.Random(btnShuffle.IsChecked == true);
+      }catch (Exception) {}
     }
 
     private void btnRepeat_Click(object sender, RoutedEventArgs e)
     {
-      if (Mpc.Connected)
-        Mpc.Repeat(btnRepeat.IsChecked == true);
+      try{
+        if (Mpc.Connected)
+          Mpc.Repeat(btnRepeat.IsChecked == true);
+      }catch (Exception) {}
     }
 
     private void sliVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
