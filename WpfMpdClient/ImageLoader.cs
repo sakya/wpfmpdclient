@@ -197,6 +197,9 @@ namespace WpfMpdClient
         return;
 
       string fromCache = DiskImageCache.GetFromCache(ImageUri);
+      if (!string.IsNullOrEmpty(fromCache) && !File.Exists(fromCache))
+        fromCache = string.Empty;
+
       loadedImage = new BitmapImage();
       loadedImage.BeginInit();
       loadedImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;

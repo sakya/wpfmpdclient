@@ -459,6 +459,9 @@ namespace WPF.JoshSmith.ServiceProviders.UI
           return false;
 
         ContentControl item = this.GetListViewItem(this.indexToSelect);
+        if (item == null)
+          return false;
+
         Rect bounds = VisualTreeHelper.GetDescendantBounds(item);
         Point ptInItem = this.selector.TranslatePoint(this.ptMouseDown, item);
 

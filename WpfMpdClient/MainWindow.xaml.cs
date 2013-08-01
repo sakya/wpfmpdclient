@@ -777,15 +777,15 @@ namespace WpfMpdClient
         return;
       }
 
+      bool scroll = false;
       if (item.Name == "mnuAddReplace" || item.Name == "mnuAddReplacePlay"){
+        scroll = true;
         try{
           m_Mpc.Clear();
         }catch (Exception ex){
           ShowException(ex);
           return;
         }
-        if (lstPlaylist.Items.Count > 0)
-          lstPlaylist.ScrollIntoView(lstPlaylist.Items[0]);
       }
 
       if (m_Tracks != null){
@@ -794,6 +794,8 @@ namespace WpfMpdClient
             m_Mpc.Add(f.File);
           }catch (Exception){}
         }
+        if (scroll && lstPlaylist.Items.Count > 0)
+          lstPlaylist.ScrollIntoView(lstPlaylist.Items[0]);
       }        
       if (item.Name == "mnuAddReplacePlay"){
         try{
@@ -810,20 +812,23 @@ namespace WpfMpdClient
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
+      bool scroll = false;
       MenuItem mnuItem = sender as MenuItem;
       if (mnuItem.Name == "mnuAddReplace" || mnuItem.Name == "mnuAddReplacePlay"){
+        scroll = true;
         try{
           m_Mpc.Clear();
         }catch (Exception ex){
           ShowException(ex);
           return;
         }
-        if (lstPlaylist.Items.Count > 0)
-          lstPlaylist.ScrollIntoView(lstPlaylist.Items[0]);
       }
 
       foreach (MpdFile file  in lstTracks.SelectedItems)
         m_Mpc.Add(file.File);
+
+      if (scroll && lstPlaylist.Items.Count > 0)
+        lstPlaylist.ScrollIntoView(lstPlaylist.Items[0]);
 
       if (mnuItem.Name == "mnuAddReplacePlay")
         m_Mpc.Play();
@@ -1148,12 +1153,28 @@ namespace WpfMpdClient
 
     private void mnuPrevious_Click(object sender, RoutedEventArgs e)
     {
-      PreviousTrack();
+      if (m_Mpc.Connected) {
+        try {
+          m_Mpc.Previous();
+        }
+        catch (Exception ex) {
+          ShowException(ex);
+          return;
+        }
+      }
     }
 
     private void mnuNext_Click(object sender, RoutedEventArgs e)
     {
-      NextTrack();
+      if (m_Mpc.Connected) {
+        try {
+          m_Mpc.Next();
+        }
+        catch (Exception ex) {
+          ShowException(ex);
+          return;
+        }
+      }
     }
 
     private void mnuPlay_Click(object sender, RoutedEventArgs e)

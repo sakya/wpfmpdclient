@@ -539,8 +539,8 @@ namespace WpfMpdClient
 
   public class LastfmScrobbler : Scrobbler
   {    
-    private const string api_key = "";
-    private const string api_secret = "";
+    private const string api_key = "151e13d056bfe133d205314b7720d27b";
+    private const string api_secret = "b6239b548844fbbbc73cbade25effe76";
     private const string m_BaseUrl = "http://ws.audioscrobbler.com/2.0/";
 
     public LastfmScrobbler(string sessionKey)
