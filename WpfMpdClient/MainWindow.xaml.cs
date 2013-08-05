@@ -906,6 +906,20 @@ namespace WpfMpdClient
         item.IsSelected = false;
     }
 
+    private void lstPlaylistContextMenu_Click(object sender, RoutedEventArgs args)
+    {
+      if (m_Mpc == null || !m_Mpc.Connected)
+        return;
+
+      MenuItem item = sender as MenuItem;
+      if (item.Name == "mnuRemove"){
+        MpdFile file = item.DataContext as MpdFile;
+        if (file != null) {
+          m_Mpc.Delete(file.Pos);
+        }
+      }        
+    }
+
     private void lstPlaylist_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)

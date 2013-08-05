@@ -288,7 +288,7 @@
                   <ComboBoxItem>Title</ComboBoxItem>
                 </ComboBox>
                 <Label Grid.Row="1" VerticalContentAlignment="Center" Content="Search:" />
-                <TextBox Margin="2" MinWidth="150" Name="txtSearch" Grid.Row="1" Grid.Column="1"/>
+                <TextBox Margin="2" MinWidth="150" VerticalContentAlignment="Center" Name="txtSearch" Grid.Row="1" Grid.Column="1"/>
 
                 <Grid Grid.Row="2" Grid.ColumnSpan="2">
                   <Grid.ColumnDefinitions>
@@ -394,6 +394,19 @@
           <ListBox Margin="2" Name="lstPlaylistStyled" SelectionMode="Single">
             <ListBox.ItemContainerStyle>
               <Style TargetType="ListBoxItem">
+                <Setter Property="ContextMenu">
+                    <Setter.Value>
+                        <ContextMenu>
+                            <ContextMenu.ItemContainerStyle>
+                                <Style TargetType="MenuItem">
+                                    <EventSetter Event="MenuItem.Click" Handler="lstPlaylistContextMenu_Click"/>
+                                </Style>
+                            </ContextMenu.ItemContainerStyle>
+                            <MenuItem Name="mnuRemove" Header="Remove from playlist">
+                            </MenuItem>
+                        </ContextMenu>
+                    </Setter.Value>
+                </Setter>
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                 <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
                 <EventSetter Event="Selected" Handler="lstPlaylist_Selected" />
@@ -539,7 +552,7 @@
           </Expander>
 
           <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
-            <TextBox Margin="2,0,0,0" Name="txtPlaylist" Width="150" TextChanged="txtPlaylist_TextChanged" />
+            <TextBox Margin="2,0,0,0" Name="txtPlaylist" Width="150" VerticalContentAlignment="Center" TextChanged="txtPlaylist_TextChanged" />
             <Button Margin="2,0,0,0" MinWidth="50" Name="btnSave" Content="Save" Click="btnSave_Click" IsEnabled="False">
               <Button.ToolTip>
                 <ToolTip>
@@ -664,7 +677,7 @@
           <DockPanel Grid.Row="1" Grid.Column="1">
             <ComboBox Width="100" Name="cmbChannnels" IsEditable="True" DisplayMemberPath="Name" />
             <Button Name="btnSendMessage" IsDefault="True" DockPanel.Dock="Right" Content="Send" Click="btnSendMessage_Click"/>
-            <TextBox Margin="2" DockPanel.Dock="Left" Name="txtMessage"/>
+            <TextBox Margin="2" DockPanel.Dock="Left" VerticalContentAlignment="Center" Name="txtMessage"/>
           </DockPanel>
         </Grid>
       </TabItem>
@@ -696,12 +709,12 @@
           </Grid.ColumnDefinitions>
 
           <Label VerticalContentAlignment="Center" Content="Server:" />
-          <TextBox Margin="2" MinWidth="150" Name="txtServerAddress" Grid.Column="1"/>
+          <TextBox Margin="2" MinWidth="150" VerticalContentAlignment="Center" Name="txtServerAddress" Grid.Column="1"/>
           <Label VerticalContentAlignment="Center" Grid.Column="2" Content="Port:" />
-          <TextBox Margin="2" MinWidth="50" Name="txtServerPort" Grid.Column="3" PreviewTextInput="txtServerPort_PreviewTextInput"/>
+          <TextBox Margin="2" MinWidth="50" VerticalContentAlignment="Center" Name="txtServerPort" Grid.Column="3" PreviewTextInput="txtServerPort_PreviewTextInput"/>
 
           <Label Grid.Row="1" Content="Password:" />
-          <PasswordBox Margin="2" Name="txtPassword" Grid.Row="1" Grid.Column="1" />
+          <PasswordBox Margin="2" Name="txtPassword" VerticalContentAlignment="Center" Grid.Row="1" Grid.Column="1" />
 
           <Label VerticalContentAlignment="Center" Grid.Row="2" Content="Reconnect on connection lost:" />
           <CheckBox Margin="0,4,0,0" Grid.Row="2" Grid.Column="1" Name="chkAutoreconnect" VerticalAlignment="Center" />
