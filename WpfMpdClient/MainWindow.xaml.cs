@@ -37,6 +37,7 @@ using CsUpdater;
 using System.Reflection;
 using System.Collections.ObjectModel;
 using WPF.JoshSmith.ServiceProviders.UI;
+using System.Threading;
 
 namespace WpfMpdClient
 {
@@ -81,6 +82,7 @@ namespace WpfMpdClient
     static MainWindow This = null;
 
     #region Private members
+    bool m_Connecting = false;
     LastfmScrobbler m_LastfmScrobbler = null;
     Updater m_Updater = null;
     UpdaterApp m_App = null;
@@ -88,8 +90,8 @@ namespace WpfMpdClient
     Mpc m_Mpc = null;
     Mpc m_MpcIdle = null;
     MpdStatus m_LastStatus = null;
-    Timer m_StartTimer = null;
-    Timer m_ReconnectTimer = null;
+    System.Timers.Timer m_StartTimer = null;
+    System.Timers.Timer m_ReconnectTimer = null;
     List<MpdFile> m_Tracks = null;
     MpdFile m_CurrentTrack = null;
     DateTime m_CurrentTrackStart = DateTime.MinValue;
@@ -186,7 +188,7 @@ namespace WpfMpdClient
       Closing += CloseHandler;
 
       if (!string.IsNullOrEmpty(m_Settings.ServerAddress)){
-        m_StartTimer = new Timer();
+        m_StartTimer = new System.Timers.Timer();
         m_StartTimer.Interval = 500;
         m_StartTimer.Elapsed += StartTimerHandler;
         m_StartTimer.Start();
@@ -300,34 +302,37 @@ namespace WpfMpdClient
         }));
       }
 
-      if ((subsystems & Mpc.Subsystems.subscription) != 0)
-        PopulateChannels();
-      if ((subsystems & Mpc.Subsystems.message) != 0)
-        PopulateMessages();
+      //if ((subsystems & Mpc.Subsystems.subscription) != 0)
+      //  PopulateChannels();
+      //if ((subsystems & Mpc.Subsystems.message) != 0)
+      //  PopulateMessages();
 
       m_LastStatus = status;
     }
 
     private void MpcConnected(Mpc connection)
     {
-      if (!string.IsNullOrEmpty(m_Settings.Password)){
-        if (!m_Mpc.Password(m_Settings.Password)){
-          MessageBox.Show("Error connecting to server:\r\nWrong password", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-          return;
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        if (!string.IsNullOrEmpty(m_Settings.Password)) {
+          if (!m_Mpc.Password(m_Settings.Password)) {
+            MessageBox.Show("Error connecting to server:\r\nWrong password", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+          }
         }
-      }
 
-      List<string> commands = m_Mpc.Commands();
-      if (!commands.Contains("channels"))
-        tabMessages.Visibility = System.Windows.Visibility.Collapsed;
+        List<string> commands = m_Mpc.Commands();
+        if (!commands.Contains("channels"))
+          tabMessages.Visibility = System.Windows.Visibility.Collapsed;
 
-      txtStatus.Text = string.Format("Connected to {0}:{1} [MPD v.{2}]", m_Settings.ServerAddress, m_Settings.ServerPort, m_Mpc.Connection.Version);
-      MpdStatistics stats = m_Mpc.Stats();      
-      PopulateGenres();
-      PopulatePlaylists();
-      PopulateFileSystemTree();
-      PopulatePlaylist();
-      PopulateArtists();      
+        txtStatus.Text = string.Format("Connected to {0}:{1} [MPD v.{2}]", m_Settings.ServerAddress, m_Settings.ServerPort, m_Mpc.Connection.Version);
+        MpdStatistics stats = m_Mpc.Stats();
+        PopulateGenres();
+        PopulatePlaylists();
+        PopulateFileSystemTree();
+        PopulatePlaylist();
+        PopulateArtists();
+      }));
     }
 
     private void MpcDisconnected(Mpc connection)
@@ -335,7 +340,7 @@ namespace WpfMpdClient
       if (!connection.Connected){
         txtStatus.Text = "Not connected";
         if (!m_IgnoreDisconnect  && m_Settings.AutoReconnect && m_ReconnectTimer == null){
-          m_ReconnectTimer = new Timer();
+          m_ReconnectTimer = new System.Timers.Timer();
           m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
           m_ReconnectTimer.Elapsed += ReconnectTimerHandler;
           m_ReconnectTimer.Start();
@@ -345,7 +350,8 @@ namespace WpfMpdClient
 
     private void Connect()
     {
-      if (!string.IsNullOrEmpty(m_Settings.ServerAddress)) {
+      if (!string.IsNullOrEmpty(m_Settings.ServerAddress) && !m_Connecting) {
+        m_Connecting = true;
         txtStatus.Text = string.Format("Connecting to {0}:{1}...", m_Settings.ServerAddress, m_Settings.ServerPort);
         try {
           IPAddress[] addresses = System.Net.Dns.GetHostAddresses(m_Settings.ServerAddress);
@@ -356,14 +362,34 @@ namespace WpfMpdClient
             m_IgnoreDisconnect = true;
             if (m_Mpc.Connected)
               m_Mpc.Connection.Disconnect();
-            m_Mpc.Connection = new MpcConnection(ie);
-            if (m_MpcIdle.Connected)
-              m_MpcIdle.Connection.Disconnect();
-            m_MpcIdle.Connection = new MpcConnection(ie);
-            m_IgnoreDisconnect = false;
+            m_Mpc.Connection = new MpcConnection();
+            m_Mpc.Connection.Server = ie;
+            m_MpcIdle.Connection = new MpcConnection();
+            m_MpcIdle.Connection.Server = ie;
+
+            ThreadPool.QueueUserWorkItem( (o) => 
+            {
+              try {
+                m_Mpc.Connection.Connect();
+                if (m_MpcIdle.Connected)
+                  m_MpcIdle.Connection.Disconnect();
+                m_MpcIdle.Connection.Connect();
+                m_IgnoreDisconnect = false;
+              } catch (Exception ex) {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                  txtStatus.Text = string.Empty;
+                  MessageBox.Show(string.Format("Error connecting to server:\r\n{0}\r\n{1}", ex.Message, ex.StackTrace), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }));
+              } finally {
+                m_Connecting = false;
+              }
+            });
+
           }
         }
         catch (Exception ex) {
+          m_Connecting = false;
           txtStatus.Text = string.Empty;
           MessageBox.Show(string.Format("Error connecting to server:\r\n{0}\r\n{1}", ex.Message, ex.StackTrace), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -870,7 +896,7 @@ namespace WpfMpdClient
           txtServerStatus.Text = sb.ToString();
         }));
       } else if (tabControl.SelectedIndex == 3) {
-        PopulateChannels();
+        //PopulateChannels();
         //PopulateMessages();
       }
     }

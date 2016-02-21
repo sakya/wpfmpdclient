@@ -104,6 +104,7 @@ namespace Libmpc
     /// </summary>
     /// <param name="server">The IPEndPoint of the MPD server.</param>
     public MpcConnection(IPEndPoint server) { this.Connect(server); }
+
     /// <summary>
     /// The IPEndPoint of the MPD server.
     /// </summary>
