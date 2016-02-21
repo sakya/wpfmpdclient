@@ -594,7 +594,7 @@
         </Grid>
       </TabItem>
 
-      <TabItem Name="tabMessages" Header="Messages">
+      <TabItem Name="tabMessages" Header="Messages" Visibility="Collapsed">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition MinWidth="100" Width="1*"/>

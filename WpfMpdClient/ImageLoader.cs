@@ -57,7 +57,7 @@ namespace WpfMpdClient
   using System.Collections.Generic;
   using System.Threading;
   using System.IO;
-
+  using System.Windows.Media.Animation;
   public class DiskImageCache
   {
     static string m_TempPath = System.IO.Path.GetTempPath();
@@ -291,7 +291,25 @@ namespace WpfMpdClient
         object sender,
         EventArgs e)
     {
-      Source = loadedImage;
+      Storyboard sb = new Storyboard();
+      DoubleAnimation anim = new DoubleAnimation(1.0, 0.0, new Duration(TimeSpan.FromMilliseconds(250)));
+      Storyboard.SetTarget(anim, this);
+      Storyboard.SetTargetProperty(anim, new PropertyPath("Opacity"));
+      sb.Children.Add(anim);
+
+      sb.Completed += (sbs, sbev) =>
+      {
+        sb = new Storyboard();
+        Source = loadedImage;
+        anim = new DoubleAnimation(0.0, 1.0, new Duration(TimeSpan.FromMilliseconds(500)));
+        Storyboard.SetTarget(anim, this);
+        Storyboard.SetTargetProperty(anim, new PropertyPath("Opacity"));
+        sb.Children.Add(anim);
+        sb.Begin();
+      };
+
+      sb.Begin();
+
       DiskImageCache.AddToCache(loadedImage);
     }
 
