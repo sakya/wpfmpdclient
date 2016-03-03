@@ -150,7 +150,8 @@ namespace Libmpc
       this.networkStream = this.tcpClient.GetStream();
       
       this.reader = new StreamReader(this.networkStream, Encoding.UTF8);
-      this.writer = new StreamWriter(this.networkStream, Encoding.UTF8);
+      this.writer = new StreamWriter(this.networkStream, Encoding.ASCII);
+      this.writer.AutoFlush = true;
       this.writer.NewLine = "\n";
 
       string firstLine = this.reader.ReadLine();
@@ -160,10 +161,9 @@ namespace Libmpc
       }
       this.version = firstLine.Substring(FIRST_LINE_PREFIX.Length);
 
-      this.writer.WriteLine();
-      this.writer.Flush();
-
-      this.readResponse();
+      //this.writer.WriteLine();
+      //this.writer.Flush();
+      //this.readResponse();
 
       MpdResponse response = Exec("commands");
       m_Commands = response.getValueList();
@@ -204,7 +204,7 @@ namespace Libmpc
         while (true){
           this.CheckConnected();
           this.writer.WriteLine(command);
-          this.writer.Flush();
+          //this.writer.Flush();
           MpdResponse res = this.readResponse();
 
           Mpc.Subsystems eventSubsystems = Mpc.Subsystems.None;
@@ -252,13 +252,14 @@ namespace Libmpc
         this.CheckConnected();
         m_Mutex.WaitOne();
         this.writer.WriteLine(command);
-        this.writer.Flush();
+        //this.writer.Flush();
 
         MpdResponse res = this.readResponse();
         m_Mutex.ReleaseMutex();
         return res;
       }
-      catch (Exception) {
+      catch (Exception ex) {
+        System.Diagnostics.Debug.WriteLine(string.Format("Exec: {0}", ex.Message));
         try {
           this.Disconnect();
         }
@@ -299,7 +300,7 @@ namespace Libmpc
         this.CheckConnected();
         m_Mutex.WaitOne();
         this.writer.WriteLine(string.Format("{0} {1}", command, string.Join(" ", argument)));
-        this.writer.Flush();
+        //this.writer.Flush();
 
         MpdResponse res = this.readResponse();
         m_Mutex.ReleaseMutex();
