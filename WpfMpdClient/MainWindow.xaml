@@ -64,7 +64,7 @@
 
                 <DockPanel Grid.Row="0">
                   <TextBlock DockPanel.Dock="Top" Margin="2" Text="Artists:" />
-                  <local:SearchableListBox Margin="2,2,2,5" x:Name="lstArtist" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged">
+                  <local:SearchableListBox Margin="2,2,2,5" x:Name="lstArtist" BorderThickness="0" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged">
                     <local:SearchableListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">
                         <Style.Resources>
@@ -94,7 +94,7 @@
 
                 <DockPanel Grid.Row="1">
                   <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Albums:" />
-                  <local:SearchableListBox Margin="2" Grid.Row="3" SelectionMode="Single" x:Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
+                  <local:SearchableListBox Margin="2" Grid.Row="3" BorderThickness="0" SelectionMode="Single" x:Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
                     <local:SearchableListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">
                         <Style.Resources>
@@ -146,7 +146,7 @@
 
                 <DockPanel Grid.Row="0">
                   <TextBlock DockPanel.Dock="Top" Margin="2" Text="Genres:" />
-                  <ListBox Margin="2,2,2,5" Name="lstGenres" SelectionMode="Single" SelectionChanged="lstGenres_SelectionChanged">
+                  <ListBox Margin="2,2,2,5" Name="lstGenres" BorderThickness="0" SelectionMode="Single" SelectionChanged="lstGenres_SelectionChanged">
                     <ListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">
                         <Style.Resources>
@@ -164,7 +164,7 @@
 
                 <DockPanel Grid.Row="1">
                   <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Albums:" />
-                  <local:SearchableListBox Margin="2" Grid.Row="3" SelectionMode="Single" x:Name="lstGenresAlbums" SelectionChanged="lstAlbums_SelectionChanged">
+                  <local:SearchableListBox Margin="2" Grid.Row="3" BorderThickness="0" SelectionMode="Single" x:Name="lstGenresAlbums" SelectionChanged="lstAlbums_SelectionChanged">
                     <local:SearchableListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">
                         <Style.Resources>
@@ -214,7 +214,7 @@
               <Grid>
                 <DockPanel Grid.Row="0">
                   <TextBlock DockPanel.Dock="Top" Margin="2" Text="Playlists:" />
-                  <ListBox Margin="2,2,2,5" Name="lstPlaylists" SelectionMode="Single" SelectionChanged="lstPlaylists_SelectionChanged">
+                  <ListBox Margin="2,2,2,5" Name="lstPlaylists" BorderThickness="0" SelectionMode="Single" SelectionChanged="lstPlaylists_SelectionChanged">
                     <ListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">
                         <Style.Resources>
@@ -249,7 +249,7 @@
 
             <TabItem Name="tabFileSystem" Header="File system">
               <Grid>
-                <TreeView Name="treeFileSystem" SelectedItemChanged="treeFileSystem_SelectedItemChanged">
+                <TreeView Name="treeFileSystem" BorderThickness="0" SelectedItemChanged="treeFileSystem_SelectedItemChanged">
                   <TreeView.ContextMenu>
                     <ContextMenu>
                       <ContextMenu.ItemContainerStyle>
@@ -304,8 +304,69 @@
 
           <GridSplitter ResizeDirection="Columns" HorizontalAlignment="Right" 
                       VerticalAlignment="Stretch" Width="5" Grid.RowSpan="2"/>
-         
-          <local:ConfigurableListView Margin="2" Grid.Column="1" x:Name="lstTracks" SelectionMode="Extended" SelectionChanged="lstTracks_SelectionChanged" >
+
+          <ListBox Margin="2" Name="lstTracksStyled" Grid.Column="1" BorderThickness="0" SelectionMode="Single">
+            <ListBox.ItemContainerStyle>
+              <Style TargetType="ListBoxItem">
+                <Setter Property="ContextMenu">
+                  <Setter.Value>
+                    <ContextMenu>
+                      <ContextMenu.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                          <EventSetter Event="MenuItem.Click" Handler="TracksContextMenu_Click"/>
+                        </Style>
+                      </ContextMenu.ItemContainerStyle>
+                      <MenuItem Name="mnuAdd" Header="Add">
+                      </MenuItem>
+                      <MenuItem Name="mnuAddReplace" Header="Add and replace"  >
+                      </MenuItem>
+                      <MenuItem Name="mnuAddReplacePlay" Header="Add, replace and play"  >
+                      </MenuItem>
+                    </ContextMenu>
+                  </Setter.Value>
+                </Setter>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <EventSetter Event="MouseDoubleClick" Handler="lstPlaylist_MouseDoubleClick" />
+                <EventSetter Event="Selected" Handler="lstPlaylist_Selected" />
+                <Style.Triggers>
+                  <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                      <MultiBinding Converter="{StaticResource IdConverter}">
+                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}}" Path="CurrentTrackId" />
+                        <Binding Path="Id" />
+                      </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                  </DataTrigger>
+                  <Trigger Property="Control.IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"/>
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid Name="grid" Margin="2">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Text="{Binding Title}"/>
+                    <DockPanel>
+                      <TextBlock Text="{Binding Artist}"/>
+                      <TextBlock Text=" - "/>
+                      <TextBlock Text="{Binding Album}"/>
+                    </DockPanel>
+                  </DockPanel>
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Time,Converter={StaticResource TimeConverter}}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <local:ConfigurableListView Margin="2" Grid.Column="1" BorderThickness="0" x:Name="lstTracks" SelectionMode="Extended" SelectionChanged="lstTracks_SelectionChanged" >
             <ListView.ItemContainerStyle>
               <Style TargetType="ListViewItem">
                 <Style.Resources>

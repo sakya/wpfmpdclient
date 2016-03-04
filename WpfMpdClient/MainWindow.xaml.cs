@@ -38,6 +38,7 @@ using System.Reflection;
 using System.Collections.ObjectModel;
 using WPF.JoshSmith.ServiceProviders.UI;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace WpfMpdClient
 {
@@ -181,6 +182,10 @@ namespace WpfMpdClient
       lstPlaylist.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
       lstPlaylistStyled.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
 
+      lstTracks.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+      lstTracksStyled.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
+
       m_NotifyIcon = new System.Windows.Forms.NotifyIcon();
       m_NotifyIcon.Icon = new System.Drawing.Icon("mpd_icon.ico", new System.Drawing.Size(32,32));
       m_NotifyIcon.MouseDown += new System.Windows.Forms.MouseEventHandler(NotifyIcon_MouseDown);
@@ -250,7 +255,7 @@ namespace WpfMpdClient
       m_MpcIdle.Idle(subsystems);
     }
 
-    private void MpcIdleSubsystemsChanged(Mpc connection, Mpc.Subsystems subsystems)
+    private async void MpcIdleSubsystemsChanged(Mpc connection, Mpc.Subsystems subsystems)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -263,7 +268,7 @@ namespace WpfMpdClient
       }
       if ((subsystems & Mpc.Subsystems.player) != 0 || (subsystems & Mpc.Subsystems.mixer) != 0 ||
           (subsystems & Mpc.Subsystems.options) != 0){
-        Dispatcher.BeginInvoke(new Action(() =>
+        await Dispatcher.BeginInvoke(new Action(() =>
         {
           MenuItem m = m_NotifyIconMenu.Items[1] as MenuItem;
           m.Visibility = status.State != MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
@@ -284,16 +289,13 @@ namespace WpfMpdClient
         }));
       }
 
-      if ((subsystems & Mpc.Subsystems.playlist) != 0){
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-          PopulatePlaylist();
-        }));
+      if ((subsystems & Mpc.Subsystems.playlist) != 0){        
+        await PopulatePlaylist();
       }
 
       if ((subsystems & Mpc.Subsystems.update) != 0){
         int lastUpdate = m_LastStatus != null ? m_LastStatus.UpdatingDb : -1;
-        Dispatcher.BeginInvoke(new Action(() =>
+        await Dispatcher.BeginInvoke(new Action(() =>
         {
           btnUpdate.IsEnabled = status.UpdatingDb <= 0;
           // Update db finished:
@@ -310,29 +312,34 @@ namespace WpfMpdClient
       m_LastStatus = status;
     }
 
-    private void MpcConnected(Mpc connection)
+    private async void MpcConnected(Mpc connection)
     {
-      Dispatcher.BeginInvoke(new Action(() =>
-      {
         if (!string.IsNullOrEmpty(m_Settings.Password)) {
           if (!m_Mpc.Password(m_Settings.Password)) {
-            MessageBox.Show("Error connecting to server:\r\nWrong password", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await Dispatcher.BeginInvoke(new Action(() =>
+            {
+              MessageBox.Show("Error connecting to server:\r\nWrong password", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }));
             return;
           }
         }
 
         List<string> commands = m_Mpc.Commands();
-        if (!commands.Contains("channels"))
-          tabMessages.Visibility = System.Windows.Visibility.Collapsed;
+        await Dispatcher.BeginInvoke(new Action(() =>
+        {
+          if (!commands.Contains("channels"))
+            tabMessages.Visibility = System.Windows.Visibility.Collapsed;
 
-        txtStatus.Text = string.Format("Connected to {0}:{1} [MPD v.{2}]", m_Settings.ServerAddress, m_Settings.ServerPort, m_Mpc.Connection.Version);
+          txtStatus.Text = string.Format("Connected to {0}:{1} [MPD v.{2}]", m_Settings.ServerAddress, m_Settings.ServerPort, m_Mpc.Connection.Version);
+        }));
+
         MpdStatistics stats = m_Mpc.Stats();
-        PopulateGenres();
-        PopulatePlaylists();
-        PopulateFileSystemTree();
-        PopulatePlaylist();
-        PopulateArtists();
-      }));
+        await PopulateGenres();
+        await PopulatePlaylists();
+        await PopulateFileSystemTree();
+        await PopulatePlaylist();
+        await PopulateArtists();
+      //}));
     }
 
     private void MpcDisconnected(Mpc connection)
@@ -396,18 +403,23 @@ namespace WpfMpdClient
       }
     } // Connect
 
-    private void PopulateArtists()
+    private async Task<bool> PopulateArtists()
     {
       if (m_Mpc == null || !m_Mpc.Connected)
-        return;
+        return false;
 
-      m_ArtistsSource.Clear();
+
+      await Dispatcher.BeginInvoke(new Action(() =>
+      {
+        m_ArtistsSource.Clear();
+      }));
+
       List<string> artists = null;
       try{
-        artists = m_Mpc.List(ScopeSpecifier.Artist);
+        artists = await Task.Factory.StartNew(() => m_Mpc.List(ScopeSpecifier.Artist));
       }catch (Exception ex){
         ShowException(ex);
-        return;
+        return false;
       }
 
       artists.Sort();
@@ -416,25 +428,34 @@ namespace WpfMpdClient
           artists[i] = Mpc.NoArtist;
         ListboxEntry entry = new ListboxEntry() { Type = ListboxEntry.EntryType.Artist, 
                                                   Artist = artists[i] };
-        m_ArtistsSource.Add(entry);
+
+        await Dispatcher.BeginInvoke(new Action(() =>
+        {
+          m_ArtistsSource.Add(entry);
+        }));
       }
-      if (artists.Count > 0){
-        lstArtist.SelectedIndex = 0;
-        lstArtist.ScrollIntoView(m_ArtistsSource[0]);
-      }
+
+      await Dispatcher.BeginInvoke(new Action(() =>
+      {
+        if (artists.Count > 0) {
+          lstArtist.SelectedIndex = 0;
+          lstArtist.ScrollIntoView(m_ArtistsSource[0]);
+        }
+      }));
+      return true;
     }
 
-    private void PopulateGenres()
+    private async Task<bool> PopulateGenres()
     {
       if (m_Mpc == null || !m_Mpc.Connected)
-        return;
+        return false;
 
       List<string> genres = null;
       try{
-        genres = m_Mpc.List(ScopeSpecifier.Genre);
+        genres = await Task.Factory.StartNew(() => m_Mpc.List(ScopeSpecifier.Genre));
       }catch (Exception ex){
         ShowException(ex);
-        return;
+        return false;
       }
 
       genres.Sort();
@@ -442,106 +463,137 @@ namespace WpfMpdClient
         if (string.IsNullOrEmpty(genres[i]))
           genres[i] = Mpc.NoGenre;
       }
-      lstGenres.ItemsSource = genres;
-      if (genres.Count > 0){
-        lstGenres.SelectedIndex = 0;
-        lstGenres.ScrollIntoView(genres[0]);
-      }
+
+      await Dispatcher.BeginInvoke(new Action(() =>
+      {
+
+        lstGenres.ItemsSource = genres;
+        if (genres.Count > 0) {
+          lstGenres.SelectedIndex = 0;
+          lstGenres.ScrollIntoView(genres[0]);
+        }
+      }));
+
+      return true;
     }
 
-    private void PopulatePlaylists()
+    private async Task<bool> PopulatePlaylists()
     {
       if (m_Mpc == null || !m_Mpc.Connected)
-        return;
+        return false;
 
       List<string> playlists = null;
       try{
-        playlists = m_Mpc.ListPlaylists();
+        playlists = await Task.Factory.StartNew(() => m_Mpc.ListPlaylists());
       }catch (Exception ex){
         ShowException(ex);
-        return;
+        return false;
       }
       playlists.Sort();
-      lstPlaylists.ItemsSource = playlists;
-      if (playlists.Count > 0){
-        lstPlaylists.SelectedIndex = 0;
-        lstPlaylists.ScrollIntoView(playlists[0]);
-      }
+
+      await Dispatcher.BeginInvoke(new Action(() =>
+      {
+        lstPlaylists.ItemsSource = playlists;
+        if (playlists.Count > 0) {
+          lstPlaylists.SelectedIndex = 0;
+          lstPlaylists.ScrollIntoView(playlists[0]);
+        }
+      }));
+      return true;
     }
 
-    private void PopulateFileSystemTree()
+    private async Task<bool> PopulateFileSystemTree()
     {
       if (m_Mpc == null || !m_Mpc.Connected)
-        return;
+        return false;
 
-      treeFileSystem.Items.Clear();
+      await Dispatcher.BeginInvoke(new Action(() =>
+      {
+        treeFileSystem.Items.Clear();
+      }));
+
       if (!m_Settings.ShowFilesystemTab)
-        return;
+        return false;
 
-      TreeViewItem root = new TreeViewItem();
-      root.Header = "Root";
-      root.Tag = null;
-      treeFileSystem.Items.Add(root);
+      TreeViewItem root = null;
+      await Dispatcher.BeginInvoke(new Action(async () =>
+      {
+        root = new TreeViewItem();
+        root.Header = "Root";
+        root.Tag = null;
+        treeFileSystem.Items.Add(root);
+        await PopulateFileSystemTree(root.Items, null);
+        if (treeFileSystem.Items != null && treeFileSystem.Items.Count > 0) {
+          TreeViewItem item = treeFileSystem.Items[0] as TreeViewItem;
+          item.IsSelected = true;
+          item.IsExpanded = true;
+        }
+      }));
 
-      PopulateFileSystemTree(root.Items, null);
-      if (treeFileSystem.Items != null && treeFileSystem.Items.Count > 0) {
-        TreeViewItem item = treeFileSystem.Items[0] as TreeViewItem;
-        item.IsSelected = true;
-        item.IsExpanded = true;
-      }
+
+
+      return true;
     }
 
-    private void PopulateFileSystemTree(ItemCollection items, string path)
+    private async Task<bool> PopulateFileSystemTree(ItemCollection items, string path)
     {
       items.Clear();
       MpdDirectoryListing list = null;
       try{
-        list = m_Mpc.LsInfo(path);
+        list = await Task.Factory.StartNew(() => m_Mpc.LsInfo(path));
       }catch (Exception ex){
         ShowException(ex);
-        return;
+        return false;
       }
-      foreach (string dir in list.DirectoryList){
-        TreeViewItem item = new TreeViewItem();
-        item.Header = path != null ? dir.Remove(0, path.Length + 1) : dir;
-        item.Tag = dir;
-        if (HasSubdirectories(item.Tag.ToString())){
-          item.Items.Add(null);
-          item.Expanded += TreeItemExpanded;
+
+      await Dispatcher.BeginInvoke(new Action( async () =>
+      {
+        foreach (string dir in list.DirectoryList) {
+          TreeViewItem item = new TreeViewItem();
+          item.Header = path != null ? dir.Remove(0, path.Length + 1) : dir;
+          item.Tag = dir;
+          if (await HasSubdirectories(item.Tag.ToString())) {
+            item.Items.Add(null);
+            item.Expanded += TreeItemExpanded;
+          }
+          items.Add(item);
         }
-        items.Add(item);
-      }
+      }));
+      return true;
     }
 
-    private bool HasSubdirectories(string path)
+    private async Task<bool> HasSubdirectories(string path)
     {
       try {
-        MpdDirectoryListing list = m_Mpc.LsInfo(path);
+        MpdDirectoryListing list = await Task.Factory.StartNew(() => m_Mpc.LsInfo(path));
         return list.DirectoryList.Count > 0;
       }catch (MpdResponseException) {
         return false;
       }
     }
 
-    private void TreeItemExpanded(object sender, RoutedEventArgs e)
+    private async void TreeItemExpanded(object sender, RoutedEventArgs e)
     {
       TreeViewItem treeItem = sender as TreeViewItem;
       if (treeItem != null){
         if (treeItem.Items.Count == 1 && treeItem.Items[0] == null) {
           treeFileSystem.Cursor = Cursors.Wait;
-          PopulateFileSystemTree(treeItem.Items, treeItem.Tag.ToString());
+          await PopulateFileSystemTree(treeItem.Items, treeItem.Tag.ToString());
           treeFileSystem.Cursor = Cursors.Arrow;
         }
       }
     }
 
-    private void treeFileSystem_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    private async void treeFileSystem_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
       TreeViewItem treeItem = treeFileSystem.SelectedItem as TreeViewItem;
       if (treeItem != null){
+        lstTracks.ItemsSource = null;
+        lstTracksStyled.ItemsSource = null;
         MpdDirectoryListing list = null;
         try{
-          list = m_Mpc.LsInfo(treeItem.Tag != null ? treeItem.Tag.ToString() : null);
+          string tag = treeItem.Tag != null ? treeItem.Tag.ToString() : null;
+          list = await Task.Factory.StartNew(() => (m_Mpc.LsInfo(tag)));
         }catch (Exception ex){
           ShowException(ex);
           return;
@@ -550,11 +602,12 @@ namespace WpfMpdClient
         foreach (MpdFile file in list.FileList)
           m_Tracks.Add(file);
         lstTracks.ItemsSource = m_Tracks;
+        lstTracksStyled.ItemsSource = m_Tracks;
         ScrollTracksToLeft();
       }
     }
 
-    private void lstArtist_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void lstArtist_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -568,12 +621,13 @@ namespace WpfMpdClient
       string artist = SelectedArtist();
       List<string> albums = null;
       try{
-        albums = m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Artist, artist);
+        albums = await Task.Factory.StartNew(() => m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Artist, artist));
       }catch (Exception ex){
         ShowException(ex);
         return;
       }
       albums.Sort();
+      m_AlbumsSource.Clear();
       for (int i = 0; i < albums.Count; i++) {
         if (string.IsNullOrEmpty(albums[i]))
           albums[i] = Mpc.NoAlbum;
@@ -588,7 +642,7 @@ namespace WpfMpdClient
       }
     }
 
-    private void lstGenres_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void lstGenres_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -605,7 +659,7 @@ namespace WpfMpdClient
 
       List<MpdFile> files = null;
       try{
-        files = m_Mpc.Find(ScopeSpecifier.Genre, genre);
+        files = await Task.Factory.StartNew(() => m_Mpc.Find(ScopeSpecifier.Genre, genre));
       }catch (Exception ex){
         ShowException(ex);
         return;
@@ -616,6 +670,7 @@ namespace WpfMpdClient
                  });
       MpdFile lastFile = null;
       MpdFile last = files.Count > 0 ? files[files.Count - 1] : null;
+      m_GenresAlbumsSource.Clear();
       foreach (MpdFile file in files){
         if (lastFile != null && lastFile.Album != file.Album || file == last){
           string album = file == last ? file.Album : lastFile.Album;
@@ -638,7 +693,7 @@ namespace WpfMpdClient
       }
     }
 
-    private void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -646,18 +701,22 @@ namespace WpfMpdClient
       ListBox list = sender as ListBox;
       if (list.SelectedItem != null) {
         string playlist = list.SelectedItem.ToString();
-        
-        try{
-          m_Tracks = m_Mpc.ListPlaylistInfo(playlist);
+        lstTracks.ItemsSource = null;
+        lstTracksStyled.ItemsSource = null;
+
+        try {
+          m_Tracks = await Task.Factory.StartNew(() => m_Mpc.ListPlaylistInfo(playlist));
         }catch (Exception ex){
           ShowException(ex);
           return;
         }
         lstTracks.ItemsSource = m_Tracks;
+        lstTracksStyled.ItemsSource = m_Tracks;
         ScrollTracksToLeft();
       } else {
         m_Tracks = null;
         lstTracks.ItemsSource = null;
+        lstTracksStyled.ItemsSource = null;
       }
     } 
 
@@ -666,7 +725,7 @@ namespace WpfMpdClient
 
     }
 
-    private void lstAlbums_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void lstAlbums_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -690,22 +749,27 @@ namespace WpfMpdClient
           listBox = lstGenresAlbums;
         }
 
+        lstTracks.ItemsSource = null;
+        lstTracksStyled.ItemsSource = null;
+
         string album = SelectedAlbum(listBox);
         if (album == Mpc.NoAlbum)
           album = string.Empty;
         search[ScopeSpecifier.Album] = album;
 
         try{
-          m_Tracks = m_Mpc.Find(search);
+          m_Tracks = await Task.Factory.StartNew(() => m_Mpc.Find(search));
         }catch (Exception ex){
           ShowException(ex);
           return;
         }
         lstTracks.ItemsSource = m_Tracks;
+        lstTracksStyled.ItemsSource = m_Tracks;
         ScrollTracksToLeft();
       } else {
         m_Tracks = null;
         lstTracks.ItemsSource = null;
+        lstTracksStyled.ItemsSource = null;
       }
     }
 
@@ -736,6 +800,10 @@ namespace WpfMpdClient
 
       lstPlaylist.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
       lstPlaylistStyled.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
+      lstTracks.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+      lstTracksStyled.Visibility = m_Settings.StyledPlaylist ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
       m_DragDropManager.Selector = m_Settings.StyledPlaylist ? lstPlaylistStyled : lstPlaylist;
       m_DragDropManager.ProcessDrop += dragMgr_ProcessDrop;
 
@@ -770,24 +838,30 @@ namespace WpfMpdClient
       }));
     } // StartTimerHandler
 
-    private void PopulatePlaylist()
+    private async Task<bool> PopulatePlaylist()
     {
       if (m_Mpc == null || !m_Mpc.Connected)
-        return;
+        return false;
 
       List<MpdFile> tracks = null;
       try{
-        tracks = m_Mpc.PlaylistInfo();
+        tracks = await Task.Factory.StartNew(() => m_Mpc.PlaylistInfo());
       }catch (Exception ex){
         ShowException(ex);
-        return;
+        return false;
       }
-      m_PlaylistTracks.Clear();
-      foreach (MpdFile file in tracks)
-        m_PlaylistTracks.Add(file);
+
+      await Dispatcher.BeginInvoke(new Action(() =>
+      {
+        m_PlaylistTracks.Clear();
+        foreach (MpdFile file in tracks)
+          m_PlaylistTracks.Add(file);
+      }));
+
+      return true;
     }
 
-    private void ContextMenu_Click(object sender, RoutedEventArgs args)
+    private async void ContextMenu_Click(object sender, RoutedEventArgs args)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -798,7 +872,7 @@ namespace WpfMpdClient
         if (Utilities.Confirm("Delete", string.Format("Delete playlist \"{0}\"?", playlist))){
           try{
             m_Mpc.Rm(playlist);
-            PopulatePlaylists();
+            await PopulatePlaylists();
           }catch (Exception ex){
             ShowException(ex);
             return;
@@ -854,7 +928,7 @@ namespace WpfMpdClient
         }
       }
 
-      foreach (MpdFile file  in lstTracks.SelectedItems)
+      foreach (MpdFile file  in m_Settings.StyledPlaylist ? lstTracksStyled.SelectedItems : lstTracks.SelectedItems)
         m_Mpc.Add(file.File);
 
       if (scroll && lstPlaylist.Items.Count > 0)
@@ -1035,7 +1109,7 @@ namespace WpfMpdClient
       }
     }
 
-    private void btnSave_Click(object sender, RoutedEventArgs e)
+    private async void btnSave_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected){
         try{
@@ -1045,7 +1119,7 @@ namespace WpfMpdClient
           return;
         }
         txtPlaylist.Clear();
-        PopulatePlaylists();
+        await PopulatePlaylists();
       }
     }
 
@@ -1134,12 +1208,12 @@ namespace WpfMpdClient
       }
     } // NotifyIcon_MouseDown
 
-    private void UpdateDbFinished()
+    private async void UpdateDbFinished()
     {
-      PopulateArtists();
-      PopulateGenres();
-      PopulatePlaylists();
-      PopulatePlaylist();
+      await PopulateArtists();
+      await PopulateGenres();
+      await PopulatePlaylists();
+      await PopulatePlaylist();
     } // UpdateDbFinished
 
     private void TrackChanged(MpdFile track)
@@ -1311,12 +1385,15 @@ namespace WpfMpdClient
       }));
     }
 
-    private void btnSearch_Click(object sender, RoutedEventArgs e)
+    private async void btnSearch_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
 
       if (!string.IsNullOrEmpty(txtSearch.Text)){
+        lstTracks.ItemsSource = null;
+        lstTracksStyled.ItemsSource = null;
+
         ScopeSpecifier searchBy = ScopeSpecifier.Title;
         switch (cmbSearch.SelectedIndex){
           case 0:
@@ -1330,16 +1407,19 @@ namespace WpfMpdClient
             break;
         }
         try{
-          m_Tracks = m_Mpc.Search(searchBy, txtSearch.Text);
+          string search = txtSearch.Text;
+          m_Tracks = await Task.Factory.StartNew(() => m_Mpc.Search(searchBy, search));
         }catch (Exception ex){
           ShowException(ex);
           return;
         }
         lstTracks.ItemsSource = m_Tracks;
+        lstTracksStyled.ItemsSource = m_Tracks;
         ScrollTracksToLeft();
       }else{
         m_Tracks = null;
         lstTracks.ItemsSource = null;
+        lstTracksStyled.ItemsSource = null;
       }
     }
 
@@ -1349,6 +1429,7 @@ namespace WpfMpdClient
       cmbSearch.SelectedIndex = 0;
       m_Tracks = null;
       lstTracks.ItemsSource = null;
+      lstTracksStyled.ItemsSource = null;
     }
 
     private void CheckCompleted(UpdaterApp app)
@@ -1459,7 +1540,10 @@ namespace WpfMpdClient
 
     private void ShowException(Exception ex)
     {
-      MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+      Dispatcher.BeginInvoke(new Action(() =>
+      {
+        MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+      }));
     }
 
     #region Client to client Messages

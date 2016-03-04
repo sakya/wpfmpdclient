@@ -42,7 +42,7 @@ namespace WpfMpdClient
       KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
     }
 
-    static void ExceptionHandler(object sender, UnhandledExceptionEventArgs args)
+    static async void ExceptionHandler(object sender, UnhandledExceptionEventArgs args)
     {
       Exception e = (Exception)args.ExceptionObject;
       StringBuilder sb = new StringBuilder();
@@ -64,12 +64,15 @@ namespace WpfMpdClient
         }
       }catch (Exception) {}
 
-      BugReportWindow dlg = new BugReportWindow();
-      if (dlg.ShowDialog() == true){
-        BugReporter bugReporter = new BugReporter(new Uri("http://www.sakya.it/updater/bugreport.php"));
-        bugReporter.BugReport("WpfMpdClient", Assembly.GetExecutingAssembly().GetName().Version.ToString(), "Windows", 
-                              dlg.Email, sb.ToString());
-      }
+      await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+      {
+        BugReportWindow dlg = new BugReportWindow();
+        if (dlg.ShowDialog() == true) {
+          BugReporter bugReporter = new BugReporter(new Uri("http://www.sakya.it/updater/bugreport.php"));
+          bugReporter.BugReport("WpfMpdClient", Assembly.GetExecutingAssembly().GetName().Version.ToString(), "Windows",
+                                dlg.Email, sb.ToString());
+        }
+      }));
 
       Application.Current.Shutdown();
     }
