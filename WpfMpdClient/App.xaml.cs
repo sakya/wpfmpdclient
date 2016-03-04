@@ -71,7 +71,7 @@ namespace WpfMpdClient
                               dlg.Email, sb.ToString());
       }
 
-      throw e;
+      Application.Current.Shutdown();
     }
 
     void KListener_KeyDown(object sender, RawKeyEventArgs args)

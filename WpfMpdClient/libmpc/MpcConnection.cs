@@ -146,7 +146,7 @@ namespace Libmpc
       this.tcpClient = new TcpClient(
           this.ipEndPoint.Address.ToString(),
           this.ipEndPoint.Port);
-      this.tcpClient.ReceiveBufferSize = 32768;
+      this.tcpClient.ReceiveBufferSize = 8192;
       this.networkStream = this.tcpClient.GetStream();
       
       this.reader = new StreamReader(this.networkStream, Encoding.UTF8);

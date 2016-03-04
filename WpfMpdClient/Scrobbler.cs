@@ -305,7 +305,7 @@ namespace WpfMpdClient
         m_Cache.Tracks.Clear();
         XmlNodeList list = xml.SelectNodes("/lfm/scrobbles");
         if (list != null && list.Count > 0)
-          return list[0].Attributes["accepted"].Value != "0";
+          return list[0].Attributes["accepted"] != null && list[0].Attributes["accepted"].Value != "0";
       }
       return false;
     } // Scrobble
@@ -347,7 +347,7 @@ namespace WpfMpdClient
       if (xml != null) {
         XmlNodeList xnList = xml.SelectNodes("/lfm/artist/image");
         foreach (XmlNode xn in xnList) {
-          if (xn.Attributes["size"].Value == size.ToString())
+          if (xn.Attributes["size"] != null && xn.Attributes["size"].Value == size.ToString())
             return xn.InnerText;
         }
       }
@@ -415,7 +415,7 @@ namespace WpfMpdClient
       if (xml != null){
         XmlNodeList xnList = xml.SelectNodes("/lfm/album/image");
         foreach (XmlNode xn in xnList) {
-          if (xn.Attributes["size"].Value == size.ToString())
+          if (xn.Attributes["size"] != null && xn.Attributes["size"].Value == size.ToString())
             return xn.InnerText;
         }
       }
@@ -539,8 +539,8 @@ namespace WpfMpdClient
 
   public class LastfmScrobbler : Scrobbler
   {    
-    private const string api_key = "";
-    private const string api_secret = "";
+    private const string api_key = "151e13d056bfe133d205314b7720d27b";
+    private const string api_secret = "b6239b548844fbbbc73cbade25effe76";
     private const string m_BaseUrl = "http://ws.audioscrobbler.com/2.0/";
 
     public LastfmScrobbler(string sessionKey)

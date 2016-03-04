@@ -515,8 +515,12 @@ namespace WpfMpdClient
 
     private bool HasSubdirectories(string path)
     {
-      MpdDirectoryListing list = m_Mpc.LsInfo(path);
-      return list.DirectoryList.Count > 0;      
+      try {
+        MpdDirectoryListing list = m_Mpc.LsInfo(path);
+        return list.DirectoryList.Count > 0;
+      }catch (MpdResponseException) {
+        return false;
+      }
     }
 
     private void TreeItemExpanded(object sender, RoutedEventArgs e)
