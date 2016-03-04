@@ -63,7 +63,7 @@
                 </Grid.RowDefinitions>
 
                 <DockPanel Grid.Row="0">
-                  <TextBlock DockPanel.Dock="Top" Margin="2" Text="Artists:" />
+                  <!--<TextBlock DockPanel.Dock="Top" Margin="2" FontWeight="Bold" Text="Artists:" />-->
                   <local:SearchableListBox Margin="2,2,2,5" x:Name="lstArtist" BorderThickness="0" SelectionMode="Single" SelectionChanged="lstArtist_SelectionChanged">
                     <local:SearchableListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">
@@ -93,7 +93,7 @@
                       HorizontalAlignment="Stretch" Height="5"/>
 
                 <DockPanel Grid.Row="1">
-                  <TextBlock DockPanel.Dock="Top" Grid.Row="2"  Margin="2" Text="Albums:" />
+                  <TextBlock DockPanel.Dock="Top" Grid.Row="2" Margin="2" Text="Albums:" />
                   <local:SearchableListBox Margin="2" Grid.Row="3" BorderThickness="0" SelectionMode="Single" x:Name="lstAlbums" SelectionChanged="lstAlbums_SelectionChanged">
                     <local:SearchableListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">
@@ -145,7 +145,7 @@
                 </Grid.RowDefinitions>
 
                 <DockPanel Grid.Row="0">
-                  <TextBlock DockPanel.Dock="Top" Margin="2" Text="Genres:" />
+                  <!--<TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="2" Text="Genres:" />-->
                   <ListBox Margin="2,2,2,5" Name="lstGenres" BorderThickness="0" SelectionMode="Single" SelectionChanged="lstGenres_SelectionChanged">
                     <ListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">
@@ -213,7 +213,7 @@
             <TabItem Header="Playlists">
               <Grid>
                 <DockPanel Grid.Row="0">
-                  <TextBlock DockPanel.Dock="Top" Margin="2" Text="Playlists:" />
+                  <!--<TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="2" Text="Playlists:" />-->
                   <ListBox Margin="2,2,2,5" Name="lstPlaylists" BorderThickness="0" SelectionMode="Single" SelectionChanged="lstPlaylists_SelectionChanged">
                     <ListBox.ItemContainerStyle>
                       <Style TargetType="ListBoxItem">

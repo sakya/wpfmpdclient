@@ -951,7 +951,7 @@ namespace WpfMpdClient
       }
     }
 
-    private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -966,11 +966,11 @@ namespace WpfMpdClient
       if (tabControl.SelectedIndex == 1){
 
       }else if (tabControl.SelectedIndex == 2){
-        Dispatcher.BeginInvoke(new Action(() =>
+        await Dispatcher.BeginInvoke(new Action( async() =>
         {
           StringBuilder sb = new StringBuilder();
-          sb.AppendLine(m_Mpc.Stats().ToString());
-          sb.AppendLine(m_Mpc.Status().ToString());
+          sb.AppendLine(await Task.Factory.StartNew(() => m_Mpc.Stats().ToString()));
+          sb.AppendLine(await Task.Factory.StartNew(() => m_Mpc.Status().ToString()));
           txtServerStatus.Text = sb.ToString();
         }));
       } else if (tabControl.SelectedIndex == 3) {
