@@ -189,9 +189,11 @@ namespace WpfMpdClient
       Dispatcher.BeginInvoke(new Action(() =>
       {
         if (!string.IsNullOrEmpty(url))
-          imgArt.Source = new BitmapImage(new Uri(url));
+          imgArt.ImageUri = new Uri(url);
+          //imgArt.Source = new BitmapImage(new Uri(url));
         else
-          imgArt.Source = null;
+          imgArt.ImageUri = null;
+          //imgArt.Source = null;
       }));
     }
 

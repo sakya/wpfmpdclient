@@ -808,7 +808,7 @@
           <Label VerticalContentAlignment="Center" Grid.Row="8" Content="Enable Last.fm scrobbler:" />
           <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal">
             <CheckBox Margin="0,4,0,0"  Name="chkScrobbler" VerticalAlignment="Center" />
-            <Button IsEnabled="{Binding ElementName=chkScrobbler, Path=IsChecked}" Margin="2" Name="btnScrobblerAuthorize" Content="Authorize" Click="btnScrobblerAuthorize_Click">
+            <Button IsEnabled="{Binding ElementName=chkScrobbler, Path=IsChecked}" Margin="2" Padding="6,0,6,0" Name="btnScrobblerAuthorize" Content="Authorize" Click="btnScrobblerAuthorize_Click">
               <Button.ToolTip>
                 <ToolTip>
                   <StackPanel>

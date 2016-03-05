@@ -250,7 +250,7 @@ namespace WpfMpdClient
         txtStatus.Text = "Not connected";
         if (!m_IgnoreDisconnect && m_Settings.AutoReconnect && m_ReconnectTimer == null) {
           m_ReconnectTimer = new System.Timers.Timer();
-          m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
+          m_ReconnectTimer.Interval = 1000;
           m_ReconnectTimer.Elapsed += ReconnectTimerHandler;
           m_ReconnectTimer.Start();
         }
@@ -281,20 +281,20 @@ namespace WpfMpdClient
 
       MpdStatus status = null;
       try{
-        status = m_Mpc.Status();
+        status = await Task.Factory.StartNew(() => m_Mpc.Status());
       }catch{
         return;
       }
       if ((subsystems & Mpc.Subsystems.player) != 0 || (subsystems & Mpc.Subsystems.mixer) != 0 ||
           (subsystems & Mpc.Subsystems.options) != 0){
-        await Dispatcher.BeginInvoke(new Action(() =>
+        await Dispatcher.BeginInvoke(new Action( async () =>
         {
           MenuItem m = m_NotifyIconMenu.Items[1] as MenuItem;
           m.Visibility = status.State != MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
           m = m_NotifyIconMenu.Items[2] as MenuItem;
           m.Visibility = status.State == MpdState.Play ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
 
-          MpdFile file = m_Mpc.CurrentSong();
+          MpdFile file = await Task.Factory.StartNew(() => m_Mpc.CurrentSong());
           playerControl.Update(status, file);          
           if (m_MiniPlayer != null)
             m_MiniPlayer.Update(status, file);
