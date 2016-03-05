@@ -331,14 +331,14 @@
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Label VerticalContentAlignment="Center" Content="Search by:" />
+                <Label VerticalContentAlignment="Center" Content="Search by:" VerticalAlignment="Center" />
                 <ComboBox Grid.Column="1" Name="cmbSearch">
                   <ComboBoxItem>Artist</ComboBoxItem>
                   <ComboBoxItem>Album</ComboBoxItem>
                   <ComboBoxItem>Title</ComboBoxItem>
                 </ComboBox>
-                <Label Grid.Row="1" VerticalContentAlignment="Center" Content="Search:" />
-                <TextBox Margin="2" MinWidth="150" VerticalContentAlignment="Center" Name="txtSearch" Grid.Row="1" Grid.Column="1"/>
+                <Label Grid.Row="1" VerticalContentAlignment="Center" Content="Search:" VerticalAlignment="Center" />
+                <TextBox Margin="0,6,0,6" MinWidth="150" VerticalContentAlignment="Center" Name="txtSearch" Grid.Row="1" Grid.Column="1"/>
 
                 <Grid Grid.Row="2" Grid.ColumnSpan="2">
                   <Grid.ColumnDefinitions>
