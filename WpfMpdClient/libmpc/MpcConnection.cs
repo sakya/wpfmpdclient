@@ -150,7 +150,7 @@ namespace Libmpc
       this.networkStream = this.tcpClient.GetStream();
       
       this.reader = new StreamReader(this.networkStream, Encoding.UTF8);
-      this.writer = new StreamWriter(this.networkStream, Encoding.ASCII);
+      this.writer = new StreamWriter(this.networkStream, Encoding.UTF8);
       this.writer.AutoFlush = true;
       this.writer.NewLine = "\n";
 
@@ -161,9 +161,8 @@ namespace Libmpc
       }
       this.version = firstLine.Substring(FIRST_LINE_PREFIX.Length);
 
-      //this.writer.WriteLine();
-      //this.writer.Flush();
-      //this.readResponse();
+      this.writer.WriteLine();
+      this.readResponse();
 
       MpdResponse response = Exec("commands");
       m_Commands = response.getValueList();
@@ -204,7 +203,6 @@ namespace Libmpc
         while (true){
           this.CheckConnected();
           this.writer.WriteLine(command);
-          //this.writer.Flush();
           MpdResponse res = this.readResponse();
 
           Mpc.Subsystems eventSubsystems = Mpc.Subsystems.None;
@@ -252,7 +250,6 @@ namespace Libmpc
         this.CheckConnected();
         m_Mutex.WaitOne();
         this.writer.WriteLine(command);
-        //this.writer.Flush();
 
         MpdResponse res = this.readResponse();
         m_Mutex.ReleaseMutex();
@@ -300,7 +297,6 @@ namespace Libmpc
         this.CheckConnected();
         m_Mutex.WaitOne();
         this.writer.WriteLine(string.Format("{0} {1}", command, string.Join(" ", argument)));
-        //this.writer.Flush();
 
         MpdResponse res = this.readResponse();
         m_Mutex.ReleaseMutex();
@@ -345,10 +341,13 @@ namespace Libmpc
     {
       List<string> ret = new List<string>();
       string line = this.reader.ReadLine();
-      while (!(line.Equals(OK) || line.StartsWith(ACK))) {
+      while (line != null && !(line.Equals(OK) || line.StartsWith(ACK))) {
         ret.Add(line);
         line = this.reader.ReadLine();
       }
+      if (line == null)
+        line = string.Empty;
+
       if (line.Equals(OK))
         return new MpdResponse(new ReadOnlyCollection<string>(ret));
       else {
