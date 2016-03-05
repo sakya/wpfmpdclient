@@ -29,6 +29,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Libmpc;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace WpfMpdClient
 {
@@ -194,43 +195,43 @@ namespace WpfMpdClient
       }));
     }
 
-    private void btnBack_Click(object sender, RoutedEventArgs e)
+    private async void btnBack_Click(object sender, RoutedEventArgs e)
     {
       try{
         if (Mpc.Connected)
-          Mpc.Previous();
+          await Task.Factory.StartNew(() => Mpc.Previous());
       }catch (Exception) {}
     }
 
-    private void btnPlay_Click(object sender, RoutedEventArgs e)
+    private async void btnPlay_Click(object sender, RoutedEventArgs e)
     {
       try{
         if (Mpc.Connected)
-          Mpc.Play();
+          await Task.Factory.StartNew(() => Mpc.Play());
       }catch (Exception) {}
     }
 
-    private void btnPause_Click(object sender, RoutedEventArgs e)
+    private async void btnPause_Click(object sender, RoutedEventArgs e)
     {
       try{
         if (Mpc.Connected)
-          Mpc.Pause(true);
+          await Task.Factory.StartNew(() => Mpc.Pause(true));
       }catch (Exception) {}
     }
 
-    private void btnStop_Click(object sender, RoutedEventArgs e)
+    private async void btnStop_Click(object sender, RoutedEventArgs e)
     {
       try{
         if (Mpc.Connected)
-          Mpc.Stop();
+          await Task.Factory.StartNew(() => Mpc.Stop());
       }catch (Exception) {}
     }
 
-    private void btnForward_Click(object sender, RoutedEventArgs e)
+    private async void btnForward_Click(object sender, RoutedEventArgs e)
     {
       try{
         if (Mpc.Connected)
-          Mpc.Next();
+          await Task.Factory.StartNew(() => Mpc.Next());
       }catch (Exception) {}
     }
 
@@ -254,27 +255,30 @@ namespace WpfMpdClient
         lblTimeAfter.Content = Utilities.FormatSeconds((int)sliTime.Maximum - (int)sliTime.Value);      
     }
 
-    private void btnShuffle_Click(object sender, RoutedEventArgs e)
+    private async void btnShuffle_Click(object sender, RoutedEventArgs e)
     {
       try{
+        bool shuffle = btnShuffle.IsChecked == true;
         if (Mpc.Connected)
-          Mpc.Random(btnShuffle.IsChecked == true);
+          await Task.Factory.StartNew(() => Mpc.Random(shuffle));
       }catch (Exception) {}
     }
 
-    private void btnRepeat_Click(object sender, RoutedEventArgs e)
+    private async void btnRepeat_Click(object sender, RoutedEventArgs e)
     {
       try{
+        bool repeat = btnRepeat.IsChecked == true;
         if (Mpc.Connected)
-          Mpc.Repeat(btnRepeat.IsChecked == true);
+          await Task.Factory.StartNew(() => Mpc.Repeat(repeat));
       }catch (Exception) {}
     }
 
-    private void sliVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    private async void sliVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
       if (!m_IgnoreVolumeChange) {
+        int vol = (int)sliVolume.Value;
         try {
-          Mpc.SetVol((int)sliVolume.Value);
+          await Task.Factory.StartNew(() => Mpc.SetVol(vol));
         }catch (Exception) {}
         lblVolume.Content = string.Format("{0}", (int)sliVolume.Value);
       }

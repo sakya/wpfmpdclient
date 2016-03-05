@@ -871,7 +871,7 @@ namespace WpfMpdClient
         string playlist = lstPlaylists.SelectedItem.ToString();
         if (Utilities.Confirm("Delete", string.Format("Delete playlist \"{0}\"?", playlist))){
           try{
-            m_Mpc.Rm(playlist);
+            await Task.Factory.StartNew(() => m_Mpc.Rm(playlist));
             await PopulatePlaylists();
           }catch (Exception ex){
             ShowException(ex);
@@ -885,7 +885,7 @@ namespace WpfMpdClient
       if (item.Name == "mnuAddReplace" || item.Name == "mnuAddReplacePlay"){
         scroll = true;
         try{
-          m_Mpc.Clear();
+          await Task.Factory.StartNew(() => m_Mpc.Clear());
         }catch (Exception ex){
           ShowException(ex);
           return;
@@ -895,7 +895,7 @@ namespace WpfMpdClient
       if (m_Tracks != null){
         foreach (MpdFile f in m_Tracks){
           try{
-            m_Mpc.Add(f.File);
+            await Task.Factory.StartNew(() => m_Mpc.Add(f.File));
           }catch (Exception){}
         }
         if (scroll && lstPlaylist.Items.Count > 0)
@@ -903,7 +903,7 @@ namespace WpfMpdClient
       }        
       if (item.Name == "mnuAddReplacePlay"){
         try{
-          m_Mpc.Play();
+          await Task.Factory.StartNew(() => m_Mpc.Play());
         }catch (Exception ex){
           ShowException(ex);
           return;
@@ -911,7 +911,7 @@ namespace WpfMpdClient
       }        
     }
 
-    private void TracksContextMenu_Click(object sender, RoutedEventArgs args)
+    private async void TracksContextMenu_Click(object sender, RoutedEventArgs args)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -921,7 +921,7 @@ namespace WpfMpdClient
       if (mnuItem.Name == "mnuAddReplace" || mnuItem.Name == "mnuAddReplacePlay"){
         scroll = true;
         try{
-          m_Mpc.Clear();
+          await Task.Factory.StartNew(() => m_Mpc.Clear());
         }catch (Exception ex){
           ShowException(ex);
           return;
@@ -929,13 +929,13 @@ namespace WpfMpdClient
       }
 
       foreach (MpdFile file  in m_Settings.StyledPlaylist ? lstTracksStyled.SelectedItems : lstTracks.SelectedItems)
-        m_Mpc.Add(file.File);
+        await Task.Factory.StartNew(() => m_Mpc.Add(file.File));
 
       if (scroll && lstPlaylist.Items.Count > 0)
         lstPlaylist.ScrollIntoView(lstPlaylist.Items[0]);
 
       if (mnuItem.Name == "mnuAddReplacePlay")
-        m_Mpc.Play();
+        await Task.Factory.StartNew(() => m_Mpc.Play());
     }
 
 
@@ -1024,7 +1024,7 @@ namespace WpfMpdClient
       }        
     }
 
-    private void lstPlaylist_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private async void lstPlaylist_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
       if (m_Mpc == null || !m_Mpc.Connected)
         return;
@@ -1034,7 +1034,7 @@ namespace WpfMpdClient
         MpdFile file = item.DataContext as MpdFile;
         if (file != null) {
           try{
-            m_Mpc.Play(file.Pos);
+            await Task.Factory.StartNew(() => m_Mpc.Play(file.Pos));
           }catch (Exception ex){
             ShowException(ex);
             return;
@@ -1097,11 +1097,11 @@ namespace WpfMpdClient
       This.mnuPrevious_Click(null, null);
     }
 
-    private void btnClear_Click(object sender, RoutedEventArgs e)
+    private async void btnClear_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected){
         try{
-          m_Mpc.Clear();
+          await Task.Factory.StartNew(() => m_Mpc.Clear());
         }catch (Exception ex){
           ShowException(ex);
           return;
@@ -1113,7 +1113,8 @@ namespace WpfMpdClient
     {
       if (m_Mpc.Connected){
         try{
-          m_Mpc.Save(txtPlaylist.Text);
+          string name = txtPlaylist.Text;
+          await Task.Factory.StartNew(() => m_Mpc.Save(name));
         }catch (Exception ex){
           ShowException(ex);
           return;
@@ -1169,9 +1170,7 @@ namespace WpfMpdClient
 
         m_Settings.Serialize(Settings.GetSettingsFileName());
 
-        m_LastfmScrobbler.SaveCache();
-
-        DiskImageCache.DeleteCacheFiles();
+        m_LastfmScrobbler.SaveCache();        
       }
     } // CloseHandler
 
@@ -1269,11 +1268,11 @@ namespace WpfMpdClient
       Quit();
     }
 
-    private void mnuPrevious_Click(object sender, RoutedEventArgs e)
+    private async void mnuPrevious_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected) {
         try {
-          m_Mpc.Previous();
+          await Task.Factory.StartNew(() => m_Mpc.Previous());
         }
         catch (Exception ex) {
           ShowException(ex);
@@ -1282,11 +1281,11 @@ namespace WpfMpdClient
       }
     }
 
-    private void mnuNext_Click(object sender, RoutedEventArgs e)
+    private async void mnuNext_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected) {
         try {
-          m_Mpc.Next();
+          await Task.Factory.StartNew(() => m_Mpc.Next());
         }
         catch (Exception ex) {
           ShowException(ex);
@@ -1295,11 +1294,11 @@ namespace WpfMpdClient
       }
     }
 
-    private void mnuPlay_Click(object sender, RoutedEventArgs e)
+    private async void mnuPlay_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected){
         try{
-          m_Mpc.Play();
+          await Task.Factory.StartNew(() => m_Mpc.Play());
         }catch (Exception ex){
           ShowException(ex);
           return;
@@ -1307,11 +1306,11 @@ namespace WpfMpdClient
       }
     }
 
-    private void mnuPause_Click(object sender, RoutedEventArgs e)
+    private async void mnuPause_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected){
         try{
-          m_Mpc.Pause(true);
+          await Task.Factory.StartNew(() => m_Mpc.Pause(true));
         }catch (Exception ex){
           ShowException(ex);
           return;

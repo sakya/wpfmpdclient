@@ -58,31 +58,60 @@ namespace WpfMpdClient
   using System.Threading;
   using System.IO;
   using System.Windows.Media.Animation;
+  using System.Text;
   public class DiskImageCache
   {
-    static string m_TempPath = System.IO.Path.GetTempPath();
-    static Dictionary<Uri, string> m_Cache = new Dictionary<Uri,string>();
+    static string m_CahcePath = string.Empty;
     static Mutex m_Mutex = new Mutex();
+
+    private static void CheckFolder()
+    {
+      string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+      appData = Path.Combine(appData, "wpfmpdclient\\cache");
+      if (!Directory.Exists(appData)) {
+        Directory.CreateDirectory(appData);
+      }
+      m_CahcePath = appData;
+    } // CheckFolder
 
     public static string GetFromCache(Uri uri)
     {
-      string result = string.Empty;
-      m_Cache.TryGetValue(uri, out result);
-      return result;
+      CheckFolder();
+      string imageId = CreateMD5(uri.ToString());
+      string path = string.Format("{0}\\{1}", m_CahcePath, imageId + ".jpg");
+      if (File.Exists(path)) {
+        return path;
+      }
+      return string.Empty;      
     }
+
+    private static string CreateMD5(string input)
+    {
+      using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create()) {
+        byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+        byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+        // Convert the byte array to hexadecimal string
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < hashBytes.Length; i++) {
+          sb.Append(hashBytes[i].ToString("X2"));
+        }
+        return sb.ToString();
+      }
+    } // CreateMD5
 
     public static void AddToCache(BitmapImage image)
     {
       m_Mutex.WaitOne();
+      CheckFolder();
       try {
         JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-        Guid imageId = System.Guid.NewGuid();
-        string path = string.Format("{0}\\{1}", m_TempPath, imageId.ToString() + ".jpg");
+        string imageId = CreateMD5(image.UriSource.ToString());
+        string path = string.Format("{0}\\{1}", m_CahcePath, imageId + ".jpg");
         encoder.Frames.Add(BitmapFrame.Create(image));
         using (var filestream = new FileStream(path, FileMode.Create))
           encoder.Save(filestream);
 
-        m_Cache[image.UriSource] = path;
       } catch (Exception) { 
       }
       m_Mutex.ReleaseMutex();
@@ -90,13 +119,13 @@ namespace WpfMpdClient
 
     public static void DeleteCacheFiles()
     {
-      foreach (string path in m_Cache.Values){
+      foreach (string path in Directory.GetFiles(m_CahcePath)) { 
         try {
           File.Delete(path);
         } catch (Exception) {
         }
       }
-    }
+    } // DeleteCacheFiles
   }
 
   /// <summary>
@@ -209,6 +238,17 @@ namespace WpfMpdClient
       loadedImage.DecodeFailed += OnDecodeFailed;
       loadedImage.UriSource = !string.IsNullOrEmpty(fromCache) ? new Uri(fromCache) : ImageUri;
       loadedImage.EndInit();
+      if (!string.IsNullOrEmpty(fromCache)) {
+        if (!string.IsNullOrEmpty(InitialImage)) {
+          BitmapImage initialImage = new BitmapImage();
+          initialImage.BeginInit();
+          initialImage.UriSource = new Uri(InitialImage, UriKind.Relative);
+          initialImage.EndInit();
+          Source = initialImage;
+        }
+        OnDownloadCompleted(null, null);
+        //Source = loadedImage;
+      }
     }
 
     /// <summary>
@@ -231,7 +271,7 @@ namespace WpfMpdClient
 
       // The image may be cached, in which case we will not use the initial image
       if (loadedImage != null && !loadedImage.IsDownloading) {
-        Source = loadedImage;
+        //OnDownloadCompleted(null, null);
       } else {
         // Create InitialImage source if path is specified
         if (!string.IsNullOrEmpty(InitialImage)) {

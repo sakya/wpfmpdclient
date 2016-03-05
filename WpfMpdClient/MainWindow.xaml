@@ -155,6 +155,11 @@
                         </Style.Resources>
                       </Style>
                     </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" Margin="3" />
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
                   </ListBox>
                 </DockPanel>
 
@@ -199,8 +204,8 @@
                                              InitialImage="images/cd.png" LoadFailedImage="images/cd.png"/>
                           </Border>
                           <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                            <TextBlock FontWeight="Bold" Text="{Binding Path=Album}" />
-                            <TextBlock Text="{Binding Path=Artist}" />
+                            <TextBlock FontWeight="SemiBold" Text="{Binding Path=Album}" />
+                            <TextBlock Text="{Binding Path=Artist}" FontSize="12" />
                           </StackPanel>
                         </StackPanel>
                       </DataTemplate>
@@ -242,6 +247,11 @@
                         </Setter>
                       </Style>
                     </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" Margin="3" />
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>                    
                   </ListBox>
                 </DockPanel>
               </Grid>
@@ -353,11 +363,11 @@
                     <ColumnDefinition Width="Auto"/>
                   </Grid.ColumnDefinitions>
                   <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Text="{Binding Title}"/>
+                    <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Text="{Binding Title}"/>
                     <DockPanel>
-                      <TextBlock Text="{Binding Artist}"/>
-                      <TextBlock Text=" - "/>
-                      <TextBlock Text="{Binding Album}"/>
+                      <TextBlock Text="{Binding Artist}" FontSize="12"/>
+                      <TextBlock Text=" - " FontSize="12"/>
+                      <TextBlock Text="{Binding Album}" FontSize="12"/>
                     </DockPanel>
                   </DockPanel>
                   <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Time,Converter={StaticResource TimeConverter}}" />
@@ -496,11 +506,11 @@
                     <ColumnDefinition Width="Auto"/>
                   </Grid.ColumnDefinitions>
                   <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Text="{Binding Title}"/>
+                    <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Text="{Binding Title}"/>
                     <DockPanel>
-                      <TextBlock Text="{Binding Artist}"/>
-                      <TextBlock Text=" - "/>
-                      <TextBlock Text="{Binding Album}"/>
+                      <TextBlock Text="{Binding Artist}" FontSize="12"/>
+                      <TextBlock Text=" - " FontSize="12"/>
+                      <TextBlock Text="{Binding Album}" FontSize="12"/>
                     </DockPanel>
                   </DockPanel>
                   <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Time,Converter={StaticResource TimeConverter}}" />
@@ -828,7 +838,7 @@
             <ComboBoxItem>Turkish</ComboBoxItem>
           </ComboBox>
 
-          <Label VerticalContentAlignment="Center" Grid.Row="10" Content="Playlist style:" />
+          <Label VerticalContentAlignment="Center" Grid.Row="10" Content="Tracklist style:" />
           <ComboBox Grid.Row="10" Grid.Column="1" Margin="2" Name="cmbPlaylistStyle">
             <ComboBoxItem>Columns</ComboBoxItem>
             <ComboBoxItem>Single column</ComboBoxItem>

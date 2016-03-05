@@ -42,7 +42,7 @@
       <TextBlock Grid.Column="1" Name="lblArtist" Text="&lt;No Artist&gt;" Grid.Row="2"  TextTrimming="CharacterEllipsis" />
 
       <DockPanel Grid.Column="2" Grid.RowSpan="3" Name="dockVolume">
-        <Label Width="30" DockPanel.Dock="Top" Name="lblVolume" HorizontalContentAlignment="Center" Content="0" />
+        <Label Width="35" DockPanel.Dock="Top" Name="lblVolume" HorizontalContentAlignment="Center" Content="0" />
         <Slider HorizontalAlignment="Center" DockPanel.Dock="Bottom" Orientation="Vertical" Maximum="100" Minimum="0"
                 Name="sliVolume" Thumb.DragStarted="sliVolume_DragStarted" Thumb.DragCompleted="sliVolume_DragCompleted" ValueChanged="sliVolume_ValueChanged" />
       </DockPanel>        
