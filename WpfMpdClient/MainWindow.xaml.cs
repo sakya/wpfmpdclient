@@ -102,6 +102,7 @@ namespace WpfMpdClient
     WindowState m_StoredWindowState = WindowState.Normal;
     bool m_Close = false;
     bool m_IgnoreDisconnect = false;
+    bool m_MpdConnectedOnce = false;
     ListViewDragDropManager<MpdFile> m_DragDropManager = null;
     MiniPlayerWindow m_MiniPlayer = null;
     List<string> m_Languages = new List<string>() { string.Empty, "fr", "de", "it", "jp", "pl", "pt", "ru", "es", "sv", "tr" };
@@ -239,6 +240,24 @@ namespace WpfMpdClient
     public static readonly DependencyProperty CurrentTrackIdProperty = DependencyProperty.Register(
         "CurrentTrackId", typeof(int), typeof(MainWindow), new PropertyMetadata(0, null));
 
+    private bool CheckMpdConnection()
+    {
+      if (m_Mpc != null && m_Mpc.Connected)
+        return true;
+
+      // Reconnect:
+      if (m_MpdConnectedOnce && !string.IsNullOrEmpty(m_Settings.ServerAddress) && !m_Connecting) {
+        txtStatus.Text = "Not connected";
+        if (!m_IgnoreDisconnect && m_Settings.AutoReconnect && m_ReconnectTimer == null) {
+          m_ReconnectTimer = new System.Timers.Timer();
+          m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
+          m_ReconnectTimer.Elapsed += ReconnectTimerHandler;
+          m_ReconnectTimer.Start();
+        }
+      }
+      return false;
+    } // CheckMpdConnection
+
     private void MpcIdleConnected(Mpc connection)
     {
       if (!string.IsNullOrEmpty(m_Settings.Password)){
@@ -257,7 +276,7 @@ namespace WpfMpdClient
 
     private async void MpcIdleSubsystemsChanged(Mpc connection, Mpc.Subsystems subsystems)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       MpdStatus status = null;
@@ -382,6 +401,7 @@ namespace WpfMpdClient
                   m_MpcIdle.Connection.Disconnect();
                 m_MpcIdle.Connection.Connect();
                 m_IgnoreDisconnect = false;
+                m_MpdConnectedOnce = true;
               } catch (Exception ex) {
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -405,7 +425,7 @@ namespace WpfMpdClient
 
     private async Task<bool> PopulateArtists()
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return false;
 
 
@@ -447,7 +467,7 @@ namespace WpfMpdClient
 
     private async Task<bool> PopulateGenres()
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return false;
 
       List<string> genres = null;
@@ -479,7 +499,7 @@ namespace WpfMpdClient
 
     private async Task<bool> PopulatePlaylists()
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return false;
 
       List<string> playlists = null;
@@ -504,7 +524,7 @@ namespace WpfMpdClient
 
     private async Task<bool> PopulateFileSystemTree()
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return false;
 
       await Dispatcher.BeginInvoke(new Action(() =>
@@ -609,7 +629,7 @@ namespace WpfMpdClient
 
     private async void lstArtist_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       if (lstArtist.SelectedItem == null) {
@@ -644,7 +664,7 @@ namespace WpfMpdClient
 
     private async void lstGenres_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       if (lstGenres.SelectedItem == null) {
@@ -695,7 +715,7 @@ namespace WpfMpdClient
 
     private async void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       ListBox list = sender as ListBox;
@@ -727,7 +747,7 @@ namespace WpfMpdClient
 
     private async void lstAlbums_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       ListBox list = sender as ListBox;
@@ -840,7 +860,7 @@ namespace WpfMpdClient
 
     private async Task<bool> PopulatePlaylist()
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return false;
 
       List<MpdFile> tracks = null;
@@ -863,7 +883,7 @@ namespace WpfMpdClient
 
     private async void ContextMenu_Click(object sender, RoutedEventArgs args)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       MenuItem item = sender as MenuItem;
@@ -913,7 +933,7 @@ namespace WpfMpdClient
 
     private async void TracksContextMenu_Click(object sender, RoutedEventArgs args)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       bool scroll = false;
@@ -953,7 +973,7 @@ namespace WpfMpdClient
 
     private async void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       if (e.AddedItems.Count > 0) {
@@ -981,7 +1001,7 @@ namespace WpfMpdClient
 
     private void tabBrowse_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       if (e.AddedItems.Count > 0) {
@@ -1012,7 +1032,7 @@ namespace WpfMpdClient
 
     private void lstPlaylistContextMenu_Click(object sender, RoutedEventArgs args)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       MenuItem item = sender as MenuItem;
@@ -1026,7 +1046,7 @@ namespace WpfMpdClient
 
     private async void lstPlaylist_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       ListBoxItem item = sender as ListBoxItem;
@@ -1386,7 +1406,7 @@ namespace WpfMpdClient
 
     private async void btnSearch_Click(object sender, RoutedEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       if (!string.IsNullOrEmpty(txtSearch.Text)){
@@ -1548,7 +1568,7 @@ namespace WpfMpdClient
     #region Client to client Messages
     private void PopulateChannels()
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       List<string> channels = null;
@@ -1572,7 +1592,7 @@ namespace WpfMpdClient
 
     private void PopulateMessages()
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       List<MpdMessage> messages = null;
@@ -1593,7 +1613,7 @@ namespace WpfMpdClient
 
     private void btnSendMessage_Click(object sender, RoutedEventArgs e)
     {
-      if (m_Mpc == null || !m_Mpc.Connected)
+      if (!CheckMpdConnection())
         return;
 
       string channel = cmbChannnels.Text;
