@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -8,18 +9,14 @@ using System.Threading.Tasks;
 
 namespace Libmpc
 {
-  public class SocketManager
+  public class SocketManager : IDisposable
   {
     Mutex m_Mutex = null;
     Socket m_Socket = null;
     StringBuilder m_TempData = new StringBuilder();
 
-    public SocketManager(Socket socket)
+    public SocketManager()
     {
-      if (socket == null)
-        throw new ArgumentNullException("socket", "No socket");
-      m_Socket = socket;
-
       Encoding = Encoding.UTF8;
       Timeout = TimeSpan.FromSeconds(30);
       m_Mutex = new Mutex();
@@ -43,6 +40,24 @@ namespace Libmpc
         return m_Socket != null && m_Socket.Connected;
       }
     }
+
+    public void Dispose()
+    {
+      if (m_Socket != null)
+        m_Socket.Dispose();
+    }
+
+    public void Connect(IPEndPoint ep)
+    {
+      if (ep == null)
+        throw new ArgumentNullException("ep");
+
+      if (m_Socket != null)
+        m_Socket.Dispose();
+      m_Socket = new Socket(SocketType.Stream, ProtocolType.IP);
+      m_Socket.NoDelay = true;
+      m_Socket.Connect(ep);
+    } // Connect
 
     public string ReadLine()
     {
@@ -75,10 +90,9 @@ namespace Libmpc
         }
 
         int bytes = m_Socket.Receive(socketBuffer, socketBuffer.Length, SocketFlags.None);
-
         if (bytes > 0) {
           string read = Encoding.GetString(socketBuffer, 0, bytes);
-          for (int i=0; i<read.Length; i++) {
+          for (int i = 0; i < read.Length; i++) {
             if (read[i] == '\n') {
               line = true;
               m_TempData.Append(read.Substring(i + 1));
@@ -89,7 +103,8 @@ namespace Libmpc
           }
           if (line)
             break;
-        }
+        } else
+          Thread.Sleep(30);
       }
 
       m_Mutex.ReleaseMutex();

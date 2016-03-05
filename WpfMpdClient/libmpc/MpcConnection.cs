@@ -139,15 +139,12 @@ namespace Libmpc
       if (this.Connected)
         throw new AlreadyConnectedException();
 
-      if (m_SocketManager != null && m_SocketManager.Socket != null) {
-        m_SocketManager.Socket.Close();
-        m_SocketManager.Socket.Dispose();
+      if (m_SocketManager != null) {
+        m_SocketManager.Dispose();
       }
-      Socket socket = new Socket(SocketType.Stream, ProtocolType.IP);
-      socket.NoDelay = true;
-      socket.Connect(ipEndPoint);
 
-      m_SocketManager = new SocketManager(socket);
+      m_SocketManager = new SocketManager();
+      m_SocketManager.Connect(ipEndPoint);
 
       string firstLine = m_SocketManager.ReadLine();
       if (!firstLine.StartsWith(FIRST_LINE_PREFIX)) {
