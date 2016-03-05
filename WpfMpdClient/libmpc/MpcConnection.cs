@@ -63,17 +63,13 @@ namespace Libmpc
     private Mutex m_Mutex = new Mutex();
     private IPEndPoint ipEndPoint = null;
 
-    private TcpClient tcpClient = null;
-    private NetworkStream networkStream = null;
-
-    private StreamReader reader;
-    private StreamWriter writer;
+    private SocketManager m_SocketManager = null;
 
     private string version;
     /// <summary>
     /// If the connection to the MPD is connected.
     /// </summary>
-    public bool Connected { get { return (this.tcpClient != null) && this.tcpClient.Connected; } }
+    public bool Connected { get { return (m_SocketManager != null) && m_SocketManager.Connected; } }
     /// <summary>
     /// The version of the MPD.
     /// </summary>
@@ -143,26 +139,25 @@ namespace Libmpc
       if (this.Connected)
         throw new AlreadyConnectedException();
 
-      this.tcpClient = new TcpClient(
-          this.ipEndPoint.Address.ToString(),
-          this.ipEndPoint.Port);
-      this.tcpClient.ReceiveBufferSize = 8192;
-      this.networkStream = this.tcpClient.GetStream();
-      
-      this.reader = new StreamReader(this.networkStream, Encoding.UTF8);
-      this.writer = new StreamWriter(this.networkStream, Encoding.UTF8);
-      this.writer.AutoFlush = true;
-      this.writer.NewLine = "\n";
+      if (m_SocketManager != null && m_SocketManager.Socket != null) {
+        m_SocketManager.Socket.Close();
+        m_SocketManager.Socket.Dispose();
+      }
+      Socket socket = new Socket(SocketType.Stream, ProtocolType.IP);
+      socket.NoDelay = true;
+      socket.Connect(ipEndPoint);
 
-      string firstLine = this.reader.ReadLine();
+      m_SocketManager = new SocketManager(socket);
+
+      string firstLine = m_SocketManager.ReadLine();
       if (!firstLine.StartsWith(FIRST_LINE_PREFIX)) {
         this.Disconnect();
         throw new InvalidDataException("Response of mpd does not start with \"" + FIRST_LINE_PREFIX + "\".");
       }
       this.version = firstLine.Substring(FIRST_LINE_PREFIX.Length);
 
-      this.writer.WriteLine();
-      this.readResponse();
+      //m_SocketManager.WriteLine(string.Empty);
+      //this.readResponse();
 
       MpdResponse response = Exec("commands");
       m_Commands = response.getValueList();
@@ -175,11 +170,11 @@ namespace Libmpc
     /// </summary>
     public void Disconnect()
     {
-      if (this.tcpClient == null)
+      if (m_SocketManager == null)
         return;
 
-      this.networkStream.Close();
-
+      m_SocketManager.Socket.Close();
+      m_SocketManager.Socket.Dispose();
       this.ClearConnectionFields();
 
       if (this.OnDisconnected != null)
@@ -202,7 +197,7 @@ namespace Libmpc
       try {
         while (true){
           this.CheckConnected();
-          this.writer.WriteLine(command);
+          m_SocketManager.WriteLine(command);
           MpdResponse res = this.readResponse();
 
           Mpc.Subsystems eventSubsystems = Mpc.Subsystems.None;
@@ -249,7 +244,7 @@ namespace Libmpc
       try {
         this.CheckConnected();
         m_Mutex.WaitOne();
-        this.writer.WriteLine(command);
+        m_SocketManager.WriteLine(command);
 
         MpdResponse res = this.readResponse();
         m_Mutex.ReleaseMutex();
@@ -296,7 +291,7 @@ namespace Libmpc
       try {
         this.CheckConnected();
         m_Mutex.WaitOne();
-        this.writer.WriteLine(string.Format("{0} {1}", command, string.Join(" ", argument)));
+        m_SocketManager.WriteLine(string.Format("{0} {1}", command, string.Join(" ", argument)));
 
         MpdResponse res = this.readResponse();
         m_Mutex.ReleaseMutex();
@@ -326,24 +321,24 @@ namespace Libmpc
     private void WriteToken(string token)
     {
       if (token.Contains(" ")) {
-        this.writer.Write("\"");
+        m_SocketManager.Write("\"");
         foreach (char chr in token)
           if (chr == '"')
-            this.writer.Write("\\\"");
+            m_SocketManager.Write("\\\"");
           else
-            this.writer.Write(chr);
+            m_SocketManager.Write(chr);
       }
       else
-        this.writer.Write(token);
+        m_SocketManager.Write(token);
     }
 
     private MpdResponse readResponse()
     {
       List<string> ret = new List<string>();
-      string line = this.reader.ReadLine();
+      string line = m_SocketManager.ReadLine();
       while (line != null && !(line.Equals(OK) || line.StartsWith(ACK))) {
         ret.Add(line);
-        line = this.reader.ReadLine();
+        line = m_SocketManager.ReadLine();
       }
       if (line == null)
         line = string.Empty;
@@ -368,10 +363,7 @@ namespace Libmpc
 
     private void ClearConnectionFields()
     {
-      this.tcpClient = null;
-      this.networkStream = null;
-      this.reader = null;
-      this.writer = null;
+      m_SocketManager = null;
       this.version = null;
     }
   }

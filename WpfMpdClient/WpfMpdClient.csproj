@@ -110,6 +110,7 @@
     <Compile Include="DragAdorner.cs" />
     <Compile Include="GridViewColumnResize.cs" />
     <Compile Include="ImageLoader.cs" />
+    <Compile Include="libmpc\SocketManager.cs" />
     <Compile Include="ListViewDragDropManager.cs" />
     <Compile Include="MiniPlayerWindow.xaml.cs">
       <DependentUpon>MiniPlayerWindow.xaml</DependentUpon>
