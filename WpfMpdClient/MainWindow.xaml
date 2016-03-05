@@ -49,14 +49,26 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TabControl Name="tabControl" SelectionChanged="tabControl_SelectionChanged">
-      <TabItem Header="Browse">
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <fa:ImageAwesome Icon="FolderOpen" Height="16" Width="16" />
+            <TextBlock Margin="3,0,0,0" Text="Browse" />
+          </StackPanel>
+        </TabItem.Header>
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition MinWidth="100" Width="*" />
             <ColumnDefinition MinWidth="100" Width="*" />
           </Grid.ColumnDefinitions>
           <TabControl Margin="2,2,5,2" Name="tabBrowse" SelectionChanged="tabBrowse_SelectionChanged">
-            <TabItem Header="Artists">
+            <TabItem>
+              <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                  <fa:ImageAwesome Icon="User" Height="16" Width="16" />
+                  <TextBlock Margin="3,0,0,0" Text="Artists" />
+                </StackPanel>
+              </TabItem.Header>
               <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition MinHeight="100" Height="*" />
@@ -140,7 +152,13 @@
               </Grid>
             </TabItem>
 
-            <TabItem Header="Genres">
+            <TabItem>
+              <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                  <fa:ImageAwesome Icon="Group" Height="16" Width="16" />
+                  <TextBlock Margin="3,0,0,0" Text="Genres" />
+                </StackPanel>
+              </TabItem.Header>              
               <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition MinHeight="100" Height="*" />
@@ -219,7 +237,13 @@
               </Grid>
             </TabItem>
 
-            <TabItem Header="Playlists">
+            <TabItem>
+              <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                  <fa:ImageAwesome Icon="List" Height="16" Width="16" />
+                  <TextBlock Margin="3,0,0,0" Text="Playlists" />
+                </StackPanel>
+              </TabItem.Header>
               <Grid>
                 <DockPanel Grid.Row="0">
                   <!--<TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="2" Text="Playlists:" />-->
@@ -261,7 +285,13 @@
               </Grid>
             </TabItem>
 
-            <TabItem Name="tabFileSystem" Header="File system">
+            <TabItem Name="tabFileSystem">
+              <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                  <fa:ImageAwesome Icon="HddOutline" Height="16" Width="16" />
+                  <TextBlock Margin="3,0,0,0" Text="File system" />
+                </StackPanel>
+              </TabItem.Header>              
               <Grid>
                 <TreeView Name="treeFileSystem" BorderThickness="0" SelectedItemChanged="treeFileSystem_SelectedItemChanged">
                   <TreeView.ContextMenu>
@@ -283,7 +313,13 @@
               </Grid>
             </TabItem>
 
-            <TabItem Header="Search">
+            <TabItem>
+              <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                  <fa:ImageAwesome Icon="Search" Height="16" Width="16" />
+                  <TextBlock Margin="3,0,0,0" Text="Search" />
+                </StackPanel>
+              </TabItem.Header>              
               <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
@@ -455,7 +491,13 @@
         </Grid>
       </TabItem>
 
-      <TabItem Header="Now Playing">
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <fa:ImageAwesome Icon="Play" Height="16" Width="16" />
+            <TextBlock Margin="3,0,0,0" Text="Now Playing" />
+          </StackPanel>
+        </TabItem.Header>
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -653,7 +695,13 @@
         </Grid>
       </TabItem>
 
-      <TabItem Header="Server">
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <fa:ImageAwesome Icon="Server" Height="16" Width="16" />
+            <TextBlock Margin="3,0,0,0" Text="Server" />
+          </StackPanel>
+        </TabItem.Header>
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -758,7 +806,13 @@
         </Grid>
       </TabItem>
 
-      <TabItem Header="Settings">
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <fa:ImageAwesome Icon="Cog" Height="16" Width="16" />
+            <TextBlock Margin="3,0,0,0" Text="Settings" />
+          </StackPanel>
+        </TabItem.Header>
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -854,7 +908,13 @@
         </Grid>
       </TabItem>
 
-      <TabItem Header="About">
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <fa:ImageAwesome Icon="InfoCircle" Height="16" Width="16" />
+            <TextBlock Margin="3,0,0,0" Text="About" />
+          </StackPanel>
+        </TabItem.Header>
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
