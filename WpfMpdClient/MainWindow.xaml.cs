@@ -608,6 +608,7 @@ namespace WpfMpdClient
     {
       TreeViewItem treeItem = treeFileSystem.SelectedItem as TreeViewItem;
       if (treeItem != null){
+        m_TracksSpinner.Visibility = Visibility.Visible;
         lstTracks.ItemsSource = null;
         lstTracksStyled.ItemsSource = null;
         MpdDirectoryListing list = null;
@@ -615,6 +616,7 @@ namespace WpfMpdClient
           string tag = treeItem.Tag != null ? treeItem.Tag.ToString() : null;
           list = await Task.Factory.StartNew(() => (m_Mpc.LsInfo(tag)));
         }catch (Exception ex){
+          m_TracksSpinner.Visibility = Visibility.Collapsed;
           ShowException(ex);
           return;
         }
@@ -625,6 +627,7 @@ namespace WpfMpdClient
         lstTracksStyled.ItemsSource = m_Tracks;
         ScrollTracksToLeft();
       }
+      m_TracksSpinner.Visibility = Visibility.Collapsed;
     }
 
     private async void lstArtist_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -637,12 +640,14 @@ namespace WpfMpdClient
         return;
       }
 
+      m_AlbumsSpinner.Visibility = Visibility.Visible;
       m_AlbumsSource.Clear();
       string artist = SelectedArtist();
       List<string> albums = null;
       try{
         albums = await Task.Factory.StartNew(() => m_Mpc.List(ScopeSpecifier.Album, ScopeSpecifier.Artist, artist));
       }catch (Exception ex){
+        m_AlbumsSpinner.Visibility = Visibility.Collapsed;
         ShowException(ex);
         return;
       }
@@ -660,6 +665,7 @@ namespace WpfMpdClient
         lstAlbums.SelectedIndex = 0;
         lstAlbums.ScrollIntoView(m_AlbumsSource[0]);
       }
+      m_AlbumsSpinner.Visibility = Visibility.Collapsed;
     }
 
     private async void lstGenres_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -672,6 +678,7 @@ namespace WpfMpdClient
         return;
       }
 
+      m_GenresAlbumsSpinner.Visibility = Visibility.Visible;
       m_GenresAlbumsSource.Clear();
       string genre = lstGenres.SelectedItem.ToString();
       if (genre == Mpc.NoGenre)
@@ -681,7 +688,8 @@ namespace WpfMpdClient
       try{
         files = await Task.Factory.StartNew(() => m_Mpc.Find(ScopeSpecifier.Genre, genre));
       }catch (Exception ex){
-        ShowException(ex);
+        m_GenresAlbumsSpinner.Visibility = Visibility.Collapsed;
+        ShowException(ex);        
         return;
       }
       files.Sort(delegate(MpdFile p1, MpdFile p2)
@@ -711,6 +719,7 @@ namespace WpfMpdClient
         lstGenresAlbums.SelectedIndex = 0;
         lstGenresAlbums.ScrollIntoView(m_GenresAlbumsSource[0]);
       }
+      m_GenresAlbumsSpinner.Visibility = Visibility.Collapsed;
     }
 
     private async void lstPlaylists_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -718,6 +727,7 @@ namespace WpfMpdClient
       if (!CheckMpdConnection())
         return;
 
+      m_TracksSpinner.Visibility = Visibility.Visible;
       ListBox list = sender as ListBox;
       if (list.SelectedItem != null) {
         string playlist = list.SelectedItem.ToString();
@@ -727,6 +737,7 @@ namespace WpfMpdClient
         try {
           m_Tracks = await Task.Factory.StartNew(() => m_Mpc.ListPlaylistInfo(playlist));
         }catch (Exception ex){
+          m_TracksSpinner.Visibility = Visibility.Collapsed;
           ShowException(ex);
           return;
         }
@@ -738,6 +749,7 @@ namespace WpfMpdClient
         lstTracks.ItemsSource = null;
         lstTracksStyled.ItemsSource = null;
       }
+      m_TracksSpinner.Visibility = Visibility.Collapsed;
     } 
 
     private void lstTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -752,6 +764,7 @@ namespace WpfMpdClient
 
       ListBox list = sender as ListBox;
       if (list.SelectedItem != null) {
+        m_TracksSpinner.Visibility = Visibility.Visible;
         Dictionary<ScopeSpecifier, string> search = new Dictionary<ScopeSpecifier, string>();
 
         ListBox listBox = null;
@@ -780,6 +793,7 @@ namespace WpfMpdClient
         try{
           m_Tracks = await Task.Factory.StartNew(() => m_Mpc.Find(search));
         }catch (Exception ex){
+          m_TracksSpinner.Visibility = Visibility.Collapsed;
           ShowException(ex);
           return;
         }
@@ -791,6 +805,7 @@ namespace WpfMpdClient
         lstTracks.ItemsSource = null;
         lstTracksStyled.ItemsSource = null;
       }
+      m_TracksSpinner.Visibility = Visibility.Collapsed;
     }
 
     private void btnApplySettings_Click(object sender, RoutedEventArgs e)

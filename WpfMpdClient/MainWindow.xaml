@@ -4,6 +4,7 @@
         xmlns:local="clr-namespace:WpfMpdClient"
         WindowStartupLocation="Manual"
         Title="WpfMpdClient" Height="400" Width="550"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         StateChanged="Window_StateChanged">
 
   <Window.Resources>
@@ -134,6 +135,8 @@
                     </local:SearchableListBox.ItemTemplate>
                   </local:SearchableListBox>
                 </DockPanel>
+                <fa:ImageAwesome Grid.Row="1" Visibility="Collapsed" Name="m_AlbumsSpinner" Icon="CircleOutlineNotch" Spin="True" Height="36" Width="36" />
+
               </Grid>
             </TabItem>
 
@@ -212,6 +215,7 @@
                     </local:SearchableListBox.ItemTemplate>
                   </local:SearchableListBox>
                 </DockPanel>
+                <fa:ImageAwesome Grid.Row="1" Visibility="Collapsed" Name="m_GenresAlbumsSpinner" Icon="CircleOutlineNotch" Spin="True" Height="36" Width="36" />
               </Grid>
             </TabItem>
 
@@ -447,6 +451,7 @@
               </GridView>
             </ListView.View>
           </local:ConfigurableListView>
+          <fa:ImageAwesome Grid.Column="1" Visibility="Collapsed" Name="m_TracksSpinner" Icon="CircleOutlineNotch" Spin="True" Height="36" Width="36" />
         </Grid>
       </TabItem>
 

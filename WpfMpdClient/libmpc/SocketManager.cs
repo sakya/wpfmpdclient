@@ -86,7 +86,7 @@ namespace Libmpc
       while (true) {
         // Check timeout:
         if ((DateTime.UtcNow - started) > Timeout){
-          throw new Exception("Timeout.");
+          throw new Exception("Socket timeout.");
         }
 
         int bytes = m_Socket.Receive(socketBuffer, socketBuffer.Length, SocketFlags.None);
