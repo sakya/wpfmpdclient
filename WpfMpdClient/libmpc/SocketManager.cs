@@ -63,9 +63,6 @@ namespace Libmpc
     {
       m_Mutex.WaitOne();
 
-      bool line = false;
-      byte[] socketBuffer = new byte[256];
-
       StringBuilder sb = new StringBuilder();
       sb.Append(m_TempData.ToString());
       m_TempData.Clear();
@@ -79,6 +76,9 @@ namespace Libmpc
         m_Mutex.ReleaseMutex();
         return res;
       }
+
+      bool line = false;
+      byte[] socketBuffer = new byte[256];
 
       // Line from network:
       DateTime started = DateTime.UtcNow;
