@@ -356,7 +356,7 @@ namespace WpfMpdClient
         await Dispatcher.BeginInvoke(new Action( async() =>
         {
           lstGenres.ItemsSource = null;
-          lstPlaylist.ItemsSource = null;
+          lstPlaylists.ItemsSource = null;
           treeFileSystem.Items.Clear();
 
           if (tabBrowse.SelectedIndex == 0)
@@ -367,6 +367,8 @@ namespace WpfMpdClient
             await PopulatePlaylists();
           else if (tabBrowse.SelectedIndex == 3)
             await PopulateFileSystemTree();
+
+          await PopulatePlaylist();
         }));
     }
 
@@ -991,7 +993,10 @@ namespace WpfMpdClient
         return;
 
       if (tabControl.SelectedIndex == 1){
-
+        //if (lstPlaylist.ItemsSource == null) {
+        //  lstPlaylist.ItemsSource = m_PlaylistTracks;
+        //  await PopulatePlaylist();
+        //}
       }else if (tabControl.SelectedIndex == 2){
         await Dispatcher.BeginInvoke(new Action( async() =>
         {
@@ -1025,7 +1030,7 @@ namespace WpfMpdClient
           await PopulateGenres();
         lstAlbums_SelectionChanged(lstGenresAlbums, null);
       } else if (tabBrowse.SelectedIndex == 2) {
-        if (lstPlaylist.ItemsSource == null)
+        if (lstPlaylists.ItemsSource == null)
           await PopulatePlaylists();
         lstPlaylists_SelectionChanged(lstPlaylists, null);
       } else if (tabBrowse.SelectedIndex == 3) {
