@@ -27,9 +27,10 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 [Files]
 Source: "..\WpfMpdClient\bin\release\WpfMpdClient.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\WpfMpdClient\bin\release\CsUpdater.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\WpfMpdClient\bin\release\FontAwesome.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\WpfMpdClient\bin\release\FontAwesome.WPF.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\WpfMpdClient\bin\release\LICENSE.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\WpfMpdClient\bin\release\mpd_icon.ico"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\WpfMpdClient\bin\release\Images\cover.png"; DestDir: "{app}\Images"; Flags: ignoreversion
 Source: "..\WpfMpdClient\bin\release\Images\next.png"; DestDir: "{app}\Images"; Flags: ignoreversion
 Source: "..\WpfMpdClient\bin\release\Images\pause.png"; DestDir: "{app}\Images"; Flags: ignoreversion
 Source: "..\WpfMpdClient\bin\release\Images\play.png"; DestDir: "{app}\Images"; Flags: ignoreversion
