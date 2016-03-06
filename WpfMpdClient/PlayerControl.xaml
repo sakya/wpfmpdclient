@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WpfMpdClient"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
   <Grid>
@@ -30,17 +31,30 @@
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
 
-      <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" >
-        <Image Name="imgArtDefault" Width="100" Source="images/cover.png"/>
+      <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" Width="100" Height="100"
+              Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}">
+        <!--<Image Name="imgArtDefault" Width="100" Source="images/cover.png"/>-->
+        <fa:ImageAwesome Name="imgArtDefault" Icon="Music" Width="50" Height="50" />
       </Border>
       <Border Margin="0,0,2,0" BorderBrush="Black" BorderThickness="1" Grid.RowSpan="3" >
         <local:ImageLoader x:Name="imgArt" Width="100" 
                            ImageUri="{Binding Path=ImageUrl}"/>
       </Border>
-      <TextBlock Grid.Column="1" Name="lblTitle" FontWeight="Bold" Text="&lt;No Title&gt;" TextTrimming="CharacterEllipsis" />
-      <TextBlock Grid.Column="1" Name="lblAlbum" Text="&lt;No Album&gt;" Grid.Row="1" TextTrimming="CharacterEllipsis"  />
-      <TextBlock Grid.Column="1" Name="lblArtist" Text="&lt;No Artist&gt;" Grid.Row="2"  TextTrimming="CharacterEllipsis" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <fa:ImageAwesome Icon="Music" Width="16" Height="16" />
+        <TextBlock Name="lblTitle" Margin="6,0,0,0" VerticalAlignment="Center" FontWeight="Bold" Text="&lt;No Title&gt;" TextTrimming="CharacterEllipsis" />
+      </StackPanel>
 
+      <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
+        <fa:ImageAwesome Icon="Circle" Width="16" Height="16" />
+        <TextBlock Name="lblAlbum" Margin="6,0,0,0" VerticalAlignment="Center" Text="&lt;No Album&gt;"  TextTrimming="CharacterEllipsis"  />
+      </StackPanel>
+
+      <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Horizontal">
+        <fa:ImageAwesome Icon="User" Width="16" Height="16" />
+        <TextBlock Name="lblArtist" Margin="6,0,0,0" VerticalAlignment="Center" Text="&lt;No Artist&gt;"  TextTrimming="CharacterEllipsis" />
+      </StackPanel>
+      
       <DockPanel Grid.Column="2" Grid.RowSpan="3" Name="dockVolume">
         <Label Width="35" DockPanel.Dock="Top" Name="lblVolume" HorizontalContentAlignment="Center" Content="0" />
         <Slider HorizontalAlignment="Center" DockPanel.Dock="Bottom" Orientation="Vertical" Maximum="100" Minimum="0"

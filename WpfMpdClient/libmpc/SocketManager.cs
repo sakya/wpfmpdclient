@@ -81,13 +81,11 @@ namespace Libmpc
       }
 
       // Line from network:
-      //while (m_Socket.Available > 0) {
       DateTime started = DateTime.UtcNow;
       while (true) {
         // Check timeout:
-        if ((DateTime.UtcNow - started) > Timeout){
+        if ((DateTime.UtcNow - started) > Timeout)
           throw new Exception("Socket timeout.");
-        }
 
         int bytes = m_Socket.Receive(socketBuffer, socketBuffer.Length, SocketFlags.None);
         if (bytes > 0) {
@@ -115,7 +113,6 @@ namespace Libmpc
     {
       if (!line.EndsWith("\n"))
         line = string.Format("{0}\n", line);
-
       Write(line);
     }
 
@@ -133,7 +130,12 @@ namespace Libmpc
       byte[] toSend = Encoding.GetBytes(line);
       int sent = 0;
 
+      DateTime started = DateTime.UtcNow;
       while (sent < toSend.Length) {
+        // Check timeout:
+        if ((DateTime.UtcNow - started) > Timeout)
+          throw new Exception("Socket timeout.");
+
         try {
           sent += m_Socket.Send(toSend, sent, toSend.Length - sent, SocketFlags.None);
         } catch (SocketException ex) {
