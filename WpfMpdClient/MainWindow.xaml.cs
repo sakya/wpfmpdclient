@@ -343,7 +343,7 @@ namespace WpfMpdClient
           }
         }
 
-        List<string> commands = m_Mpc.Commands();
+        List<string> commands = await Task.Factory.StartNew(() => m_Mpc.Commands());
         await Dispatcher.BeginInvoke(new Action(() =>
         {
           if (!commands.Contains("channels"))
@@ -352,16 +352,22 @@ namespace WpfMpdClient
           txtStatus.Text = string.Format("Connected to {0}:{1} [MPD v.{2}]", m_Settings.ServerAddress, m_Settings.ServerPort, m_Mpc.Connection.Version);
         }));
 
-        MpdStatistics stats = m_Mpc.Stats();
+        MpdStatistics stats = await Task.Factory.StartNew(() => m_Mpc.Stats());
         await Dispatcher.BeginInvoke(new Action( async() =>
-        {          
-          //await PopulateGenres();
-          //await PopulatePlaylists();
-          //await PopulateFileSystemTree();
-          //await PopulatePlaylist();
-          await PopulateArtists();
+        {
+          lstGenres.ItemsSource = null;
+          lstPlaylist.ItemsSource = null;
+          treeFileSystem.Items.Clear();
+
+          if (tabBrowse.SelectedIndex == 0)
+            await PopulateArtists();
+          else if (tabBrowse.SelectedIndex == 1)
+            await PopulateGenres();
+          else if (tabBrowse.SelectedIndex == 2)
+            await PopulatePlaylists();
+          else if (tabBrowse.SelectedIndex == 3)
+            await PopulateFileSystemTree();
         }));
-      //}));
     }
 
     private void MpcDisconnected(Mpc connection)
@@ -960,11 +966,11 @@ namespace WpfMpdClient
     }
 
 
-    private void btnUpdate_Click(object sender, RoutedEventArgs e)
+    private async void btnUpdate_Click(object sender, RoutedEventArgs e)
     {
       if (m_Mpc.Connected){
         try{
-          m_Mpc.Update();
+          await Task.Factory.StartNew(() => m_Mpc.Update());
         }catch (Exception ex){
           ShowException(ex);
           return;
@@ -1037,7 +1043,7 @@ namespace WpfMpdClient
         item.IsSelected = false;
     }
 
-    private void lstPlaylistContextMenu_Click(object sender, RoutedEventArgs args)
+    private async void lstPlaylistContextMenu_Click(object sender, RoutedEventArgs args)
     {
       if (!CheckMpdConnection())
         return;
@@ -1046,7 +1052,7 @@ namespace WpfMpdClient
       if (item.Name == "mnuRemove"){
         MpdFile file = item.DataContext as MpdFile;
         if (file != null) {
-          m_Mpc.Delete(file.Pos);
+          await Task.Factory.StartNew(() => m_Mpc.Delete(file.Pos));
         }
       }        
     }
@@ -1550,11 +1556,11 @@ namespace WpfMpdClient
         listViewScrollViewer.ScrollToLeftEnd();
     }
 
-		private void dragMgr_ProcessDrop( object sender, ProcessDropEventArgs<MpdFile> e )
+		private async void dragMgr_ProcessDrop( object sender, ProcessDropEventArgs<MpdFile> e )
 		{
       if (m_Mpc.Connected){
         try{
-          m_Mpc.Move(e.OldIndex, e.NewIndex);
+          await Task.Factory.StartNew(() => m_Mpc.Move(e.OldIndex, e.NewIndex));
         }catch (Exception ex){
           ShowException(ex);
           return;

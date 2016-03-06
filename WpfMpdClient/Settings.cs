@@ -25,6 +25,8 @@ namespace WpfMpdClient
 {
   public class Settings
   {
+    bool m_StyledPlaylist = true;
+
     public Settings()
     {
       ServerAddress = "localhost";
@@ -160,8 +162,8 @@ namespace WpfMpdClient
 
     [XmlAttribute("styledplaylist")]
     public bool StyledPlaylist {
-      get;
-      set;
+      get { return m_StyledPlaylist; }
+      set { m_StyledPlaylist = value; }
     }
 
     [XmlAttribute("scrobbler")]

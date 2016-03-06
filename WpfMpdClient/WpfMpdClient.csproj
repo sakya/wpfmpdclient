@@ -224,9 +224,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\cover.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Images\next.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
