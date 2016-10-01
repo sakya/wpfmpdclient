@@ -1127,7 +1127,7 @@ namespace Libmpc
       if (password == null)
         throw new ArgumentNullException("password");
 
-      return this.getConnection().Exec("password", new string[] { password }).IsError;
+      return !this.getConnection().Exec("password", new string[] { password }).IsError;
     }
     /// <summary>
     /// Sends a ping command to the server and waits for the response.

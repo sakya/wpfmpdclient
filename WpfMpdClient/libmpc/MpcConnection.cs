@@ -282,8 +282,8 @@ namespace Libmpc
           throw new ArgumentException("argument[" + i + "] contains newline");
       }
 
-      if (m_Commands != null && !m_Commands.Contains(command))
-        return new MpdResponse(new ReadOnlyCollection<string>(new List<string>()));
+      //if (m_Commands != null && !m_Commands.Contains(command))
+      //  return new MpdResponse(new ReadOnlyCollection<string>(new List<string>()));
 
       try {
         this.CheckConnected();
