@@ -55,6 +55,7 @@ namespace Libmpc
       if (m_Socket != null)
         m_Socket.Dispose();
       m_Socket = new Socket(SocketType.Stream, ProtocolType.IP);
+      m_Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
       m_Socket.NoDelay = true;
       m_Socket.Connect(ep);
     } // Connect

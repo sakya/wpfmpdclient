@@ -91,6 +91,7 @@ namespace WpfMpdClient
     Mpc m_Mpc = null;
     Mpc m_MpcIdle = null;
     MpdStatus m_LastStatus = null;
+    System.Timers.Timer m_PingTimer = null;
     System.Timers.Timer m_StartTimer = null;
     System.Timers.Timer m_ReconnectTimer = null;
     List<MpdFile> m_Tracks = null;
@@ -200,6 +201,11 @@ namespace WpfMpdClient
         m_StartTimer.Start();
       }
 
+      m_PingTimer = new System.Timers.Timer();
+      m_PingTimer.Interval = 5000;
+      m_PingTimer.Elapsed += PingTimerHandler;
+      m_PingTimer.Start();
+
       m_Updater = new Updater(new Uri("http://www.sakya.it/updater/updater.php"), "WpfMpdClient", "Windows");
       m_Updater.AppCurrentVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
       m_Updater.CheckCompletedDelegate += CheckCompleted;
@@ -247,7 +253,11 @@ namespace WpfMpdClient
 
       // Reconnect:
       if (m_MpdConnectedOnce && !string.IsNullOrEmpty(m_Settings.ServerAddress) && !m_Connecting) {
-        txtStatus.Text = "Not connected";
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          txtStatus.Text = "Not connected";
+        }));
+
         if (!m_IgnoreDisconnect && m_Settings.AutoReconnect && m_ReconnectTimer == null) {
           m_ReconnectTimer = new System.Timers.Timer();
           m_ReconnectTimer.Interval = 1000;
@@ -375,7 +385,11 @@ namespace WpfMpdClient
     private void MpcDisconnected(Mpc connection)
     {
       if (!connection.Connected){
-        txtStatus.Text = "Not connected";
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+          txtStatus.Text = "Not connected";
+        }));
+
         if (!m_IgnoreDisconnect  && m_Settings.AutoReconnect && m_ReconnectTimer == null){
           m_ReconnectTimer = new System.Timers.Timer();
           m_ReconnectTimer.Interval = m_Settings.AutoReconnectDelay * 1000;
@@ -855,6 +869,15 @@ namespace WpfMpdClient
         Connect();
       }));
     } // ReconnectTimerHandler
+
+    private async void PingTimerHandler(object sender, ElapsedEventArgs e)
+    {
+      if (m_Mpc != null) {
+        try {
+          await Task.Run(() => m_Mpc.Ping());
+        } catch (Exception) { }
+      }
+    }
 
     private void StartTimerHandler(object sender, ElapsedEventArgs e)
     {

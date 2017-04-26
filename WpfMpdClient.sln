@@ -1,30 +1,28 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfMpdClient", "WpfMpdClient\WpfMpdClient.csproj", "{B8D098E7-DBD1-4938-8A45-01ED8F812815}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
-		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|x64.ActiveCfg = Debug|x64
 		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|x64.Build.0 = Debug|x64
 		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|x86.ActiveCfg = Debug|x86
 		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Debug|x86.Build.0 = Debug|x86
-		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Release|Any CPU.ActiveCfg = Release|x86
-		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Release|Mixed Platforms.Build.0 = Release|x86
+		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Release|x64.ActiveCfg = Release|x64
 		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Release|x64.Build.0 = Release|x64
 		{B8D098E7-DBD1-4938-8A45-01ED8F812815}.Release|x86.ActiveCfg = Release|x86
